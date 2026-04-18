@@ -22,15 +22,27 @@ app.use(helmet({
 }));
 
 // CORS Configuration
-const allowedOrigins = [
+const allowedOrigins = new Set([
   'https://weddinginvites.online',
   'https://www.weddinginvites.online',
   'https://wedinvitesv3.onrender.com',
-];
+  process.env.FRONTEND_URL,
+].filter(Boolean));
+
+if (process.env.NODE_ENV !== 'production') {
+  [
+    'http://localhost:3000',
+    'http://localhost:3002',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3002',
+    'http://127.0.0.1:5173',
+  ].forEach((origin) => allowedOrigins.add(origin));
+}
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.has(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
