@@ -25,9 +25,7 @@ app.use(helmet({
 const allowedOrigins = [
   'https://weddinginvites.online',
   'https://www.weddinginvites.online',
-  'http://localhost:3000',
-  'http://localhost:3002',
-  'http://localhost:5000',
+  'https://wedinvitesv3.onrender.com',
 ];
 
 app.use(cors({

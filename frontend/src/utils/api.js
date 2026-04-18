@@ -3,7 +3,7 @@
  * Handles all communication with the backend API
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wedinvitesv3.onrender.com';
 
 class APIClient {
   constructor(baseURL = API_BASE_URL) {
@@ -152,8 +152,8 @@ class APIClient {
     });
   }
 
-  async submitRSVP(id, data) {
-    return this.request(`/api/public/rsvp/${id}`, {
+  async submitRSVP(slug, data) {
+    return this.request(`/api/public/invitations/${slug}/rsvp`, {
       method: 'POST',
       body: JSON.stringify(data),
     });

@@ -1,9 +1,11 @@
 import Order from '../models/Order.js';
 import Invitation from '../models/Invitation.js';
+import { ensureDBReady } from '../config/db.js';
 import { sendPaymentConfirmation } from '../services/emailService.js';
 
 export const createOrder = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { invitationId, customerEmail, package: selectedPackage, amount } = req.body;
 
     const order = await Order.create({
@@ -22,6 +24,7 @@ export const createOrder = async (req, res, next) => {
 
 export const getOrders = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const orders = await Order.find()
       .populate('invitationId', 'brideName groomName')
       .sort({ createdAt: -1 });
@@ -33,6 +36,7 @@ export const getOrders = async (req, res, next) => {
 
 export const verifyPayment = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     const { transactionId } = req.body;
 

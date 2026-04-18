@@ -1,10 +1,12 @@
 import Invitation from '../models/Invitation.js';
 import RSVP from '../models/RSVP.js';
+import { ensureDBReady } from '../config/db.js';
 import { invitationSchema } from '../validators/invitationValidator.js';
 import crypto from 'crypto';
 
 export const createInvitation = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const invitation = await Invitation.create({
       status: 'DRAFT',
       package: 'BASIC',
@@ -21,6 +23,7 @@ export const createInvitation = async (req, res, next) => {
 
 export const getInvitations = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const invitations = await Invitation.find().sort({ createdAt: -1 });
     res.json(invitations);
   } catch (error) {
@@ -30,6 +33,7 @@ export const getInvitations = async (req, res, next) => {
 
 export const getInvitationById = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     const invitation = await Invitation.findById(id);
 
@@ -50,6 +54,7 @@ export const getInvitationById = async (req, res, next) => {
 
 export const updateInvitation = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     const validatedData = invitationSchema.parse(req.body);
 
@@ -68,6 +73,7 @@ export const updateInvitation = async (req, res, next) => {
 
 export const publishInvitation = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     const invitation = await Invitation.findById(id);
 
@@ -94,6 +100,7 @@ export const publishInvitation = async (req, res, next) => {
 
 export const unpublishInvitation = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     await Invitation.findByIdAndUpdate(id, { status: 'DRAFT' });
     res.json({ message: 'Unpublished successfully' });
@@ -104,6 +111,7 @@ export const unpublishInvitation = async (req, res, next) => {
 
 export const deleteInvitation = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     await Invitation.findByIdAndUpdate(id, { status: 'ARCHIVED' });
     res.json({ message: 'Invitation archived' });
@@ -114,6 +122,7 @@ export const deleteInvitation = async (req, res, next) => {
 
 export const getRSVPs = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { id } = req.params;
     const rsvps = await RSVP.find({ invitationId: id }).sort({ createdAt: -1 });
     res.json(rsvps);

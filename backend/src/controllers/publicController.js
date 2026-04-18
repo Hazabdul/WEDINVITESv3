@@ -1,9 +1,11 @@
 import Invitation from '../models/Invitation.js';
 import RSVP from '../models/RSVP.js';
+import { ensureDBReady } from '../config/db.js';
 import { rsvpSchema } from '../validators/invitationValidator.js';
 
 export const listPublishedInvitations = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const page = Math.max(Number.parseInt(req.query.page || '1', 10), 1);
     const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '6', 10), 1), 24);
     const skip = (page - 1) * limit;
@@ -33,6 +35,7 @@ export const listPublishedInvitations = async (req, res, next) => {
 
 export const getPublicInvitation = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { slug } = req.params;
     const invitation = await Invitation.findOne({ slug, status: 'PUBLISHED' });
 
@@ -46,6 +49,7 @@ export const getPublicInvitation = async (req, res, next) => {
 
 export const submitRSVP = async (req, res, next) => {
   try {
+    await ensureDBReady();
     const { slug } = req.params;
     const invitation = await Invitation.findOne({ slug });
 

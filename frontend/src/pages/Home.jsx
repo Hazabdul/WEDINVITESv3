@@ -95,7 +95,7 @@ export function Home() {
   const testAPIConnection = async () => {
     try {
       setApiStatus('Testing...');
-      const response = await fetch('http://localhost:5000/health');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://wedinvitesv3.onrender.com'}/health`);
       if (response.ok) {
         setApiStatus('Connected. Backend is responding.');
       } else {
