@@ -6,7 +6,7 @@ export function Stepper({ steps, currentStep, onStepChange, progressInfo }) {
   const missingFields = progressInfo?.missingFields ?? [];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-lg backdrop-blur mb-6">
+    <div className="mb-6 rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-lg backdrop-blur">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-500">Builder progress</p>
@@ -17,24 +17,24 @@ export function Stepper({ steps, currentStep, onStepChange, progressInfo }) {
           <p className="text-xs text-slate-500">Completion</p>
         </div>
       </div>
-      
-      <div className="mb-3 h-3 rounded-full bg-slate-100 overflow-hidden">
+
+      <div className="mb-3 h-3 overflow-hidden rounded-full bg-slate-100">
         <div
-          className={cn("h-full rounded-full transition-all duration-700", percentage === 100 ? "bg-emerald-500" : "bg-slate-900")}
+          className={cn('h-full rounded-full transition-all duration-700', percentage === 100 ? 'bg-emerald-500' : 'bg-slate-900')}
           style={{ width: `${percentage}%` }}
         />
       </div>
-      
+
       {missingFields.length > 0 ? (
-         <div className="mb-5 text-[11px] font-medium text-amber-600 leading-tight">
-           <span className="font-bold">Missing Info:</span> {missingFields.join(", ")}
-         </div>
+        <div className="mb-5 text-[11px] font-medium leading-tight text-amber-600">
+          <span className="font-bold">Missing info:</span> {missingFields.join(', ')}
+        </div>
       ) : (
-         <div className="mb-5 text-sm font-semibold text-emerald-600">
-           🎉 Excellent! All required details are filled.
-         </div>
+        <div className="mb-5 text-sm font-semibold text-emerald-600">
+          Excellent. All required details are filled.
+        </div>
       )}
-      
+
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
         {steps.map((step, index) => (
           <button
@@ -42,12 +42,12 @@ export function Stepper({ steps, currentStep, onStepChange, progressInfo }) {
             key={step}
             onClick={() => onStepChange && onStepChange(index)}
             className={cn(
-              "rounded-xl border px-3 py-2 text-xs font-medium truncate text-center cursor-pointer transition-all hover:-translate-y-0.5 active:scale-95 select-none",
+              'cursor-pointer select-none truncate rounded-xl border px-3 py-2 text-center text-xs font-medium transition-all hover:-translate-y-0.5 active:scale-95',
               index === currentStep
-                ? "border-slate-900 bg-slate-900 text-white shadow-md shadow-slate-900/20"
+                ? 'border-slate-900 bg-slate-900 text-white shadow-md shadow-slate-900/20'
                 : index < currentStep
-                ? "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                : "border-slate-100 bg-white text-slate-400 hover:bg-slate-50"
+                ? 'border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                : 'border-slate-100 bg-white text-slate-400 hover:bg-slate-50'
             )}
             title={step}
           >

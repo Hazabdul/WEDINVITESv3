@@ -166,7 +166,7 @@ export function ExampleInvitationComponent() {
 
             <div className="mt-3 flex gap-2">
               <button
-                onClick={() => window.open(`/live-preview?id=${invitation._id}`)}
+                onClick={() => window.open(`/invitation/${invitation.slug || invitation._id}`)}
                 className="px-3 py-1 bg-blue-500 text-white text-sm rounded"
               >
                 Preview

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Builder } from './pages/Builder';
 import { Templates } from './pages/Templates';
 import { Pricing } from './pages/Pricing';
-import { LivePreview } from './pages/LivePreview';
 import { InvitationView } from './pages/InvitationView';
 import { InvitationProvider } from './hooks/useInvitationState';
-import { Heart, Globe, Mail } from 'lucide-react';
+import { Globe, Mail } from 'lucide-react';
 import { cn } from './utils/cn';
 
 function Navbar() {
@@ -78,7 +77,6 @@ function App() {
             <Route path="/builder" element={<Builder />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/live-preview" element={<LivePreview />} />
             <Route path="/invitation/:slug" element={<InvitationView />} />
             <Route path="/invite/:slug" element={<InvitationView />} />
             <Route path="/v/:slug" element={<InvitationView />} />

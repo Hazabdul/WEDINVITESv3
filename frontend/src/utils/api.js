@@ -146,6 +146,12 @@ class APIClient {
     });
   }
 
+  async getPublishedInvitations(page = 1, limit = 6) {
+    return this.request(`/api/public/invitations?page=${page}&limit=${limit}`, {
+      method: 'GET',
+    });
+  }
+
   async submitRSVP(id, data) {
     return this.request(`/api/public/rsvp/${id}`, {
       method: 'POST',

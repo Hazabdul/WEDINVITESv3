@@ -164,21 +164,6 @@ export function ThemeSelector() {
         />
       </div>
 
-      <div className="mb-6 mt-6 border-t pt-6">
-        <div className="flex flex-col items-start justify-between gap-4 rounded-[24px] border border-indigo-100 bg-[linear-gradient(135deg,#eef2ff_0%,#ffffff_100%)] p-4 sm:flex-row sm:items-center">
-          <div>
-            <h4 className="flex items-center gap-2 font-bold text-indigo-900">
-              Interactive Design Mode
-              <span className="rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white">New</span>
-            </h4>
-            <p className="mt-1 text-sm text-indigo-700/80">
-              Turn this on to drag content blocks around and tune the composition directly in the preview canvas.
-            </p>
-          </div>
-          <Toggle label="" checked={theme.enableDesignMode} onChange={() => updateSection("theme", "enableDesignMode", !theme.enableDesignMode)} className="w-[100px] shrink-0 border-indigo-200 bg-white" />
-        </div>
-      </div>
-
       <div className="grid gap-3 md:grid-cols-2">
         <Toggle label="Enable Animation" checked={theme.enableAnimation} onChange={() => updateSection("theme", "enableAnimation", !theme.enableAnimation)} />
         <Toggle label="Enable Countdown" checked={theme.enableCountdown} onChange={() => updateSection("theme", "enableCountdown", !theme.enableCountdown)} />

@@ -49,12 +49,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
-import authRoutes from './routes/authRoutes.js';
-import invitationRoutes from './routes/invitationRoutes.js';
-import publicRoutes from './routes/publicRoutes.js';
-import uploadRoutes from './routes/uploadRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import metaRoutes from './routes/metaRoutes.js';
+const [
+  { default: authRoutes },
+  { default: invitationRoutes },
+  { default: publicRoutes },
+  { default: uploadRoutes },
+  { default: orderRoutes },
+  { default: metaRoutes },
+] = await Promise.all([
+  import('./routes/authRoutes.js'),
+  import('./routes/invitationRoutes.js'),
+  import('./routes/publicRoutes.js'),
+  import('./routes/uploadRoutes.js'),
+  import('./routes/orderRoutes.js'),
+  import('./routes/metaRoutes.js'),
+]);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/invitations', invitationRoutes);
@@ -64,7 +73,11 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/', metaRoutes);
 
 // Health check
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/health', (req, res) => res.status(200).json({
+  status: 'ok',
+  dbConnected: !!global.DB_CONNECTED,
+  mode: process.env.NODE_ENV || 'development',
+}));
 
 // 404 handler
 app.use((req, res) => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Heart, CheckCircle2 } from 'lucide-react';
+import { Heart, CheckCircle2, PartyPopper, AlertCircle } from 'lucide-react';
 import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 import apiClient from '../utils/api';
 import { Button } from '../components/ui/Button';
@@ -45,7 +45,7 @@ export function InvitationView() {
         const data = await apiClient.getPublicInvitation(slug);
         setInvitation(data);
       } catch (err) {
-        setError('Invitation not found or not available');
+        setError('This invitation is not available right now.');
         console.error('Failed to fetch invitation:', err);
       } finally {
         setLoading(false);
@@ -69,9 +69,9 @@ export function InvitationView() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-rose-500"></div>
           <p className="text-slate-600">Loading invitation...</p>
         </div>
       </div>
@@ -80,12 +80,14 @@ export function InvitationView() {
 
   if (error || !invitation) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="text-6xl mb-4">Broken</div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Invitation Not Found</h1>
-          <p className="text-slate-600 mb-6">{error || 'This invitation may have been removed or the link is incorrect.'}</p>
-          <Button onClick={() => window.location.href = '/'}>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+            <AlertCircle className="h-8 w-8" />
+          </div>
+          <h1 className="mb-2 text-2xl font-bold text-slate-900">Invitation Not Found</h1>
+          <p className="mb-6 text-slate-600">{error || 'This invitation may have been removed or the link is incorrect.'}</p>
+          <Button onClick={() => { window.location.href = '/'; }}>
             Go Home
           </Button>
         </div>
@@ -124,14 +126,14 @@ export function InvitationView() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-4xl px-4 py-6">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-rose-100 px-4 py-2 text-sm font-medium text-rose-800">
               <Heart className="h-4 w-4" />
               You're Invited
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-slate-900">
               {brideName} & {groomName}
             </h1>
             <p className="text-slate-600">{invitation.couple?.title || 'Wedding Invitation'}</p>
@@ -139,20 +141,20 @@ export function InvitationView() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         <TemplateRenderer
           type={theme.id || theme.templateId || 'classic'}
           data={templateData}
           isPreview={false}
-          className="shadow-2xl rounded-2xl overflow-hidden"
+          className="overflow-hidden rounded-2xl shadow-2xl"
         />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 pb-16">
-        <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Will You Attend?</h2>
-          <p className="text-slate-600 mb-6">
-            Please let us know if you'll be joining us for our special day.
+      <div className="mx-auto max-w-4xl px-4 pb-16">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+          <h2 className="mb-4 text-2xl font-bold text-slate-900">Will You Attend?</h2>
+          <p className="mb-6 text-slate-600">
+            Let the couple know whether you will be joining their celebration.
           </p>
 
           <div className="relative min-h-14">
@@ -161,26 +163,27 @@ export function InvitationView() {
                 <div className="animate-[popIn_420ms_cubic-bezier(0.22,1,0.36,1)] rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-white shadow-xl">
                   <span className="inline-flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4" />
-                    RSVP saved. We can't wait to celebrate with you.
+                    RSVP saved. We cannot wait to celebrate with you.
                   </span>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button
-              className={`px-8 py-3 transition-all duration-300 ${attendanceResponse === 'accepted' ? 'scale-105 bg-emerald-600 hover:bg-emerald-500 shadow-[0_18px_40px_rgba(16,185,129,0.28)]' : ''}`}
+              className={`px-8 py-3 transition-all duration-300 ${attendanceResponse === 'accepted' ? 'scale-105 bg-emerald-600 shadow-[0_18px_40px_rgba(16,185,129,0.28)] hover:bg-emerald-500' : ''}`}
               onClick={handleAccept}
             >
-              Yes, I'll be there! 🎉
+              <PartyPopper className="h-4 w-4" />
+              Yes, I&apos;ll be there
             </Button>
             <Button
               variant="outline"
               className={`px-8 py-3 transition-all duration-300 ${attendanceResponse === 'declined' ? 'border-slate-400 bg-slate-50' : ''}`}
               onClick={handleDecline}
             >
-              Sorry, I can't make it 😔
+              Sorry, I can&apos;t make it
             </Button>
           </div>
 

@@ -2,6 +2,35 @@ import Invitation from '../models/Invitation.js';
 import RSVP from '../models/RSVP.js';
 import { rsvpSchema } from '../validators/invitationValidator.js';
 
+export const listPublishedInvitations = async (req, res, next) => {
+  try {
+    const page = Math.max(Number.parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '6', 10), 1), 24);
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      Invitation.find({ status: 'PUBLISHED' })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Invitation.countDocuments({ status: 'PUBLISHED' }),
+    ]);
+
+    res.json({
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        hasMore: skip + items.length < total,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getPublicInvitation = async (req, res, next) => {
   try {
     const { slug } = req.params;
