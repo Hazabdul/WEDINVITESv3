@@ -16,48 +16,42 @@ function GalleryCard({ invitation, onOpen }) {
     : 'Date to be announced';
 
   return (
-    <article className="group overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]">
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+    <article className="group h-full overflow-hidden rounded-[24px] glass-card p-1.5 transition-all duration-700 hover:-translate-y-3 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[20px]">
         {coverImage ? (
           <img
             src={coverImage}
             alt={`${brideName} and ${groomName}`}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-white text-slate-500">
-            Invitation Preview
+          <div className="flex h-full w-full items-center justify-center bg-[#fdfcfb] text-slate-300">
+            Preview
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-transparent to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-slate-700 backdrop-blur">
-            Published
-          </div>
-        </div>
       </div>
 
-      <div className="space-y-4 p-7">
+      <div className="space-y-4 p-8">
         <div>
-          <h3 className="text-2xl font-bold text-slate-900">{brideName} & {groomName}</h3>
-          <p className="mt-2 min-h-12 text-sm leading-6 text-slate-500">{title}</p>
+          <h3 className="text-2xl font-serif text-[#1a2b5a]">{brideName} & {groomName}</h3>
+          <p className="mt-2 min-h-12 text-[13px] leading-relaxed text-[#1a2b5a]/60 font-medium">{title}</p>
         </div>
 
-        <div className="space-y-2 text-sm text-slate-600">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-emerald-600" />
+        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-[#1a2b5a]/40">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="h-3.5 w-3.5" />
             <span>{formattedDate}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-emerald-600" />
-            <span className="truncate">{venue}</span>
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="truncate max-w-[120px]">{venue}</span>
           </div>
         </div>
 
-        <Button onClick={onOpen} variant="outline" className="w-full rounded-xl border-slate-200 transition-all hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-600">
-          Open Invitation
-        </Button>
+        <button onClick={onOpen} className="group/btn relative w-full overflow-hidden rounded-full border border-[#1a2b5a]/10 bg-white/50 py-3.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#1a2b5a] transition-all hover:bg-[#1a2b5a] hover:text-white">
+          <span className="relative z-10">View Detail</span>
+        </button>
       </div>
     </article>
   );
@@ -65,16 +59,12 @@ function GalleryCard({ invitation, onOpen }) {
 
 function GallerySkeleton() {
   return (
-    <article className="overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-sm">
-      <div className="aspect-[4/3] animate-pulse bg-slate-200" />
-      <div className="space-y-4 p-7">
-        <div className="h-8 animate-pulse rounded-xl bg-slate-200" />
-        <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
-        <div className="space-y-2">
-          <div className="h-4 animate-pulse rounded bg-slate-100" />
-          <div className="h-4 animate-pulse rounded bg-slate-100" />
-        </div>
-        <div className="h-11 animate-pulse rounded-xl bg-slate-200" />
+    <article className="overflow-hidden rounded-[24px] glass-card p-1.5">
+      <div className="aspect-[4/3] animate-pulse bg-slate-50/50 rounded-[20px]" />
+      <div className="space-y-4 p-8">
+        <div className="h-8 animate-pulse rounded bg-slate-50/50" />
+        <div className="h-12 animate-pulse rounded bg-slate-50/50" />
+        <div className="h-12 animate-pulse rounded-full bg-slate-50/50" />
       </div>
     </article>
   );
@@ -91,20 +81,6 @@ export function Home() {
   const [galleryError, setGalleryError] = useState('');
   const loaderRef = useRef(null);
   const fetchingRef = useRef(false);
-
-  const testAPIConnection = async () => {
-    try {
-      setApiStatus('Testing...');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://wedinvitesv3.onrender.com'}/health`);
-      if (response.ok) {
-        setApiStatus('Connected. Backend is responding.');
-      } else {
-        setApiStatus('Backend responded with an error.');
-      }
-    } catch (error) {
-      setApiStatus('Cannot connect to backend. Check if the server is running.');
-    }
-  };
 
   useEffect(() => {
     let ignore = false;
@@ -170,130 +146,144 @@ export function Home() {
   }, [hasMore, page]);
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-20">
-      <section aria-labelledby="hero-heading" className="relative overflow-hidden rounded-b-[64px] bg-slate-900 pb-48 pt-32 text-center text-white shadow-2xl lg:pb-64 lg:pt-48">
-        <div className="absolute inset-0 bg-[url('/swiss-wedding.png')] bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105" aria-hidden="true" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" aria-hidden="true" />
-        <div className="absolute inset-0 bg-emerald-900/10 mix-blend-multiply" aria-hidden="true" />
+    <main className="min-h-screen bg-white">
+      {/* ARTEMIS HERO SECTION */}
+      <section aria-labelledby="hero-heading" className="relative flex min-h-screen overflow-hidden pt-32 pb-24 items-center justify-center bg-white">
+        
+        {/* Background Accents — Minimalist */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+           <div className="absolute top-[10%] left-[20%] h-[500px] w-[500px] rounded-full bg-rose-50/20 blur-[130px]" />
+           <div className="absolute bottom-[20%] right-[10%] h-[400px] w-[400px] rounded-full bg-indigo-50/20 blur-[110px]" />
+        </div>
 
-        <div className="container relative z-10 mx-auto flex flex-col items-center px-4">
-          <div className="mb-8 inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/30 bg-black/40 px-5 py-2.5 text-sm font-medium text-emerald-100 shadow-lg backdrop-blur-md transition-all hover:bg-black/50">
-            <Sparkles className="h-4 w-4 text-emerald-400" aria-hidden="true" /> Welcome to the Future of Wedding Invites
+        {/* Floating Rotated Cards — Precise Artemis Physic */}
+        <div className="absolute inset-0 h-full w-full pointer-events-none overflow-hidden">
+           {/* Top Left */}
+           <div className="absolute top-[15%] left-[8%] animate-artemis-card stagger-card-1" style={{ '--rot': '-12deg' } }>
+              <div className="h-[240px] w-[170px] rounded-[16px] glass-card p-1.5 transition-transform hover:scale-105 pointer-events-auto rotate-[-12deg] group">
+                 <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=400" alt="Wedding Detail" className="h-full w-full object-cover rounded-[12px] grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+              </div>
+           </div>
+
+           {/* Top Right */}
+           <div className="absolute top-[10%] right-[10%] animate-artemis-card stagger-card-2" style={{ '--rot': '15deg' }}>
+              <div className="h-[300px] w-[210px] rounded-[16px] glass-card p-1.5 transition-transform hover:scale-105 pointer-events-auto rotate-[15deg] group">
+                 <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400" alt="The Couple" className="h-full w-full object-cover rounded-[12px] grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+              </div>
+           </div>
+
+           {/* Bottom Left */}
+           <div className="absolute bottom-[10%] left-[12%] animate-artemis-card stagger-card-4" style={{ '--rot': '8deg' }}>
+              <div className="h-[180px] w-[240px] rounded-[16px] glass-card p-1.5 transition-transform hover:scale-105 pointer-events-auto rotate-[8deg] group">
+                 <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=400" alt="Wedding Vibe" className="h-full w-full object-cover rounded-[12px] grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+              </div>
+           </div>
+
+           {/* Bottom Right */}
+           <div className="absolute bottom-[14%] right-[18%] animate-artemis-card stagger-card-3" style={{ '--rot': '-10deg' }}>
+              <div className="h-[170px] w-[120px] rounded-[16px] glass-card p-1.5 transition-transform hover:scale-105 pointer-events-auto rotate-[-10deg] group">
+                <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=400" alt="Floral" className="h-full w-full object-cover rounded-[12px] grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+              </div>
+           </div>
+        </div>
+
+        <div className="container relative z-10 mx-auto px-6 text-center">
+          <div className="animate-artemis-hero stagger-1 mb-6 inline-block">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff2d55]/70 bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/40">
+              Weddinginvites Luxury Edition
+            </span>
           </div>
 
-          <h1 id="hero-heading" className="mx-auto max-w-5xl text-5xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-xl sm:text-7xl lg:text-8xl">
-            Your dream invitation.<br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-white bg-clip-text text-transparent drop-shadow-sm">
-              Designed in minutes.
-            </span>
+          <h1 id="hero-heading" className="animate-artemis-hero stagger-2 mx-auto max-w-4xl text-[38px] italic font-serif leading-[1.05] tracking-[-0.015em] text-[#1a2b5a] sm:text-[68px]">
+            Digital & <br className="hidden sm:block" /> <span className="text-[#ff2d55]">High-End</span> Invites
           </h1>
 
-          <p className="mx-auto mt-8 max-w-2xl text-lg font-medium leading-relaxed text-slate-200 drop-shadow-md sm:text-xl">
-            Create, customize, and share breathtaking digital wedding invitations. No coding, no downloads, just pure elegance delivered instantly to your guests.
+          <p className="animate-artemis-hero stagger-3 mx-auto mt-6 max-w-lg text-[11px] font-black uppercase tracking-[0.3em] text-[#1a2b5a]/60 leading-relaxed">
+            weddings can count on!
           </p>
 
-          <div className="mt-12 flex flex-col items-center justify-center gap-5 sm:flex-row">
-            <Button onClick={() => navigate('/builder')} className="group rounded-full border-0 bg-white px-8 py-6 text-lg font-bold text-slate-950 shadow-[0_0_40px_-5px_rgba(255,255,255,0.4)] transition-all hover:scale-105 hover:bg-emerald-50 active:scale-95" aria-label="Start designing your wedding invitation">
-              Start Designing <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-            </Button>
-            <Button onClick={() => document.getElementById('published-gallery')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} variant="outline" className="glass-effect-dark rounded-full border-white/40 px-8 py-6 text-lg text-white shadow-lg transition-all hover:bg-white/20 hover:text-white" aria-label="View published invitation gallery">
-              <PlayCircle className="mr-2 h-5 w-5" aria-hidden="true" /> View Gallery
-            </Button>
-            <Button onClick={testAPIConnection} variant="outline" className="glass-effect-dark rounded-full border-white/40 px-8 py-6 text-lg text-white shadow-lg transition-all hover:bg-white/20 hover:text-white" aria-label="Test API connection">
-              Test API Connection
-            </Button>
+          <div className="animate-artemis-hero stagger-5 mt-10 flex items-center justify-center">
+            <button
+              onClick={() => navigate('/builder')}
+              className="group relative h-[54px] overflow-hidden rounded-full bg-brand-gradient px-10 text-[13px] font-bold uppercase tracking-[0.2em] text-white shadow-[0_20px_40px_-10px_rgba(255,45,85,0.3)] transition-all hover:scale-105 active:scale-95"
+            >
+              <div className="flex items-center gap-2.5">
+                Get Started <span className="text-lg transition-transform group-hover:translate-x-1 duration-300">↗</span>
+              </div>
+            </button>
           </div>
-
-          {apiStatus && (
-            <div className="mt-4 rounded-lg bg-white/20 p-4 font-medium text-white backdrop-blur-sm">
-              {apiStatus}
-            </div>
-          )}
         </div>
       </section>
 
-      <section id="published-gallery" aria-labelledby="gallery-heading" className="container mx-auto px-4 py-32">
-        <header className="mb-20 text-center">
-          <h2 id="gallery-heading" className="text-4xl font-extrabold tracking-tight text-slate-900">Published Invitations</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-xl font-light text-slate-500">
-            Browse live invitations created on the platform. Scroll to load more published designs.
+      {/* GALLERY SECTION */}
+      <section id="published-gallery" aria-labelledby="gallery-heading" className="container mx-auto px-6 py-40">
+        <header className="mb-24 text-center">
+           <div className="animate-artemis-reveal stagger-1 text-[10px] font-black uppercase tracking-[0.6em] text-[#ff2d55]/40 mb-4">Registry of Love</div>
+          <h2 id="gallery-heading" className="font-serif text-[42px] sm:text-[56px] italic text-[#1a2b5a] leading-tight">Featured Collections</h2>
+          <p className="mx-auto mt-6 max-w-xl text-[14px] text-[#1a2b5a]/50 font-medium leading-relaxed">
+            Explore live invitations created on the platform.
           </p>
         </header>
 
         {galleryError && (
-          <div className="mx-auto mb-10 max-w-2xl rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-center text-sm text-red-700">
+          <div className="mx-auto mb-16 max-w-2xl rounded-2xl border border-rose-50 bg-rose-50/50 p-6 text-center text-sm font-medium text-[#ff2d55] backdrop-blur-md">
             {galleryError}
           </div>
         )}
 
         {initialLoading ? (
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <GallerySkeleton key={index} />
+          <div className="mx-auto grid max-w-7xl gap-x-12 gap-y-16 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <GallerySkeleton key={i} />
             ))}
           </div>
         ) : invitations.length === 0 && !galleryError ? (
-          <div className="mx-auto max-w-2xl rounded-[32px] border border-slate-200 bg-white px-8 py-14 text-center shadow-sm">
-            <h3 className="text-2xl font-bold text-slate-900">No published invitations yet</h3>
-            <p className="mt-3 text-slate-500">Publish an invitation from the builder and it will appear here automatically.</p>
+          <div className="mx-auto max-w-3xl rounded-[32px] glass-card p-20 text-center shadow-sm">
+            <h3 className="text-3xl font-serif italic text-[#1a2b5a]">Start Your Collection</h3>
+            <p className="mt-4 text-[#1a2b5a]/50">Every wedding begins with a single invitation.</p>
+            <button onClick={() => navigate('/builder')} className="mt-10 rounded-full border border-[#ff2d55]/30 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#ff2d55] transition-all hover:bg-[#ff2d55] hover:text-white">
+              Create My First
+            </button>
           </div>
         ) : (
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {invitations.map((invitation) => (
+          <div className="mx-auto grid max-w-7xl gap-x-12 gap-y-16 md:grid-cols-2 lg:grid-cols-3">
+            {invitations.map((inv) => (
               <GalleryCard
-                key={invitation._id}
-                invitation={invitation}
-                onOpen={() => navigate(`/invitation/${invitation.slug}`)}
+                key={inv._id}
+                invitation={inv}
+                onOpen={() => navigate(`/invitation/${inv.slug}`)}
               />
             ))}
           </div>
         )}
 
-        <div ref={loaderRef} className="flex min-h-20 items-center justify-center pt-12">
-          {loadingMore && <div className="text-sm font-medium text-slate-500">Loading more invitations...</div>}
-          {!loadingMore && !hasMore && invitations.length > 0 && <div className="text-sm font-medium text-slate-400">You have reached the end of the gallery.</div>}
+        <div ref={loaderRef} className="flex min-h-40 items-center justify-center pt-24">
+          {loadingMore && <div className="h-6 w-6 border-2 border-[#ff2d55] border-t-transparent animate-spin rounded-full" />}
+          {!loadingMore && !hasMore && invitations.length > 0 && (
+            <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff2d55]/20">
+              End of Gallery
+            </div>
+          )}
         </div>
       </section>
 
-      <section aria-labelledby="features-heading" className="relative mx-4 mb-20 overflow-hidden rounded-[64px] border border-slate-100 bg-white py-24 shadow-2xl lg:mx-8">
-        <div className="absolute inset-0 bg-[url('/floral-frame.png')] bg-cover bg-center bg-no-repeat transition-transform duration-1000 hover:scale-105" aria-hidden="true" />
-        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" aria-hidden="true" />
-
-        <div className="container relative z-10 mx-auto max-w-6xl px-4">
-          <header className="mb-16 text-center lg:mb-28">
-            <h2 id="features-heading" className="mb-6 text-5xl font-serif leading-[1.1] text-slate-800 drop-shadow-sm md:text-7xl">
-              Flawless elegance. <br />
-              <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500 bg-clip-text font-light italic text-transparent">
-                Effortlessly crafted.
-              </span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg font-light text-slate-600">
-              Discover the intuitive tools that transform your vision into a digital masterpiece.
-            </p>
-          </header>
-
-          <div className="mt-auto grid gap-8 md:grid-cols-3 md:gap-12">
-            <article className="group rounded-[32px] border border-white/50 bg-white/70 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all hover:-translate-y-2 hover:border-emerald-200 hover:bg-white/90">
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm transition-transform duration-500 group-hover:scale-110">
-                <Heart className="h-8 w-8 text-emerald-600" aria-hidden="true" />
-              </div>
-              <h3 className="mb-4 font-display text-2xl font-bold text-slate-800 transition-colors group-hover:text-emerald-700">No Login Required</h3>
-              <p className="text-sm font-light leading-relaxed text-slate-600">Frictionless flow ensures you or your clients can start building immediately without hurdles.</p>
-            </article>
-            <article className="group rounded-[32px] border border-white/50 bg-white/70 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all hover:-translate-y-2 hover:border-blue-200 hover:bg-white/90">
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-100 to-blue-50 shadow-sm transition-transform duration-500 group-hover:scale-110">
-                <Share2 className="h-8 w-8 text-blue-600" aria-hidden="true" />
-              </div>
-              <h3 className="mb-4 font-display text-2xl font-bold text-slate-800 transition-colors group-hover:text-blue-700">Instantly Shareable</h3>
-              <p className="text-sm font-light leading-relaxed text-slate-600">Publish your invitation with one click and share a beautiful link with all your guests.</p>
-            </article>
-            <article className="group rounded-[32px] border border-white/50 bg-white/70 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md transition-all hover:-translate-y-2 hover:border-violet-200 hover:bg-white/90">
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-100 to-violet-50 shadow-sm transition-transform duration-500 group-hover:scale-110">
-                <Sparkles className="h-8 w-8 text-violet-600" aria-hidden="true" />
-              </div>
-              <h3 className="mb-4 font-display text-2xl font-bold text-slate-800 transition-colors group-hover:text-violet-700">Media Rich Experience</h3>
-              <p className="text-sm font-light leading-relaxed text-slate-600">Support for stunning high-res galleries, ambient background music, and video messages.</p>
-            </article>
+      {/* FEATURES SECTION — Luxury Layout */}
+      <section aria-labelledby="features-heading" className="bg-white/30 backdrop-blur-3xl py-40 border-t border-white/40">
+        <div className="container mx-auto max-w-7xl px-6">
+          <div className="grid gap-20 md:grid-cols-3">
+            {[
+              { icon: Heart, title: 'No Login Required', text: 'Start crafting immediately. Frictionless flow for you and your guests.' },
+              { icon: Share2, title: 'Instantly Shareable', text: 'One click to publish. A stunning, private link ready for WhatsApp & Socials.' },
+              { icon: Sparkles, title: 'Media Rich', text: 'Support for high-res galleries, ambient music, and cinematic video.' }
+            ].map((feature, i) => (
+              <article key={i} className="text-left group">
+                <div className="mb-10 w-16 h-16 flex items-center justify-center rounded-[20px] glass-card text-[#ff2d55] group-hover:scale-110 transition-all duration-500">
+                  <feature.icon className="h-6 w-6" />
+                </div>
+                <h3 className="mb-6 text-3xl font-serif italic text-[#1a2b5a]">{feature.title}</h3>
+                <p className="text-[14px] leading-relaxed text-[#1a2b5a]/60 font-medium">{feature.text}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>

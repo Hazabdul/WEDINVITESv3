@@ -7,7 +7,7 @@ import { Check, CreditCard, Lock, Smartphone, Copy, CheckCircle, Mail, RefreshCw
 import { cn } from '../utils/cn';
 
 const UPI_VPA = 'triredglobal@upi';
-const MERCHANT = 'Ethereal Vows by Trired Global';
+const MERCHANT = 'Weddinginvites by Trired Global';
 
 function buildUpiLink({ amount, email, planName }) {
   const note = `EV-${planName}-${email}`;

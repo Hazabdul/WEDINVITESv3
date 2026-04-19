@@ -7,74 +7,85 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900 font-sans;
+    @apply bg-[#fcfaf8] text-[#1a2b5a] font-sans selection:bg-rose-100 selection:text-rose-900;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight text-slate-900;
+    @apply font-serif tracking-tight text-[#1a2b5a];
   }
 }
 
 @layer utilities {
-  .glass-effect {
-    @apply bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+  .bg-silk {
+    background: radial-gradient(circle at top right, #ffffff, #fcfaf8 100%);
   }
-  .glass-effect-dark {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+  .glass-card {
+    @apply bg-white/40 backdrop-blur-3xl border border-white/20 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)];
   }
-  .text-gradient {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-indigo-500;
+  .bg-brand-gradient {
+    background: linear-gradient(135deg, #ff2d55 0%, #fb7185 100%);
   }
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+  .text-brand {
+    @apply text-[#ff2d55];
   }
-  .animate-blob {
-    animation: blob 7s infinite;
-  }
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-  .animation-delay-4000 {
-    animation-delay: 4s;
+  .animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
   }
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
-}
-
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-12px) rotate(calc(var(--rot, 0deg) + 0.8deg)); }
 }
 
 @layer utilities {
-  .animate-fade-in-up {
-    animation: fadeInUp 0.8s ease-out forwards;
+  .animate-artemis-hero {
+    animation: artemisHero 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
   }
-  .animate-reveal {
-    animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  .animate-artemis-card {
+    animation: artemisCard 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .animate-artemis-reveal {
+    animation: artemisReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
   }
   .stagger-1 { animation-delay: 0.1s; }
-  .stagger-2 { animation-delay: 0.2s; }
-  .stagger-3 { animation-delay: 0.3s; }
-  .stagger-4 { animation-delay: 0.4s; }
-  .stagger-5 { animation-delay: 0.5s; }
+  .stagger-2 { animation-delay: 0.25s; }
+  .stagger-3 { animation-delay: 0.4s; }
+  .stagger-4 { animation-delay: 0.6s; }
+  .stagger-5 { animation-delay: 0.8s; }
+  .stagger-card-1 { animation-delay: 0.5s; }
+  .stagger-card-2 { animation-delay: 0.65s; }
+  .stagger-card-3 { animation-delay: 0.8s; }
+  .stagger-card-4 { animation-delay: 0.95s; }
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+@keyframes artemisHero {
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes reveal {
-  from { opacity: 0; filter: blur(10px); transform: scale(0.95); }
+@keyframes artemisCard {
+  from { 
+    opacity: 0; 
+    transform: scale(0.85) rotate(calc(var(--rot, 0deg) - 5deg)) translateY(40px);
+    filter: blur(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) rotate(var(--rot, 0deg)) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes artemisReveal {
+  from { opacity: 0; filter: blur(15px); transform: scale(1.05); }
   to { opacity: 1; filter: blur(0px); transform: scale(1); }
 }
