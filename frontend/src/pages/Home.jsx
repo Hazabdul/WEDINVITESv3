@@ -76,8 +76,10 @@ const featureHighlights = [
     text: 'Start crafting immediately. Frictionless flow for you and your guests.',
     eyebrow: 'Start in seconds',
     tags: ['No signup', 'Private flow'],
-    accent: 'from-[#fff1f4] via-white to-[#fff7f8]',
-    glow: 'bg-[#ff2d55]/10',
+    accent: 'from-[#fff0f4] via-white to-[#fff9fb]',
+    glow: 'bg-[#b45b6b]/14',
+    tint: 'text-[#b45b6b]',
+    badgeShadow: 'shadow-[0_18px_40px_-24px_rgba(180,91,107,0.55)]',
   },
   {
     icon: Share2,
@@ -85,8 +87,10 @@ const featureHighlights = [
     text: 'One click to publish. A stunning, private link ready for WhatsApp and social sharing.',
     eyebrow: 'Publish once',
     tags: ['Private link', 'Mobile ready'],
-    accent: 'from-[#f4f0ff] via-white to-[#f8f7ff]',
-    glow: 'bg-[#7c3aed]/10',
+    accent: 'from-[#fff7e8] via-white to-[#fffbf2]',
+    glow: 'bg-[#c6a66b]/16',
+    tint: 'text-[#c6a66b]',
+    badgeShadow: 'shadow-[0_18px_40px_-24px_rgba(198,166,107,0.60)]',
   },
   {
     icon: Sparkles,
@@ -94,8 +98,10 @@ const featureHighlights = [
     text: 'Support for high-res galleries, ambient music, and cinematic video in one invitation.',
     eyebrow: 'Designed to feel alive',
     tags: ['Gallery', 'Music', 'Video'],
-    accent: 'from-[#eef9ff] via-white to-[#f7fcff]',
-    glow: 'bg-[#0ea5e9]/10',
+    accent: 'from-[#f3f6ff] via-white to-[#fbfcff]',
+    glow: 'bg-[#1a2b5a]/10',
+    tint: 'text-[#1a2b5a]',
+    badgeShadow: 'shadow-[0_18px_40px_-24px_rgba(26,43,90,0.35)]',
   },
 ];
 
@@ -298,15 +304,15 @@ export function Home() {
       {/* FEATURES SECTION — Luxury Layout */}
       <section
         aria-labelledby="features-heading"
-        className="relative overflow-hidden border-t border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(252,248,245,0.95)_100%)] py-24 backdrop-blur-3xl sm:py-32"
+        className="wedding-section overflow-hidden border-t border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.72)_0%,rgba(255,248,250,0.92)_55%,rgba(252,249,244,0.98)_100%)] py-24 backdrop-blur-3xl sm:py-32"
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(255,45,85,0.10),transparent_58%)]" />
-        <div className="pointer-events-none absolute left-[-7%] top-24 h-52 w-52 rounded-full bg-[#ff2d55]/8 blur-3xl" />
-        <div className="pointer-events-none absolute right-[-4%] top-12 h-64 w-64 rounded-full bg-[#1a2b5a]/6 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_top,rgba(180,91,107,0.12),transparent_62%)]" />
+        <div className="pointer-events-none absolute left-[-7%] top-24 h-52 w-52 rounded-full bg-[#b45b6b]/10 blur-3xl" />
+        <div className="pointer-events-none absolute right-[-4%] top-10 h-64 w-64 rounded-full bg-[#c6a66b]/12 blur-3xl" />
 
         <div className="container relative mx-auto max-w-7xl px-6">
           <header className="mx-auto max-w-3xl text-center">
-            <div className="animate-artemis-reveal stagger-1 text-[10px] font-black uppercase tracking-[0.56em] text-[#ff2d55]/45">
+            <div className="animate-artemis-reveal stagger-1 text-[10px] font-black uppercase tracking-[0.56em] text-[#b45b6b]/55">
               Built for modern wedding sharing
             </div>
             <h2 id="features-heading" className="animate-artemis-reveal stagger-2 mt-5 text-[40px] leading-tight text-[#1a2b5a] sm:text-[58px]">
@@ -330,15 +336,15 @@ export function Home() {
 
                 <div className="relative">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-white/70 bg-white/80 text-[#ff2d55] shadow-[0_18px_40px_-24px_rgba(255,45,85,0.45)] transition-transform duration-500 group-hover:scale-110">
+                    <div className={`flex h-16 w-16 items-center justify-center rounded-[22px] border border-white/70 bg-white/85 ${feature.tint} ${feature.badgeShadow} transition-transform duration-500 group-hover:scale-110`}>
                       <feature.icon className="h-6 w-6" />
                     </div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#1a2b5a]/28">
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#c6a66b]/40">
                       0{i + 1}
                     </div>
                   </div>
 
-                  <div className="mt-8 text-[10px] font-black uppercase tracking-[0.34em] text-[#ff2d55]/58">
+                  <div className={`mt-8 text-[10px] font-black uppercase tracking-[0.34em] ${feature.tint} opacity-70`}>
                     {feature.eyebrow}
                   </div>
                   <h3 className="mt-4 text-[31px] font-serif italic leading-[1.1] text-[#1a2b5a]">
@@ -359,8 +365,8 @@ export function Home() {
                     ))}
                   </div>
 
-                  <div className="mt-8 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.32em] text-[#1a2b5a]/42">
-                    <span className="h-px flex-1 bg-[#1a2b5a]/10" />
+                  <div className="mt-8 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.32em] text-[#c6a66b]/55">
+                    <span className="h-px flex-1 bg-[#c6a66b]/18" />
                     Invitation-ready
                   </div>
                 </div>

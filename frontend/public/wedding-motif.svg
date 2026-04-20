@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="420" viewBox="0 0 420 420" fill="none">
+  <defs>
+    <pattern id="motif" width="210" height="210" patternUnits="userSpaceOnUse">
+      <!-- Interlocking rings -->
+      <g opacity="0.22" stroke="#C6A66B" stroke-width="2" fill="none">
+        <circle cx="72" cy="76" r="22"/>
+        <circle cx="96" cy="76" r="22"/>
+        <path d="M84 96c6 7 16 11 26 11 18 0 32-14 32-32 0-9-3-17-9-23" opacity="0.55"/>
+      </g>
+
+      <!-- Floral sprig -->
+      <g opacity="0.18" stroke="#B45B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M150 148c-14-10-26-22-34-36"/>
+        <path d="M124 116c4-16 18-28 36-30"/>
+        <path d="M126 126c10-3 20 0 28 7"/>
+        <path d="M138 96c8 8 10 18 6 28"/>
+        <path d="M112 112c8 2 14 7 18 14"/>
+      </g>
+
+      <!-- Small dots -->
+      <g opacity="0.14" fill="#1A2B5A">
+        <circle cx="24" cy="158" r="2"/>
+        <circle cx="184" cy="26" r="2"/>
+        <circle cx="186" cy="188" r="2"/>
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="420" height="420" fill="url(#motif)"/>
+</svg>

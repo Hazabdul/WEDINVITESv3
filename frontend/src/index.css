@@ -27,6 +27,31 @@
   .glass-card {
     @apply bg-white/40 backdrop-blur-3xl border border-white/20 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)];
   }
+  .wedding-section {
+    position: relative;
+    isolation: isolate;
+  }
+  .wedding-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("/wedding-motif.svg");
+    background-repeat: repeat;
+    background-size: 520px auto;
+    opacity: 0.12;
+    pointer-events: none;
+    filter: blur(0.15px);
+    mix-blend-mode: multiply;
+  }
+  .wedding-section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 30% 0%, rgba(198, 166, 107, 0.12), transparent 60%),
+      radial-gradient(circle at 80% 20%, rgba(180, 91, 107, 0.10), transparent 62%);
+    mix-blend-mode: normal;
+  }
   .bg-brand-gradient {
     background: linear-gradient(135deg, #ff2d55 0%, #fb7185 100%);
   }
