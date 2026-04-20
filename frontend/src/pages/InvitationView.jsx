@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Heart, CheckCircle2, PartyPopper, AlertCircle } from 'lucide-react';
+import { CheckCircle2, PartyPopper, AlertCircle } from 'lucide-react';
 import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 import apiClient from '../utils/api';
 import { Button } from '../components/ui/Button';
@@ -126,27 +126,12 @@ export function InvitationView() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-4xl px-4 py-6">
-          <div className="text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-rose-100 px-4 py-2 text-sm font-medium text-rose-800">
-              <Heart className="h-4 w-4" />
-              You're Invited
-            </div>
-            <h1 className="mb-2 text-3xl font-bold text-slate-900">
-              {brideName} & {groomName}
-            </h1>
-            <p className="text-slate-600">{invitation.couple?.title || 'Wedding Invitation'}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="w-full">
         <TemplateRenderer
           type={theme.id || theme.templateId || 'ceremony'}
           data={templateData}
           isPreview={false}
-          className="overflow-hidden rounded-2xl shadow-2xl"
+          className="w-full"
         />
       </div>
 
