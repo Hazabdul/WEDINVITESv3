@@ -796,63 +796,63 @@ export function CeremonyTemplate({ data, isPreview = false }) {
         '--ceremony-secondary': theme?.secondaryColor || '#efe2d3',
       }}
     >
-      <section className="relative overflow-hidden px-4 pb-6 pt-6 sm:px-5 sm:pb-8 sm:pt-8">
+      <section className="relative overflow-hidden px-3 pb-5 pt-4 sm:px-5 sm:pb-8 sm:pt-8">
         <div data-ceremony-float className="absolute left-[-90px] top-[-40px] h-48 w-48 rounded-full bg-[var(--ceremony-secondary)]/70 blur-3xl" />
         <div data-ceremony-float className="absolute right-[-80px] top-24 h-52 w-52 rounded-full bg-[var(--ceremony-primary)]/10 blur-3xl" />
 
         <div
           data-ceremony-reveal
           data-ceremony-tilt
-          className="relative mx-auto max-w-xl rounded-[28px] border border-[#e8ddd1] bg-white/85 p-4 text-center shadow-[0_24px_70px_-34px_rgba(61,46,33,0.35)] backdrop-blur-md will-change-transform sm:rounded-[36px] sm:p-6"
+          className="relative mx-auto max-w-xl rounded-[24px] border border-[#e8ddd1] bg-white/85 p-3.5 text-center shadow-[0_24px_70px_-34px_rgba(61,46,33,0.35)] backdrop-blur-md will-change-transform sm:rounded-[36px] sm:p-6"
         >
-          <div className="text-[9px] uppercase tracking-[0.26em] text-[#9b8d81] sm:text-[10px] sm:tracking-[0.42em]">
+          <div className="text-[8px] uppercase tracking-[0.18em] text-[#9b8d81] sm:text-[10px] sm:tracking-[0.42em]">
             You are invited to the wedding of
           </div>
 
-          <div className="mt-5 flex flex-col items-center gap-1.5 sm:flex-row sm:justify-center sm:gap-3">
+          <div className="mt-4 flex flex-col items-center gap-2 sm:mt-5 sm:flex-row sm:justify-center sm:gap-3">
             <DesignElement id="ceremonyBrideName" label="Bride Name" defaultColor="#2d2926">
-              <span className="block max-w-full break-words text-3xl font-semibold leading-none tracking-tight sm:text-5xl">
+              <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight">
                 {couple.bride}
               </span>
             </DesignElement>
-            <span className="inline-block text-xl font-light italic text-[var(--ceremony-primary)]/70 sm:text-2xl">&amp;</span>
+            <span className="inline-block text-lg font-light italic text-[var(--ceremony-primary)]/70 sm:text-2xl">&amp;</span>
             <DesignElement id="ceremonyGroomName" label="Groom Name" defaultColor="#2d2926">
-              <span className="block max-w-full break-words text-3xl font-semibold leading-none tracking-tight sm:text-5xl">
+              <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight">
                 {couple.groom}
               </span>
             </DesignElement>
           </div>
 
-          <div className="mt-4 text-xs font-medium tracking-[0.12em] text-[#72665d] uppercase sm:text-sm sm:tracking-[0.18em]">
+          <div className="mt-3 text-[11px] font-medium tracking-[0.08em] text-[#72665d] uppercase sm:mt-4 sm:text-sm sm:tracking-[0.18em]">
             {formatShortDate(event.date) || 'Save the date'}
           </div>
 
-          <div className="mt-5 inline-flex rounded-full border border-[#e5d9cd] bg-[#faf5ef] px-3 py-2 text-[9px] uppercase tracking-[0.22em] text-[#7a6a5d] sm:px-4 sm:text-[10px] sm:tracking-[0.34em]">
+          <div className="mt-4 inline-flex rounded-full border border-[#e5d9cd] bg-[#faf5ef] px-3 py-2 text-[8px] uppercase tracking-[0.16em] text-[#7a6a5d] sm:mt-5 sm:px-4 sm:text-[10px] sm:tracking-[0.34em]">
             Open invitation
           </div>
 
           {mediaPack.heroImage && (
-            <div className="mt-6 overflow-hidden rounded-[22px] border border-[#ede2d7] sm:rounded-[28px]">
-              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" className="h-48 w-full object-cover will-change-transform sm:h-64" />
+            <div className="mt-5 overflow-hidden rounded-[18px] border border-[#ede2d7] sm:mt-6 sm:rounded-[28px]">
+              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" className="h-44 w-full object-cover will-change-transform sm:h-64" />
             </div>
           )}
         </div>
       </section>
 
-      <section className="px-4 py-3 sm:px-5 sm:py-4">
-        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#ebe1d6] bg-white/88 p-4 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.28)] sm:rounded-[34px] sm:p-6">
+      <section className="px-3 py-2.5 sm:px-5 sm:py-4">
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border border-[#ebe1d6] bg-white/88 p-3.5 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.28)] sm:rounded-[34px] sm:p-6">
           <div className="text-center">
-            <div className="text-[9px] uppercase tracking-[0.28em] text-[#9d8d81] sm:text-[10px] sm:tracking-[0.4em]">With great joy</div>
+            <div className="text-[8px] uppercase tracking-[0.18em] text-[#9d8d81] sm:text-[10px] sm:tracking-[0.4em]">With great joy</div>
             {intro && (
               <DesignElement id="ceremonyIntro" label="Ceremony Intro" defaultColor="#4b413a">
-                <p className="mt-4 text-sm leading-7 text-[#645a52]">
+                <p className="mt-3 text-[13px] leading-6 text-[#645a52] sm:mt-4 sm:text-sm sm:leading-7">
                   {intro}
                 </p>
               </DesignElement>
             )}
           </div>
 
-          <div className="mt-8 grid gap-4">
+          <div className="mt-6 grid gap-3.5 sm:mt-8 sm:gap-4">
             {[
               {
                 key: 'bride',
@@ -872,23 +872,23 @@ export function CeremonyTemplate({ data, isPreview = false }) {
               <div
                 key={person.key}
                 data-ceremony-tilt
-                className="grid gap-4 rounded-[22px] border border-[#efe4d8] bg-[#fcfaf7] p-4 will-change-transform sm:grid-cols-[140px_1fr] sm:items-center sm:rounded-[28px]"
+                className="grid gap-3 rounded-[20px] border border-[#efe4d8] bg-[#fcfaf7] p-3 will-change-transform sm:grid-cols-[140px_1fr] sm:items-center sm:gap-4 sm:rounded-[28px] sm:p-4"
               >
-                <div className="overflow-hidden rounded-[18px] border border-[#ede2d5] bg-[var(--ceremony-secondary)]/45 sm:rounded-[24px]">
+                <div className="overflow-hidden rounded-[16px] border border-[#ede2d5] bg-[var(--ceremony-secondary)]/45 sm:rounded-[24px]">
                   {person.image ? (
-                    <img src={person.image} alt={person.name} className="h-40 w-full object-cover sm:h-44" />
+                    <img src={person.image} alt={person.name} className="h-36 w-full object-cover sm:h-44" />
                   ) : (
-                    <div className="flex h-40 items-center justify-center text-sm uppercase tracking-[0.35em] text-[#a19387] sm:h-44">
+                    <div className="flex h-36 items-center justify-center text-sm uppercase tracking-[0.22em] text-[#a19387] sm:h-44 sm:tracking-[0.35em]">
                       {person.label}
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <div className="text-[9px] uppercase tracking-[0.26em] text-[#aa9887] sm:text-[10px] sm:tracking-[0.36em]">{person.label}</div>
-                  <h2 className="mt-2 break-words text-2xl font-semibold text-[#2d2926] sm:text-3xl">{person.name || person.label}</h2>
+                  <div className="text-[8px] uppercase tracking-[0.18em] text-[#aa9887] sm:text-[10px] sm:tracking-[0.36em]">{person.label}</div>
+                  <h2 className="mt-2 break-words text-[clamp(1.55rem,6vw,1.9rem)] font-semibold leading-tight text-[#2d2926] sm:text-3xl">{person.name || person.label}</h2>
                   {person.familyName && (
-                    <p className="mt-3 text-sm leading-7 text-[#6d6259]">{person.familyName}</p>
+                    <p className="mt-2 text-[13px] leading-6 text-[#6d6259] sm:mt-3 sm:text-sm sm:leading-7">{person.familyName}</p>
                   )}
                 </div>
               </div>
@@ -897,55 +897,55 @@ export function CeremonyTemplate({ data, isPreview = false }) {
         </div>
       </section>
 
-      <section className="px-4 py-3 sm:px-5 sm:py-4">
-        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#e9dfd4] bg-[linear-gradient(180deg,#fffdfa_0%,#f8f1e8_100%)] p-4 shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:p-6">
+      <section className="px-3 py-2.5 sm:px-5 sm:py-4">
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border border-[#e9dfd4] bg-[linear-gradient(180deg,#fffdfa_0%,#f8f1e8_100%)] p-3.5 shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:p-6">
           <div className="text-center">
-            <div className="text-[9px] uppercase tracking-[0.28em] text-[#9f9185] sm:text-[10px] sm:tracking-[0.4em]">The celebration</div>
-            <h3 className="mt-4 text-2xl font-semibold text-[#2d2926] sm:text-3xl">Join us for the ceremony</h3>
+            <div className="text-[8px] uppercase tracking-[0.18em] text-[#9f9185] sm:text-[10px] sm:tracking-[0.4em]">The celebration</div>
+            <h3 className="mt-3 text-[clamp(1.55rem,6vw,1.9rem)] font-semibold text-[#2d2926] sm:mt-4 sm:text-3xl">Join us for the ceremony</h3>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-[24px] border border-[#eadfd3] bg-white/85 p-4 text-center">
-              <div className="text-[10px] uppercase tracking-[0.35em] text-[#9c8c7e]">Date</div>
-              <p className="mt-3 text-sm font-medium leading-6 text-[#564c45]">{formatElegantDate(event.date) || 'Date to be announced'}</p>
+          <div className="mt-5 grid gap-3 sm:mt-6 sm:gap-4 sm:grid-cols-3">
+            <div className="rounded-[20px] border border-[#eadfd3] bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4">
+              <div className="text-[9px] uppercase tracking-[0.22em] text-[#9c8c7e] sm:text-[10px] sm:tracking-[0.35em]">Date</div>
+              <p className="mt-2 text-[13px] font-medium leading-6 text-[#564c45] sm:mt-3 sm:text-sm">{formatElegantDate(event.date) || 'Date to be announced'}</p>
             </div>
-            <div className="rounded-[24px] border border-[#eadfd3] bg-white/85 p-4 text-center">
-              <div className="text-[10px] uppercase tracking-[0.35em] text-[#9c8c7e]">Time</div>
-              <p className="mt-3 text-sm font-medium leading-6 text-[#564c45]">{event.time || 'Time to be announced'}</p>
+            <div className="rounded-[20px] border border-[#eadfd3] bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4">
+              <div className="text-[9px] uppercase tracking-[0.22em] text-[#9c8c7e] sm:text-[10px] sm:tracking-[0.35em]">Time</div>
+              <p className="mt-2 text-[13px] font-medium leading-6 text-[#564c45] sm:mt-3 sm:text-sm">{event.time || 'Time to be announced'}</p>
             </div>
-            <div className="rounded-[24px] border border-[#eadfd3] bg-white/85 p-4 text-center">
-              <div className="text-[10px] uppercase tracking-[0.35em] text-[#9c8c7e]">Venue</div>
-              <p className="mt-3 text-sm font-medium leading-6 text-[#564c45]">{event.venue || 'Venue to be announced'}</p>
+            <div className="rounded-[20px] border border-[#eadfd3] bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4">
+              <div className="text-[9px] uppercase tracking-[0.22em] text-[#9c8c7e] sm:text-[10px] sm:tracking-[0.35em]">Venue</div>
+              <p className="mt-2 break-words text-[13px] font-medium leading-6 text-[#564c45] sm:mt-3 sm:text-sm">{event.venue || 'Venue to be announced'}</p>
             </div>
           </div>
 
           {event.address && (
             <DesignElement id="ceremonyVenueAddress" label="Ceremony Address" defaultColor="#564c45">
-              <p className="mt-5 text-center text-sm leading-7 text-[#6b6057]">{event.address}</p>
+              <p className="mt-4 text-center text-[13px] leading-6 text-[#6b6057] sm:mt-5 sm:text-sm sm:leading-7">{event.address}</p>
             </DesignElement>
           )}
         </div>
       </section>
 
       {gallery.length > 0 && (
-        <section className="px-4 py-3 sm:px-5 sm:py-4">
-          <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#ece2d7] bg-white/85 p-4 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.22)] sm:rounded-[34px] sm:p-6">
+        <section className="px-3 py-2.5 sm:px-5 sm:py-4">
+          <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border border-[#ece2d7] bg-white/85 p-3.5 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.22)] sm:rounded-[34px] sm:p-6">
             <div className="text-center">
-              <div className="text-[9px] uppercase tracking-[0.28em] text-[#9f9185] sm:text-[10px] sm:tracking-[0.4em]">Our journey</div>
-              <h3 className="mt-4 text-2xl font-semibold text-[#2d2926] sm:text-3xl">A few cherished moments</h3>
+              <div className="text-[8px] uppercase tracking-[0.18em] text-[#9f9185] sm:text-[10px] sm:tracking-[0.4em]">Our journey</div>
+              <h3 className="mt-3 text-[clamp(1.55rem,6vw,1.9rem)] font-semibold text-[#2d2926] sm:mt-4 sm:text-3xl">A few cherished moments</h3>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2">
               {gallery.map((src, index) => (
                 <div key={`${src}-${index}`} className={index === 0 ? 'sm:col-span-2' : ''}>
                   <div
                     data-ceremony-tilt
-                    className="overflow-hidden rounded-[20px] border border-[#ede2d6] bg-[#f7f1eb] will-change-transform sm:rounded-[24px]"
+                    className="overflow-hidden rounded-[18px] border border-[#ede2d6] bg-[#f7f1eb] will-change-transform sm:rounded-[24px]"
                   >
                     <img
                       src={src}
                       alt={`gallery ${index + 1}`}
-                      className={index === 0 ? 'h-48 w-full object-cover sm:h-52' : 'h-40 w-full object-cover sm:h-32'}
+                      className={index === 0 ? 'h-44 w-full object-cover sm:h-52' : 'h-36 w-full object-cover sm:h-32'}
                     />
                   </div>
                 </div>
@@ -955,17 +955,17 @@ export function CeremonyTemplate({ data, isPreview = false }) {
         </section>
       )}
 
-      <section className="px-4 pb-6 pt-3 sm:px-5 sm:pb-8 sm:pt-4">
-        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#eadfd3] bg-[linear-gradient(180deg,#fffdfb_0%,#f6efe7_100%)] px-4 py-6 text-center shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:px-6 sm:py-8">
+      <section className="px-3 pb-5 pt-2.5 sm:px-5 sm:pb-8 sm:pt-4">
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border border-[#eadfd3] bg-[linear-gradient(180deg,#fffdfb_0%,#f6efe7_100%)] px-3.5 py-5 text-center shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:px-6 sm:py-8">
           {note && (
             <DesignElement id="ceremonyClosingNote" label="Ceremony Closing Note" defaultColor="#5f544d">
-              <p className="mx-auto max-w-lg text-sm leading-7 text-[#655b54]">{note}</p>
+              <p className="mx-auto max-w-lg text-[13px] leading-6 text-[#655b54] sm:text-sm sm:leading-7">{note}</p>
             </DesignElement>
           )}
-          <div className="mt-6 text-[9px] uppercase tracking-[0.28em] text-[#aa998a] sm:text-[10px] sm:tracking-[0.42em]">With love</div>
-          <h3 className="mt-4 break-words text-2xl font-semibold text-[#2d2926] sm:text-3xl">{couple.bride} &amp; {couple.groom}</h3>
+          <div className="mt-5 text-[8px] uppercase tracking-[0.18em] text-[#aa998a] sm:mt-6 sm:text-[10px] sm:tracking-[0.42em]">With love</div>
+          <h3 className="mt-3 break-words text-[clamp(1.55rem,6vw,1.9rem)] font-semibold text-[#2d2926] sm:mt-4 sm:text-3xl">{couple.bride} &amp; {couple.groom}</h3>
           {content.rsvpText && (
-            <p className="mt-4 text-sm leading-7 text-[#6f645b]">{content.rsvpText}</p>
+            <p className="mt-3 text-[13px] leading-6 text-[#6f645b] sm:mt-4 sm:text-sm sm:leading-7">{content.rsvpText}</p>
           )}
         </div>
       </section>
