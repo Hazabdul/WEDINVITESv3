@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SharedSections } from './SharedSections';
 import { DesignElement } from '../preview/DesignElement';
 
@@ -163,9 +165,10 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
   const showImage = !showVideo && Boolean(mediaPack.heroImage);
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div data-live-invite-section className={`relative overflow-hidden ${className}`}>
       {showVideo && (
         <video
+          data-live-invite-media
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay
           muted
@@ -179,6 +182,7 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
 
       {showImage && (
         <img
+          data-live-invite-media
           src={mediaPack.heroImage}
           alt="wedding cover"
           className="absolute inset-0 h-full w-full object-cover animate-reveal"
@@ -232,13 +236,14 @@ function PhotoRibbon({ media, className = '', frameClassName = '' }) {
   const gridCols = items.length === 1 ? 'grid-cols-1' : items.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
 
   return (
-    <div className={`grid ${gridCols} gap-3 ${className}`}>
+    <div data-live-invite-card className={`grid ${gridCols} gap-3 ${className}`}>
       {items.map((src, index) => (
         <div
           key={`${src}-${index}`}
+          data-live-invite-card
           className={`overflow-hidden rounded-[24px] border border-white/10 bg-white/10 shadow-[0_14px_30px_rgba(15,23,42,0.12)] ${frameClassName}`}
         >
-          <img src={src} alt={`gallery ${index + 1}`} className="h-28 w-full object-cover" />
+          <img data-live-invite-media src={src} alt={`gallery ${index + 1}`} className="h-28 w-full object-cover" />
         </div>
       ))}
     </div>
@@ -254,7 +259,7 @@ function StoryVideoCard({ media, dark = false, className = '' }) {
     : 'border-slate-200 bg-white text-slate-900';
 
   return (
-    <div className={`rounded-[30px] border p-4 shadow-[0_18px_40px_rgba(15,23,42,0.1)] ${cardClasses} ${className}`}>
+    <div data-live-invite-section className={`rounded-[30px] border p-4 shadow-[0_18px_40px_rgba(15,23,42,0.1)] ${cardClasses} ${className}`}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <div className="text-[10px] uppercase tracking-[0.34em] opacity-50">Featured Video</div>
@@ -265,6 +270,7 @@ function StoryVideoCard({ media, dark = false, className = '' }) {
         </div>
       </div>
       <video
+        data-live-invite-media
         controls
         playsInline
         preload="metadata"
@@ -312,7 +318,7 @@ export function ClassicTemplate({ data }) {
             <DateBadge event={event} />
           </div>
 
-          <div className="rounded-[28px] border border-white/20 bg-white/10 p-5 text-white shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-xl animate-fade-in-up stagger-2">
+          <div data-live-invite-section className="rounded-[28px] border border-white/20 bg-white/10 p-5 text-white shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-xl animate-fade-in-up stagger-2">
             <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-sm tracking-[0.3em] text-white/90">
               {initialsForCouple(couple)}
             </div>
@@ -371,17 +377,17 @@ export function FloralTemplate({ data }) {
   return (
     <div className="bg-[linear-gradient(180deg,#fff8fb_0%,#ffe9ef_52%,#fffdfd_100%)] text-rose-950">
       <div className="relative overflow-hidden">
-        <div className="absolute left-[-80px] top-[-90px] h-56 w-56 rounded-full bg-rose-200/50 blur-3xl" />
-        <div className="absolute right-[-70px] top-20 h-52 w-52 rounded-full bg-fuchsia-200/50 blur-3xl" />
+        <div data-live-invite-float className="absolute left-[-80px] top-[-90px] h-56 w-56 rounded-full bg-rose-200/50 blur-3xl" />
+        <div data-live-invite-float className="absolute right-[-70px] top-20 h-52 w-52 rounded-full bg-fuchsia-200/50 blur-3xl" />
 
         {/* Hero media full-width */}
-        <div className="relative overflow-hidden rounded-b-[34px] mx-4 mt-4 shadow-[0_24px_55px_rgba(136,19,55,0.14)]">
+        <div data-live-invite-section className="relative overflow-hidden rounded-b-[34px] mx-4 mt-4 shadow-[0_24px_55px_rgba(136,19,55,0.14)]">
           {mediaPack.heroVideo ? (
-            <video className="h-56 w-full object-cover" autoPlay muted loop playsInline poster={mediaPack.poster || undefined}>
+            <video data-live-invite-media className="h-56 w-full object-cover" autoPlay muted loop playsInline poster={mediaPack.poster || undefined}>
               <source src={mediaPack.heroVideo} />
             </video>
           ) : mediaPack.heroImage ? (
-            <img src={mediaPack.heroImage} alt="botanical hero" className="h-56 w-full object-cover" />
+            <img data-live-invite-media src={mediaPack.heroImage} alt="botanical hero" className="h-56 w-full object-cover" />
           ) : (
             <div className="h-56 w-full bg-[linear-gradient(180deg,#fbcfe8_0%,#f9a8d4_100%)]" />
           )}
@@ -418,7 +424,7 @@ export function FloralTemplate({ data }) {
 
           <div className="mt-5 space-y-3">
             <DateBadge event={event} />
-            <div className="rounded-[22px] border border-rose-200 bg-white/75 p-4 shadow-[0_18px_40px_rgba(136,19,55,0.08)] backdrop-blur-md">
+            <div data-live-invite-section className="rounded-[22px] border border-rose-200 bg-white/75 p-4 shadow-[0_18px_40px_rgba(136,19,55,0.08)] backdrop-blur-md">
               <DetailsRow label="When" value={`${formatShortDate(event.date)}${event.time ? ` · ${event.time}` : ''}`} designId="floralWhen" designLabel="Floral Date and Time" />
               <DetailsRow label="Venue" value={event.venue} className="mt-3" designId="floralVenue" designLabel="Floral Venue" />
               <DetailsRow label="Address" value={event.address} className="mt-3 text-rose-900/70" designId="floralAddress" designLabel="Floral Address" />
@@ -429,8 +435,8 @@ export function FloralTemplate({ data }) {
           {mediaPack.gallery.length > 1 && (
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mediaPack.gallery.slice(1, 3).map((src, i) => (
-                <div key={`fg-${i}`} className="overflow-hidden rounded-[20px] border border-white/60">
-                  <img src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
+                <div key={`fg-${i}`} data-live-invite-card className="overflow-hidden rounded-[20px] border border-white/60">
+                  <img data-live-invite-media src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -495,7 +501,7 @@ export function ModernTemplate({ data }) {
             )}
           </div>
 
-          <div className="rounded-[26px] border border-white/10 bg-white/8 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] backdrop-blur-2xl mt-5">
+          <div data-live-invite-section className="rounded-[26px] border border-white/10 bg-white/8 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.24)] backdrop-blur-2xl mt-5">
             <div className="flex items-start justify-between gap-3">
               <DateBadge event={event} dark />
               <div className="text-right">
@@ -543,7 +549,7 @@ export function ArabicTemplate({ data }) {
             </div>
           </div>
 
-          <div className="rounded-t-[70px] rounded-b-[28px] border border-yellow-200/15 bg-black/30 p-5 text-center shadow-[0_24px_70px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+          <div data-live-invite-section className="rounded-t-[70px] rounded-b-[28px] border border-yellow-200/15 bg-black/30 p-5 text-center shadow-[0_24px_70px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
             <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-gradient-to-r from-transparent via-yellow-300/80 to-transparent" />
 
             <h1 className="text-3xl font-semibold leading-tight" style={{ fontFamily: 'inherit' }}>
@@ -594,12 +600,12 @@ export function TraditionalTemplate({ data }) {
   return (
     <div className="bg-[linear-gradient(180deg,#3b0d0d_0%,#4a140f_35%,#23090a_100%)] text-amber-50">
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(253,224,71,0.12),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.08),transparent_25%)]" />
+        <div data-live-invite-float className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(253,224,71,0.12),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.08),transparent_25%)]" />
 
         {/* Hero image */}
-        <div className="relative overflow-hidden rounded-b-[28px] mx-4 mt-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
+        <div data-live-invite-section className="relative overflow-hidden rounded-b-[28px] mx-4 mt-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
           {mediaPack.heroImage ? (
-            <img src={mediaPack.heroImage} alt="heritage hero" className="h-52 w-full object-cover" />
+            <img data-live-invite-media src={mediaPack.heroImage} alt="heritage hero" className="h-52 w-full object-cover" />
           ) : (
             <div className="h-52 w-full bg-[linear-gradient(180deg,#7f1d1d_0%,#451a03_100%)]" />
           )}
@@ -610,8 +616,8 @@ export function TraditionalTemplate({ data }) {
         </div>
 
         <div className="relative px-5 py-6">
-          <div className="rounded-[28px] border border-yellow-200/15 bg-black/15 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.22)] backdrop-blur-md">
-            <div className="rounded-[22px] border border-yellow-200/10 bg-[linear-gradient(180deg,rgba(255,251,235,0.96),rgba(255,244,214,0.92))] p-4 text-stone-900">
+          <div data-live-invite-section className="rounded-[28px] border border-yellow-200/15 bg-black/15 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.22)] backdrop-blur-md">
+            <div data-live-invite-card className="rounded-[22px] border border-yellow-200/10 bg-[linear-gradient(180deg,rgba(255,251,235,0.96),rgba(255,244,214,0.92))] p-4 text-stone-900">
               <InfoPill className="border-amber-300 bg-amber-50 text-amber-800">
                 Traditional Wedding
               </InfoPill>
@@ -649,8 +655,8 @@ export function TraditionalTemplate({ data }) {
           {mediaPack.gallery.length > 1 && (
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mediaPack.gallery.slice(1, 3).map((src, i) => (
-                <div key={`tg-${i}`} className="overflow-hidden rounded-[20px] border border-yellow-200/10">
-                  <img src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
+                <div key={`tg-${i}`} data-live-invite-card className="overflow-hidden rounded-[20px] border border-yellow-200/10">
+                  <img data-live-invite-media src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -663,6 +669,306 @@ export function TraditionalTemplate({ data }) {
       </div>
 
       <SharedSections data={data} dark />
+    </div>
+  );
+}
+
+/* --- Ceremony / Portrait Editorial --- */
+export function CeremonyTemplate({ data, isPreview = false }) {
+  const rootRef = useRef(null);
+  const { couple = {}, content = {}, event = {}, family = {}, media = {}, theme = {} } = data;
+  const mediaPack = buildMediaPackage(media);
+  const intro = pickIntro(content);
+  const bridePortrait = resolveMediaSource(media.brideImage) || mediaPack.gallery[0] || mediaPack.heroImage;
+  const groomPortrait = resolveMediaSource(media.groomImage) || mediaPack.gallery[1] || mediaPack.heroImage;
+  const gallery = mediaPack.gallery.slice(0, 4);
+  const note = content.familyMessage || content.specialNotes || content.quote;
+
+  useEffect(() => {
+    if (!rootRef.current || typeof window === 'undefined' || isPreview || theme.enableAnimation === false) return undefined;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cleanupFns = [];
+
+    const ctx = gsap.context(() => {
+      const revealItems = gsap.utils.toArray('[data-ceremony-reveal]');
+      const tiltItems = gsap.utils.toArray('[data-ceremony-tilt]');
+      const mediaItems = gsap.utils.toArray('[data-ceremony-media]');
+      const blobs = gsap.utils.toArray('[data-ceremony-float]');
+
+      if (!prefersReducedMotion) {
+        revealItems.forEach((item, index) => {
+          gsap.fromTo(
+            item,
+            { autoAlpha: 0, y: 42, scale: 0.985 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.9,
+              delay: index === 0 ? 0.08 : 0,
+              ease: 'power3.out',
+              scrollTrigger: {
+                trigger: item,
+                start: 'top 86%',
+                once: true,
+              },
+            }
+          );
+        });
+
+        mediaItems.forEach((item) => {
+          gsap.fromTo(
+            item,
+            { scale: 1.08, autoAlpha: 0.72 },
+            {
+              scale: 1,
+              autoAlpha: 1,
+              duration: 1.4,
+              ease: 'power2.out',
+            }
+          );
+        });
+
+        blobs.forEach((blob, index) => {
+          gsap.to(blob, {
+            yPercent: index % 2 === 0 ? -10 : 10,
+            xPercent: index % 2 === 0 ? 6 : -6,
+            duration: 7 + index,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+          });
+        });
+
+        tiltItems.forEach((item) => {
+          gsap.set(item, {
+            transformPerspective: 900,
+            transformStyle: 'preserve-3d',
+          });
+
+          const rotateXTo = gsap.quickTo(item, 'rotationX', { duration: 0.35, ease: 'power2.out' });
+          const rotateYTo = gsap.quickTo(item, 'rotationY', { duration: 0.35, ease: 'power2.out' });
+          const yTo = gsap.quickTo(item, 'y', { duration: 0.35, ease: 'power2.out' });
+
+          const handleMove = (event) => {
+            const rect = item.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / rect.width;
+            const y = (event.clientY - rect.top) / rect.height;
+            rotateXTo((0.5 - y) * 8);
+            rotateYTo((x - 0.5) * 10);
+            yTo(-4);
+          };
+
+          const handleLeave = () => {
+            rotateXTo(0);
+            rotateYTo(0);
+            yTo(0);
+          };
+
+          item.addEventListener('pointermove', handleMove);
+          item.addEventListener('pointerleave', handleLeave);
+          cleanupFns.push(() => {
+            item.removeEventListener('pointermove', handleMove);
+            item.removeEventListener('pointerleave', handleLeave);
+          });
+        });
+      } else {
+        gsap.set(revealItems, { autoAlpha: 1, y: 0, scale: 1 });
+      }
+    }, rootRef);
+
+    return () => {
+      cleanupFns.forEach((cleanup) => cleanup());
+      ctx.revert();
+      ScrollTrigger.refresh();
+    };
+  }, [bridePortrait, gallery, groomPortrait, isPreview, mediaPack.heroImage, note, theme.enableAnimation]);
+
+  return (
+    <div
+      ref={rootRef}
+      className="overflow-x-hidden bg-[linear-gradient(180deg,#f8f3ed_0%,#f4ede5_38%,#fbf8f4_100%)] text-[#2d2926]"
+      style={{
+        '--ceremony-primary': theme?.primaryColor || '#876c57',
+        '--ceremony-secondary': theme?.secondaryColor || '#efe2d3',
+      }}
+    >
+      <section className="relative overflow-hidden px-4 pb-6 pt-6 sm:px-5 sm:pb-8 sm:pt-8">
+        <div data-ceremony-float className="absolute left-[-90px] top-[-40px] h-48 w-48 rounded-full bg-[var(--ceremony-secondary)]/70 blur-3xl" />
+        <div data-ceremony-float className="absolute right-[-80px] top-24 h-52 w-52 rounded-full bg-[var(--ceremony-primary)]/10 blur-3xl" />
+
+        <div
+          data-ceremony-reveal
+          data-ceremony-tilt
+          className="relative mx-auto max-w-xl rounded-[28px] border border-[#e8ddd1] bg-white/85 p-4 text-center shadow-[0_24px_70px_-34px_rgba(61,46,33,0.35)] backdrop-blur-md will-change-transform sm:rounded-[36px] sm:p-6"
+        >
+          <div className="text-[9px] uppercase tracking-[0.26em] text-[#9b8d81] sm:text-[10px] sm:tracking-[0.42em]">
+            You are invited to the wedding of
+          </div>
+
+          <div className="mt-5 flex flex-col items-center gap-1.5 sm:flex-row sm:justify-center sm:gap-3">
+            <DesignElement id="ceremonyBrideName" label="Bride Name" defaultColor="#2d2926">
+              <span className="block max-w-full break-words text-3xl font-semibold leading-none tracking-tight sm:text-5xl">
+                {couple.bride}
+              </span>
+            </DesignElement>
+            <span className="inline-block text-xl font-light italic text-[var(--ceremony-primary)]/70 sm:text-2xl">&amp;</span>
+            <DesignElement id="ceremonyGroomName" label="Groom Name" defaultColor="#2d2926">
+              <span className="block max-w-full break-words text-3xl font-semibold leading-none tracking-tight sm:text-5xl">
+                {couple.groom}
+              </span>
+            </DesignElement>
+          </div>
+
+          <div className="mt-4 text-xs font-medium tracking-[0.12em] text-[#72665d] uppercase sm:text-sm sm:tracking-[0.18em]">
+            {formatShortDate(event.date) || 'Save the date'}
+          </div>
+
+          <div className="mt-5 inline-flex rounded-full border border-[#e5d9cd] bg-[#faf5ef] px-3 py-2 text-[9px] uppercase tracking-[0.22em] text-[#7a6a5d] sm:px-4 sm:text-[10px] sm:tracking-[0.34em]">
+            Open invitation
+          </div>
+
+          {mediaPack.heroImage && (
+            <div className="mt-6 overflow-hidden rounded-[22px] border border-[#ede2d7] sm:rounded-[28px]">
+              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" className="h-48 w-full object-cover will-change-transform sm:h-64" />
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="px-4 py-3 sm:px-5 sm:py-4">
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#ebe1d6] bg-white/88 p-4 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.28)] sm:rounded-[34px] sm:p-6">
+          <div className="text-center">
+            <div className="text-[9px] uppercase tracking-[0.28em] text-[#9d8d81] sm:text-[10px] sm:tracking-[0.4em]">With great joy</div>
+            {intro && (
+              <DesignElement id="ceremonyIntro" label="Ceremony Intro" defaultColor="#4b413a">
+                <p className="mt-4 text-sm leading-7 text-[#645a52]">
+                  {intro}
+                </p>
+              </DesignElement>
+            )}
+          </div>
+
+          <div className="mt-8 grid gap-4">
+            {[
+              {
+                key: 'bride',
+                label: 'Bride',
+                name: couple.bride,
+                image: bridePortrait,
+                familyName: family.brideParents,
+              },
+              {
+                key: 'groom',
+                label: 'Groom',
+                name: couple.groom,
+                image: groomPortrait,
+                familyName: family.groomParents,
+              },
+            ].map((person) => (
+              <div
+                key={person.key}
+                data-ceremony-tilt
+                className="grid gap-4 rounded-[22px] border border-[#efe4d8] bg-[#fcfaf7] p-4 will-change-transform sm:grid-cols-[140px_1fr] sm:items-center sm:rounded-[28px]"
+              >
+                <div className="overflow-hidden rounded-[18px] border border-[#ede2d5] bg-[var(--ceremony-secondary)]/45 sm:rounded-[24px]">
+                  {person.image ? (
+                    <img src={person.image} alt={person.name} className="h-40 w-full object-cover sm:h-44" />
+                  ) : (
+                    <div className="flex h-40 items-center justify-center text-sm uppercase tracking-[0.35em] text-[#a19387] sm:h-44">
+                      {person.label}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="text-[9px] uppercase tracking-[0.26em] text-[#aa9887] sm:text-[10px] sm:tracking-[0.36em]">{person.label}</div>
+                  <h2 className="mt-2 break-words text-2xl font-semibold text-[#2d2926] sm:text-3xl">{person.name || person.label}</h2>
+                  {person.familyName && (
+                    <p className="mt-3 text-sm leading-7 text-[#6d6259]">{person.familyName}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 py-3 sm:px-5 sm:py-4">
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#e9dfd4] bg-[linear-gradient(180deg,#fffdfa_0%,#f8f1e8_100%)] p-4 shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:p-6">
+          <div className="text-center">
+            <div className="text-[9px] uppercase tracking-[0.28em] text-[#9f9185] sm:text-[10px] sm:tracking-[0.4em]">The celebration</div>
+            <h3 className="mt-4 text-2xl font-semibold text-[#2d2926] sm:text-3xl">Join us for the ceremony</h3>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-[24px] border border-[#eadfd3] bg-white/85 p-4 text-center">
+              <div className="text-[10px] uppercase tracking-[0.35em] text-[#9c8c7e]">Date</div>
+              <p className="mt-3 text-sm font-medium leading-6 text-[#564c45]">{formatElegantDate(event.date) || 'Date to be announced'}</p>
+            </div>
+            <div className="rounded-[24px] border border-[#eadfd3] bg-white/85 p-4 text-center">
+              <div className="text-[10px] uppercase tracking-[0.35em] text-[#9c8c7e]">Time</div>
+              <p className="mt-3 text-sm font-medium leading-6 text-[#564c45]">{event.time || 'Time to be announced'}</p>
+            </div>
+            <div className="rounded-[24px] border border-[#eadfd3] bg-white/85 p-4 text-center">
+              <div className="text-[10px] uppercase tracking-[0.35em] text-[#9c8c7e]">Venue</div>
+              <p className="mt-3 text-sm font-medium leading-6 text-[#564c45]">{event.venue || 'Venue to be announced'}</p>
+            </div>
+          </div>
+
+          {event.address && (
+            <DesignElement id="ceremonyVenueAddress" label="Ceremony Address" defaultColor="#564c45">
+              <p className="mt-5 text-center text-sm leading-7 text-[#6b6057]">{event.address}</p>
+            </DesignElement>
+          )}
+        </div>
+      </section>
+
+      {gallery.length > 0 && (
+        <section className="px-4 py-3 sm:px-5 sm:py-4">
+          <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#ece2d7] bg-white/85 p-4 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.22)] sm:rounded-[34px] sm:p-6">
+            <div className="text-center">
+              <div className="text-[9px] uppercase tracking-[0.28em] text-[#9f9185] sm:text-[10px] sm:tracking-[0.4em]">Our journey</div>
+              <h3 className="mt-4 text-2xl font-semibold text-[#2d2926] sm:text-3xl">A few cherished moments</h3>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {gallery.map((src, index) => (
+                <div key={`${src}-${index}`} className={index === 0 ? 'sm:col-span-2' : ''}>
+                  <div
+                    data-ceremony-tilt
+                    className="overflow-hidden rounded-[20px] border border-[#ede2d6] bg-[#f7f1eb] will-change-transform sm:rounded-[24px]"
+                  >
+                    <img
+                      src={src}
+                      alt={`gallery ${index + 1}`}
+                      className={index === 0 ? 'h-48 w-full object-cover sm:h-52' : 'h-40 w-full object-cover sm:h-32'}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="px-4 pb-6 pt-3 sm:px-5 sm:pb-8 sm:pt-4">
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[28px] border border-[#eadfd3] bg-[linear-gradient(180deg,#fffdfb_0%,#f6efe7_100%)] px-4 py-6 text-center shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:px-6 sm:py-8">
+          {note && (
+            <DesignElement id="ceremonyClosingNote" label="Ceremony Closing Note" defaultColor="#5f544d">
+              <p className="mx-auto max-w-lg text-sm leading-7 text-[#655b54]">{note}</p>
+            </DesignElement>
+          )}
+          <div className="mt-6 text-[9px] uppercase tracking-[0.28em] text-[#aa998a] sm:text-[10px] sm:tracking-[0.42em]">With love</div>
+          <h3 className="mt-4 break-words text-2xl font-semibold text-[#2d2926] sm:text-3xl">{couple.bride} &amp; {couple.groom}</h3>
+          {content.rsvpText && (
+            <p className="mt-4 text-sm leading-7 text-[#6f645b]">{content.rsvpText}</p>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

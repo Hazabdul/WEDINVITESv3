@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Sparkles, ArrowRight, Heart, PlayCircle, Share2, CalendarDays, MapPin } from 'lucide-react';
+import { Sparkles, ArrowRight, Heart, Share2, CalendarDays, MapPin } from 'lucide-react';
 import apiClient from '../utils/api';
 
 function GalleryCard({ invitation, onOpen }) {
@@ -70,9 +69,38 @@ function GallerySkeleton() {
   );
 }
 
+const featureHighlights = [
+  {
+    icon: Heart,
+    title: 'No Login Required',
+    text: 'Start crafting immediately. Frictionless flow for you and your guests.',
+    eyebrow: 'Start in seconds',
+    tags: ['No signup', 'Private flow'],
+    accent: 'from-[#fff1f4] via-white to-[#fff7f8]',
+    glow: 'bg-[#ff2d55]/10',
+  },
+  {
+    icon: Share2,
+    title: 'Instantly Shareable',
+    text: 'One click to publish. A stunning, private link ready for WhatsApp and social sharing.',
+    eyebrow: 'Publish once',
+    tags: ['Private link', 'Mobile ready'],
+    accent: 'from-[#f4f0ff] via-white to-[#f8f7ff]',
+    glow: 'bg-[#7c3aed]/10',
+  },
+  {
+    icon: Sparkles,
+    title: 'Media Rich',
+    text: 'Support for high-res galleries, ambient music, and cinematic video in one invitation.',
+    eyebrow: 'Designed to feel alive',
+    tags: ['Gallery', 'Music', 'Video'],
+    accent: 'from-[#eef9ff] via-white to-[#f7fcff]',
+    glow: 'bg-[#0ea5e9]/10',
+  },
+];
+
 export function Home() {
   const navigate = useNavigate();
-  const [apiStatus, setApiStatus] = useState(null);
   const [invitations, setInvitations] = useState([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -110,7 +138,7 @@ export function Home() {
         });
         setPage(response.pagination?.page ?? nextPage);
         setHasMore(Boolean(response.pagination?.hasMore));
-      } catch (error) {
+      } catch {
         if (!ignore) {
           setGalleryError('Could not load published invitations right now.');
         }
@@ -268,20 +296,74 @@ export function Home() {
       </section>
 
       {/* FEATURES SECTION — Luxury Layout */}
-      <section aria-labelledby="features-heading" className="bg-white/30 backdrop-blur-3xl py-40 border-t border-white/40">
-        <div className="container mx-auto max-w-7xl px-6">
-          <div className="grid gap-20 md:grid-cols-3">
-            {[
-              { icon: Heart, title: 'No Login Required', text: 'Start crafting immediately. Frictionless flow for you and your guests.' },
-              { icon: Share2, title: 'Instantly Shareable', text: 'One click to publish. A stunning, private link ready for WhatsApp & Socials.' },
-              { icon: Sparkles, title: 'Media Rich', text: 'Support for high-res galleries, ambient music, and cinematic video.' }
-            ].map((feature, i) => (
-              <article key={i} className="text-left group">
-                <div className="mb-10 w-16 h-16 flex items-center justify-center rounded-[20px] glass-card text-[#ff2d55] group-hover:scale-110 transition-all duration-500">
-                  <feature.icon className="h-6 w-6" />
+      <section
+        aria-labelledby="features-heading"
+        className="relative overflow-hidden border-t border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(252,248,245,0.95)_100%)] py-24 backdrop-blur-3xl sm:py-32"
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,rgba(255,45,85,0.10),transparent_58%)]" />
+        <div className="pointer-events-none absolute left-[-7%] top-24 h-52 w-52 rounded-full bg-[#ff2d55]/8 blur-3xl" />
+        <div className="pointer-events-none absolute right-[-4%] top-12 h-64 w-64 rounded-full bg-[#1a2b5a]/6 blur-3xl" />
+
+        <div className="container relative mx-auto max-w-7xl px-6">
+          <header className="mx-auto max-w-3xl text-center">
+            <div className="animate-artemis-reveal stagger-1 text-[10px] font-black uppercase tracking-[0.56em] text-[#ff2d55]/45">
+              Built for modern wedding sharing
+            </div>
+            <h2 id="features-heading" className="animate-artemis-reveal stagger-2 mt-5 text-[40px] leading-tight text-[#1a2b5a] sm:text-[58px]">
+              Elegant for couples. Effortless for guests.
+            </h2>
+            <p className="animate-artemis-reveal stagger-3 mx-auto mt-6 max-w-2xl text-[14px] font-medium leading-8 text-[#1a2b5a]/58 sm:text-[15px]">
+              Everything important is kept simple: build fast, publish once, and send a link that feels polished on every screen.
+            </p>
+          </header>
+
+          <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:gap-8">
+            {featureHighlights.map((feature, i) => (
+              <article
+                key={feature.title}
+                className="animate-artemis-reveal group relative isolate overflow-hidden rounded-[32px] border border-white/60 bg-white/70 p-7 shadow-[0_28px_80px_-36px_rgba(26,43,90,0.24)] transition-all duration-700 hover:-translate-y-2 hover:shadow-[0_40px_90px_-34px_rgba(26,43,90,0.24)] sm:p-8"
+                style={{ animationDelay: `${0.16 + i * 0.12}s` }}
+              >
+                <div className={`absolute inset-0 bg-[linear-gradient(180deg,var(--tw-gradient-stops))] ${feature.accent} opacity-90`} />
+                <div className={`absolute right-[-20px] top-[-18px] h-28 w-28 rounded-full blur-2xl ${feature.glow}`} />
+                <div className="absolute inset-x-6 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(26,43,90,0.18),transparent)]" />
+
+                <div className="relative">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-white/70 bg-white/80 text-[#ff2d55] shadow-[0_18px_40px_-24px_rgba(255,45,85,0.45)] transition-transform duration-500 group-hover:scale-110">
+                      <feature.icon className="h-6 w-6" />
+                    </div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#1a2b5a]/28">
+                      0{i + 1}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 text-[10px] font-black uppercase tracking-[0.34em] text-[#ff2d55]/58">
+                    {feature.eyebrow}
+                  </div>
+                  <h3 className="mt-4 text-[31px] font-serif italic leading-[1.1] text-[#1a2b5a]">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-5 max-w-sm text-[14px] font-medium leading-7 text-[#1a2b5a]/62">
+                    {feature.text}
+                  </p>
+
+                  <div className="mt-8 flex flex-wrap gap-2">
+                    {feature.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-[#1a2b5a]/8 bg-white/72 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#1a2b5a]/52"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-8 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.32em] text-[#1a2b5a]/42">
+                    <span className="h-px flex-1 bg-[#1a2b5a]/10" />
+                    Invitation-ready
+                  </div>
                 </div>
-                <h3 className="mb-6 text-3xl font-serif italic text-[#1a2b5a]">{feature.title}</h3>
-                <p className="text-[14px] leading-relaxed text-[#1a2b5a]/60 font-medium">{feature.text}</p>
               </article>
             ))}
           </div>

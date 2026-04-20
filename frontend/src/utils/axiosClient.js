@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wedinvitesv3.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || 'https://wedinvitesv3.onrender.com';
 
 // Create axios instance
 const axiosInstance = axios.create({

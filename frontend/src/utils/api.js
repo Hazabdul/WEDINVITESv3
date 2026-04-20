@@ -3,7 +3,7 @@
  * Handles all communication with the backend API
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wedinvitesv3.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || 'https://wedinvitesv3.onrender.com';
 
 class APIClient {
   constructor(baseURL = API_BASE_URL) {
@@ -61,7 +61,42 @@ class APIClient {
 
       return await response.json();
     } catch (error) {
+      if (error instanceof TypeError && /Failed to fetch/i.test(error.message)) {
+        const networkError = new Error(`Could not reach API at ${url}. Start the backend server or update VITE_API_BASE_URL.`);
+        console.error('API Request Error:', networkError);
+        throw networkError;
+      }
       console.error('API Request Error:', error);
+      throw error;
+    }
+  }
+
+  // Health endpoint (no /api prefix)
+  async getHealth() {
+    const baseUrl = `${this.baseURL}/health`;
+    const url = `${baseUrl}?t=${Date.now()}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          ...this.getHeaders(),
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+        },
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `API Error: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      if (error instanceof TypeError && /Failed to fetch/i.test(error.message)) {
+        const networkError = new Error(`Could not reach API at ${url}. Start the backend server or update VITE_API_BASE_URL.`);
+        console.error('API Request Error:', networkError);
+        throw networkError;
+      }
       throw error;
     }
   }

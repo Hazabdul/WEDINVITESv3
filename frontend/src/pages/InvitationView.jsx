@@ -97,7 +97,7 @@ export function InvitationView() {
 
   const brideName = invitation.brideName || invitation.couple?.bride || '';
   const groomName = invitation.groomName || invitation.couple?.groom || '';
-  const theme = invitation.theme || { id: 'classic' };
+  const theme = invitation.theme || { id: 'ceremony' };
 
   const handleAccept = () => {
     setAttendanceResponse('accepted');
@@ -143,7 +143,7 @@ export function InvitationView() {
 
       <div className="mx-auto max-w-4xl px-4 py-8">
         <TemplateRenderer
-          type={theme.id || theme.templateId || 'classic'}
+          type={theme.id || theme.templateId || 'ceremony'}
           data={templateData}
           isPreview={false}
           className="overflow-hidden rounded-2xl shadow-2xl"

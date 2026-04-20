@@ -29,9 +29,9 @@ function Countdown({ date, dark }) {
     : 'bg-white shadow-sm border border-slate-100';
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-center">
+    <div data-live-invite-card className="grid grid-cols-4 gap-2 text-center">
       {Object.entries(timeLeft).map(([label, value]) => (
-        <div key={label} className={cn('rounded-xl p-2', box)}>
+        <div key={label} data-live-invite-card className={cn('rounded-xl p-2', box)}>
           <div className={cn('text-xl font-bold tabular-nums', dark ? 'text-white' : 'text-slate-900')}>
             {String(value).padStart(2, '0')}
           </div>
@@ -64,11 +64,11 @@ export function SharedSections({ data, dark = false }) {
 
       {/* ── Event schedule ── */}
       {(events || []).length > 0 && (
-        <div className={cn('border p-4', shape, cardBg)}>
+        <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Event Schedule</h3>
           <div className="space-y-3">
             {events.map((evt) => (
-              <div key={evt.id || evt.name} className={cn('rounded-xl border p-3', innerBg)}>
+              <div key={evt.id || evt.name} data-live-invite-card className={cn('rounded-xl border p-3', innerBg)}>
                 <div className={cn('font-semibold text-sm mb-1.5', textPrimary)}>{evt.name}</div>
                 <div className={cn('space-y-1 text-xs', textMuted)}>
                   {evt.date    && <div className="flex items-center gap-1.5"><Calendar className="h-3 w-3 shrink-0" />{evt.date}</div>}
@@ -86,7 +86,7 @@ export function SharedSections({ data, dark = false }) {
       {/* ── Families + Blessing ── */}
       <div className="space-y-4">
         {(family?.brideParents || family?.groomParents) && (
-          <div className={cn('border p-4', shape, cardBg)}>
+          <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
             <h3 className={cn('mb-2 text-base font-bold', textPrimary)}>Families</h3>
             {family.brideParents  && <p className={cn('text-xs', textMuted)}>Bride: {family.brideParents}</p>}
             {family.groomParents  && <p className={cn('text-xs', textMuted)}>Groom: {family.groomParents}</p>}
@@ -99,7 +99,7 @@ export function SharedSections({ data, dark = false }) {
         )}
 
         {content.quote && (
-          <div className={cn('border p-4', shape, cardBg)}>
+          <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
             <h3 className={cn('mb-2 text-base font-bold', textPrimary)}>Blessing</h3>
             <DesignElement id="sharedBlessing" label="Blessing Quote" defaultColor={dark ? '#ffffff' : '#0f172a'}>
               <p className={cn('text-sm italic leading-relaxed', textMuted)}>{content.quote}</p>
@@ -110,12 +110,17 @@ export function SharedSections({ data, dark = false }) {
 
       {/* ── Gallery ── */}
       {theme.enableGallery && media?.gallery?.length > 0 && (
-        <div className={cn('border p-4', shape, cardBg)}>
+        <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Gallery</h3>
           <div className="grid grid-cols-2 gap-2">
             {media.gallery.map((img, idx) => (
-              <img key={idx} src={img} alt={`gallery-${idx}`}
-                   className="h-32 w-full rounded-xl object-cover" />
+              <img
+                key={idx}
+                data-live-invite-media
+                src={img}
+                alt={`gallery-${idx}`}
+                className="h-32 w-full rounded-xl object-cover"
+              />
             ))}
           </div>
         </div>
@@ -123,16 +128,16 @@ export function SharedSections({ data, dark = false }) {
 
       {/* ── Video ── */}
       {theme.enableVideo && media?.video && (
-        <div className={cn('border p-4', shape, cardBg)}>
+        <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Video Message</h3>
-          <video controls className="w-full rounded-xl">
+          <video data-live-invite-media controls className="w-full rounded-xl">
             <source src={media.video} type="video/mp4" />
           </video>
         </div>
       )}
 
       {/* ── RSVP & Contact ── */}
-      <div className={cn('border p-4', shape, cardBg)}>
+      <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
         <h3 className={cn('mb-1.5 text-base font-bold', textPrimary)}>RSVP & Contact</h3>
         {content.rsvpText && (
           <DesignElement id="sharedRsvpText" label="RSVP Text" defaultColor={dark ? '#ffffff' : '#0f172a'}>
@@ -142,7 +147,7 @@ export function SharedSections({ data, dark = false }) {
 
         <div className="space-y-2">
           {content.contact1 && (
-            <div className={cn('rounded-xl border p-3', innerBg)}>
+            <div data-live-invite-card className={cn('rounded-xl border p-3', innerBg)}>
               <div className={cn('text-xs font-semibold mb-0.5', textPrimary)}>Contact 1</div>
               <div className={cn('flex items-center gap-1.5 text-xs', textMuted)}>
                 <Phone className="h-3 w-3 shrink-0" />{content.contact1}
@@ -150,7 +155,7 @@ export function SharedSections({ data, dark = false }) {
             </div>
           )}
           {content.contact2 && (
-            <div className={cn('rounded-xl border p-3', innerBg)}>
+            <div data-live-invite-card className={cn('rounded-xl border p-3', innerBg)}>
               <div className={cn('text-xs font-semibold mb-0.5', textPrimary)}>Contact 2</div>
               <div className={cn('flex items-center gap-1.5 text-xs', textMuted)}>
                 <Phone className="h-3 w-3 shrink-0" />{content.contact2}
