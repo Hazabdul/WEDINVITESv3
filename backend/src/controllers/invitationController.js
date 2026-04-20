@@ -4,6 +4,25 @@ import { ensureDBReady } from '../config/db.js';
 import { invitationSchema } from '../validators/invitationValidator.js';
 import crypto from 'crypto';
 
+const defaultTheme = {
+  id: 'ceremony',
+  primaryColor: '#876c57',
+  secondaryColor: '#efe2d3',
+  headingColor: '#6f5642',
+  subheadingColor: '#876c57',
+  bodyColor: '#705f53',
+  metaColor: '#9a7d66',
+  font: 'serif',
+  backgroundStyle: 'soft-gradient',
+  borderStyle: 'rounded',
+  sectionShape: 'rounded-3xl',
+  enableAnimation: true,
+  enableCountdown: true,
+  enableGallery: true,
+  enableVideo: true,
+  enableMusic: false,
+};
+
 export const createInvitation = async (req, res, next) => {
   try {
     await ensureDBReady();
@@ -11,7 +30,7 @@ export const createInvitation = async (req, res, next) => {
       status: 'DRAFT',
       package: 'BASIC',
       content: {},
-      theme: {},
+      theme: defaultTheme,
       media: { gallery: [] },
       positions: {}
     });
