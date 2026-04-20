@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+const idSchema = z.union([z.string(), z.number()]).optional().transform((value) => (
+  value === undefined || value === null ? undefined : String(value)
+));
+
 export const invitationSchema = z.object({
   brideName: z.string().optional(),
   groomName: z.string().optional(),
@@ -18,7 +22,7 @@ export const invitationSchema = z.object({
   
   // Relations (mostly handled in services but can be passed)
   events: z.array(z.object({
-    id: z.string().optional(),
+    id: idSchema,
     name: z.string(),
     date: z.string().optional(),
     time: z.string().optional(),
@@ -28,7 +32,7 @@ export const invitationSchema = z.object({
   })).optional(),
   
   widgets: z.array(z.object({
-    id: z.string().optional(),
+    id: idSchema,
     type: z.string(),
     x: z.number(),
     y: z.number(),
