@@ -203,6 +203,31 @@ export function Builder() {
 
     try {
       const created = await apiClient.createInvitation({});
+      const primaryEvent = {
+        id: data.events?.[0]?.id || 'primary-event',
+        name: data.events?.[0]?.name?.trim() || 'Wedding Ceremony',
+        date: data.events?.[0]?.date || data.event?.date || '',
+        time: data.events?.[0]?.time || data.event?.time || '',
+        venue: data.events?.[0]?.venue || data.event?.venue || '',
+        address: data.events?.[0]?.address || data.event?.address || '',
+        notes: data.events?.[0]?.notes || '',
+      };
+      const additionalEvents = (data.events || [])
+        .slice(1)
+        .map((item, index) => ({
+          id: item.id || `event-${index + 2}`,
+          name: item.name?.trim() || '',
+          date: item.date || '',
+          time: item.time || '',
+          venue: item.venue || '',
+          address: item.address || '',
+          notes: item.notes || '',
+        }))
+        .filter((item) => item.name);
+      const eventsPayload = [
+        primaryEvent,
+        ...additionalEvents,
+      ];
 
       const invitationData = {
         brideName: data.couple?.bride || '',
@@ -215,7 +240,7 @@ export function Builder() {
         theme: data.theme || { id: 'classic' },
         media: data.media || { gallery: [] },
         positions: data.positions || {},
-        events: data.events || [],
+        events: eventsPayload,
       };
 
       await apiClient.updateInvitation(created._id, invitationData);
@@ -285,6 +310,23 @@ export function Builder() {
               onChange={(event) => updateSection('couple', 'title', event.target.value)}
             />
 
+            <div className="grid gap-5 md:grid-cols-2">
+              <TextInput
+                label="Bride's parents"
+                helper="Optional. Add father & mother names (e.g. Mr. Ahmed & Mrs. Sara)."
+                placeholder="Mr. & Mrs. Rahman"
+                value={data.family?.brideParents || ''}
+                onChange={(event) => updateSection('family', 'brideParents', event.target.value)}
+              />
+              <TextInput
+                label="Groom's parents"
+                helper="Optional. Add father & mother names (e.g. Mr. Khalid & Mrs. Huda)."
+                placeholder="Mr. & Mrs. Kareem"
+                value={data.family?.groomParents || ''}
+                onChange={(event) => updateSection('family', 'groomParents', event.target.value)}
+              />
+            </div>
+
             <TextAreaInput
               label="Intro message"
               helper="A short welcome note is enough. Avoid turning this into a paragraph wall."
@@ -336,6 +378,15 @@ export function Builder() {
                 className="md:col-span-2"
               />
             </div>
+
+            <TextAreaInput
+              label="RSVP message"
+              helper="This text appears in the RSVP area of the invitation."
+              placeholder="Please confirm your attendance before December 1st, 2026."
+              value={data.content?.rsvpText || ''}
+              onChange={(event) => updateSection('content', 'rsvpText', event.target.value)}
+              rows={3}
+            />
           </div>
         );
 

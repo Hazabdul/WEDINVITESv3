@@ -187,6 +187,12 @@ export function InvitationView() {
             </Button>
           </div>
 
+          {attendanceResponse === 'declined' && (
+            <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm leading-7 text-amber-900 shadow-sm">
+              Sorry to hear that. Please keep us in your prayers.
+            </div>
+          )}
+
           <style>{`
             @keyframes popIn {
               0% {
