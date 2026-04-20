@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SharedSections } from './SharedSections';
 import { DesignElement } from '../preview/DesignElement';
+import { cn } from '../../utils/cn';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -697,7 +698,7 @@ export function TraditionalTemplate({ data }) {
 }
 
 /* --- Ceremony / Portrait Editorial --- */
-export function CeremonyTemplate({ data, isPreview = false }) {
+export function CeremonyTemplate({ data, isPreview = false, previewMode = 'desktop' }) {
   const rootRef = useRef(null);
   const gallerySectionRef = useRef(null);
   const { couple = {}, content = {}, event = {}, family = {}, media = {}, theme = {} } = data;
@@ -714,6 +715,7 @@ export function CeremonyTemplate({ data, isPreview = false }) {
   const primaryMuted = withAlpha(ceremonyPrimary, 0.72);
   const primaryLight = withAlpha(ceremonyPrimary, 0.1);
   const secondaryPanel = withAlpha(ceremonySecondary, 0.5);
+  const isCompactPreview = isPreview && previewMode === 'mobile';
 
   const handleScrollToGallery = () => {
     gallerySectionRef.current?.scrollIntoView({
@@ -849,7 +851,7 @@ export function CeremonyTemplate({ data, isPreview = false }) {
             You are invited to the wedding of
           </div>
 
-          <div className="mt-4 flex flex-col items-center gap-2 sm:mt-5 sm:flex-row sm:justify-center sm:gap-3">
+          <div className={cn('mt-4 flex flex-col items-center gap-2 sm:mt-5', !isCompactPreview && 'sm:flex-row sm:justify-center sm:gap-3')}>
             <DesignElement id="ceremonyBrideName" label="Bride Name" defaultColor="#2d2926">
               <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight">
                 {couple.bride}
@@ -924,7 +926,7 @@ export function CeremonyTemplate({ data, isPreview = false }) {
               <div
                 key={person.key}
                 data-ceremony-tilt
-                className="grid gap-3 rounded-[20px] border p-3 will-change-transform sm:grid-cols-[140px_1fr] sm:items-center sm:gap-4 sm:rounded-[28px] sm:p-4"
+                className={cn('grid gap-3 rounded-[20px] border p-3 will-change-transform sm:gap-4 sm:rounded-[28px] sm:p-4', !isCompactPreview && 'sm:grid-cols-[140px_1fr] sm:items-center')}
                 style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: withAlpha(ceremonySecondary, 0.16) }}
               >
                 <div className="overflow-hidden rounded-[16px] border sm:rounded-[24px]" style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: secondaryPanel }}>
@@ -957,7 +959,7 @@ export function CeremonyTemplate({ data, isPreview = false }) {
             <h3 className="mt-3 text-[clamp(1.55rem,6vw,1.9rem)] font-semibold sm:mt-4 sm:text-3xl" style={{ color: ceremonyPrimary }}>Join us for the ceremony</h3>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:mt-6 sm:gap-4 sm:grid-cols-3">
+          <div className={cn('mt-5 grid gap-3 sm:mt-6 sm:gap-4', !isCompactPreview && 'sm:grid-cols-3')}>
             <div className="rounded-[20px] border bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14) }}>
               <div className="text-[9px] uppercase tracking-[0.22em] sm:text-[10px] sm:tracking-[0.35em]" style={{ color: primaryMuted }}>Date</div>
               <p className="mt-2 text-[13px] font-medium leading-6 sm:mt-3 sm:text-sm" style={{ color: ceremonyPrimary }}>{formatElegantDate(event.date) || 'Date to be announced'}</p>
@@ -988,9 +990,9 @@ export function CeremonyTemplate({ data, isPreview = false }) {
               <h3 className="mt-3 text-[clamp(1.55rem,6vw,1.9rem)] font-semibold sm:mt-4 sm:text-3xl" style={{ color: ceremonyPrimary }}>A few cherished moments</h3>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2">
+            <div className={cn('mt-5 grid grid-cols-1 gap-3 sm:mt-6', !isCompactPreview && 'sm:grid-cols-2')}>
               {gallery.map((src, index) => (
-                <div key={`${src}-${index}`} className={index === 0 ? 'sm:col-span-2' : ''}>
+                <div key={`${src}-${index}`} className={index === 0 && !isCompactPreview ? 'sm:col-span-2' : ''}>
                   <div
                     data-ceremony-tilt
                     className="overflow-hidden rounded-[18px] border will-change-transform sm:rounded-[24px]"

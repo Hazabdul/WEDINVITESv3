@@ -124,6 +124,8 @@ export function Builder() {
   const [currentStep, setCurrentStep] = useState(0);
   const [previewMode, setPreviewMode] = useState('desktop');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [mediaUploadError, setMediaUploadError] = useState('');
   const [publishedInvitation, setPublishedInvitation] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -172,19 +174,46 @@ export function Builder() {
   const nextStep = () => setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
   const previousStep = () => setCurrentStep((step) => Math.max(step - 1, 0));
 
-  const handleCoverUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const localUrl = URL.createObjectURL(file);
-    updateSection('media', 'coverImage', localUrl);
-    updateSection('media', 'coupleImage', localUrl);
+  const uploadFiles = async (files, label) => {
+    setIsUploadingMedia(true);
+    setMediaUploadError('');
+
+    try {
+      const results = await Promise.all(files.map((file) => apiClient.uploadFile(file)));
+      const urls = results.map((item) => item?.url).filter(Boolean);
+
+      if (urls.length !== files.length) {
+        throw new Error(`${label} upload did not return a valid file URL.`);
+      }
+
+      return urls;
+    } catch (error) {
+      setMediaUploadError(error?.message || `${label} upload failed.`);
+      return [];
+    } finally {
+      setIsUploadingMedia(false);
+    }
   };
 
-  const handleGalleryUpload = (event) => {
+  const handleCoverUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const [uploadedUrl] = await uploadFiles([file], 'Cover image');
+    event.target.value = '';
+    if (!uploadedUrl) return;
+
+    updateSection('media', 'coverImage', uploadedUrl);
+    updateSection('media', 'coupleImage', uploadedUrl);
+  };
+
+  const handleGalleryUpload = async (event) => {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
-    const localUrls = files.map((file) => URL.createObjectURL(file));
-    updateSection('media', 'gallery', [...(data.media?.gallery || []), ...localUrls]);
+    const uploadedUrls = await uploadFiles(files, 'Gallery image');
+    event.target.value = '';
+    if (!uploadedUrls.length) return;
+
+    updateSection('media', 'gallery', [...(data.media?.gallery || []), ...uploadedUrls]);
   };
 
   const handleGalleryUrlsChange = (value) => {
@@ -393,19 +422,35 @@ export function Builder() {
       case 2:
         return (
           <div className="space-y-8">
+            {mediaUploadError ? (
+              <div className="rounded-[22px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {mediaUploadError}
+              </div>
+            ) : null}
+
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]">
+              <label className={cn(
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                isUploadingMedia && 'cursor-wait opacity-70'
+              )}>
                 <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
-                <div className="text-sm font-medium text-[#564a42]">Upload cover photo</div>
+                <div className="text-sm font-medium text-[#564a42]">
+                  {isUploadingMedia ? 'Uploading...' : 'Upload cover photo'}
+                </div>
                 <div className="mt-1 text-xs leading-5 text-[#8a8178]">Use one strong portrait or wide photo.</div>
-                <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
               </label>
 
-              <label className="flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]">
+              <label className={cn(
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                isUploadingMedia && 'cursor-wait opacity-70'
+              )}>
                 <Images className="mb-4 h-8 w-8 text-[#b08f72]" />
-                <div className="text-sm font-medium text-[#564a42]">Add gallery photos</div>
+                <div className="text-sm font-medium text-[#564a42]">
+                  {isUploadingMedia ? 'Uploading...' : 'Add gallery photos'}
+                </div>
                 <div className="mt-1 text-xs leading-5 text-[#8a8178]">Upload multiple images for the invitation gallery.</div>
-                <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
+                <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={isUploadingMedia} />
               </label>
             </div>
 
@@ -870,7 +915,7 @@ export function Builder() {
 
                   <div className="rounded-[28px] bg-[radial-gradient(circle_at_top,#fff8ef_0%,#efe4d8_100%)] p-4 sm:p-5">
                     <PreviewFrame mode={previewMode}>
-                      <TemplateRenderer type={data.theme?.id} data={data} />
+                      <TemplateRenderer type={data.theme?.id} data={data} previewMode={previewMode} />
                     </PreviewFrame>
                   </div>
 

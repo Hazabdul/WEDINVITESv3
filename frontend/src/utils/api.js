@@ -165,13 +165,21 @@ class APIClient {
     const formData = new FormData();
     formData.append('file', file);
 
-    return fetch(`${this.baseURL}/api/uploads`, {
+    const response = await fetch(`${this.baseURL}/api/uploads`, {
       method: 'POST',
       headers: {
         'Authorization': this.token ? `Bearer ${this.token}` : '',
       },
       body: formData,
-    }).then(res => res.json());
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.message || 'File upload failed.');
+    }
+
+    return payload;
   }
 
   // Public endpoints

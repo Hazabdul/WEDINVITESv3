@@ -8,7 +8,7 @@ const templates = {
   ceremony: CeremonyTemplate,
 };
 
-export function TemplateRenderer({ type, data, className = "", isPreview = true }) {
+export function TemplateRenderer({ type, data, className = "", isPreview = true, previewMode = 'desktop' }) {
   const rootRef = useRef(null);
   const hasData = Boolean(data);
   const effectiveType = templates[type] ? type : 'ceremony';
@@ -128,7 +128,7 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true 
         fontFamily: theme.font || 'serif',
       }}
     >
-      <SelectedTemplate data={data} isPreview={isPreview} />
+      <SelectedTemplate data={data} isPreview={isPreview} previewMode={previewMode} />
     </div>
   );
 }
