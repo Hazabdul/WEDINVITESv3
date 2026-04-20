@@ -710,11 +710,19 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
   const note = content.familyMessage || content.specialNotes || content.quote;
   const ceremonyPrimary = theme?.primaryColor || '#876c57';
   const ceremonySecondary = theme?.secondaryColor || '#efe2d3';
-  const rootGradient = `linear-gradient(180deg, ${withAlpha(ceremonySecondary, 0.34)} 0%, ${withAlpha(ceremonySecondary, 0.18)} 38%, #fbf8f4 100%)`;
+  const rootBackground = theme?.backgroundStyle === 'solid'
+    ? withAlpha(ceremonySecondary, 0.38)
+    : theme?.backgroundStyle === 'pattern'
+      ? `radial-gradient(${withAlpha(ceremonyPrimary, 0.14)} 1px, transparent 1px), linear-gradient(180deg, ${withAlpha(ceremonySecondary, 0.34)} 0%, ${withAlpha(ceremonySecondary, 0.18)} 38%, #fbf8f4 100%)`
+      : `linear-gradient(180deg, ${withAlpha(ceremonySecondary, 0.46)} 0%, ${withAlpha(ceremonySecondary, 0.26)} 38%, #fbf8f4 100%)`;
   const primarySoftBorder = withAlpha(ceremonyPrimary, 0.18);
   const primaryMuted = withAlpha(ceremonyPrimary, 0.72);
   const primaryLight = withAlpha(ceremonyPrimary, 0.1);
   const secondaryPanel = withAlpha(ceremonySecondary, 0.5);
+  const primaryText = withAlpha(ceremonyPrimary, 0.92);
+  const bodyText = withAlpha(ceremonyPrimary, 0.82);
+  const surfaceStrong = withAlpha(ceremonySecondary, 0.52);
+  const surfaceSoft = withAlpha(ceremonySecondary, 0.28);
   const isCompactPreview = isPreview && previewMode === 'mobile';
 
   const handleScrollToGallery = () => {
@@ -830,11 +838,13 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
   return (
     <div
       ref={rootRef}
-      className="overflow-x-hidden text-[#2d2926]"
+      className="overflow-x-hidden"
       style={{
         '--ceremony-primary': ceremonyPrimary,
         '--ceremony-secondary': ceremonySecondary,
-        background: rootGradient,
+        color: bodyText,
+        background: rootBackground,
+        backgroundSize: theme?.backgroundStyle === 'pattern' ? '18px 18px, auto' : undefined,
       }}
     >
       <section className="relative overflow-hidden px-3 pb-5 pt-4 sm:px-5 sm:pb-8 sm:pt-8">
@@ -844,22 +854,22 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
         <div
           data-ceremony-reveal
           data-ceremony-tilt
-          className="relative mx-auto max-w-xl rounded-[24px] border bg-white/85 p-3.5 text-center shadow-[0_24px_70px_-34px_rgba(61,46,33,0.35)] backdrop-blur-md will-change-transform sm:rounded-[36px] sm:p-6"
-          style={{ borderColor: withAlpha(ceremonyPrimary, 0.16) }}
+          className="relative mx-auto max-w-xl rounded-[24px] border p-3.5 text-center shadow-[0_24px_70px_-34px_rgba(61,46,33,0.35)] backdrop-blur-md will-change-transform sm:rounded-[36px] sm:p-6"
+          style={{ borderColor: withAlpha(ceremonyPrimary, 0.16), backgroundColor: withAlpha(ceremonySecondary, 0.34) }}
         >
           <div className="text-[8px] uppercase tracking-[0.18em] sm:text-[10px] sm:tracking-[0.42em]" style={{ color: primaryMuted }}>
             You are invited to the wedding of
           </div>
 
           <div className={cn('mt-4 flex flex-col items-center gap-2 sm:mt-5', !isCompactPreview && 'sm:flex-row sm:justify-center sm:gap-3')}>
-            <DesignElement id="ceremonyBrideName" label="Bride Name" defaultColor="#2d2926">
-              <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight">
+            <DesignElement id="ceremonyBrideName" label="Bride Name" defaultColor={ceremonyPrimary}>
+              <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight" style={{ color: primaryText }}>
                 {couple.bride}
               </span>
             </DesignElement>
             <span className="inline-block text-lg font-light italic sm:text-2xl" style={{ color: primaryMuted }}>&amp;</span>
-            <DesignElement id="ceremonyGroomName" label="Groom Name" defaultColor="#2d2926">
-              <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight">
+            <DesignElement id="ceremonyGroomName" label="Groom Name" defaultColor={ceremonyPrimary}>
+              <span className="block max-w-full break-words text-[clamp(2rem,8vw,3rem)] font-semibold leading-[0.95] tracking-tight" style={{ color: primaryText }}>
                 {couple.groom}
               </span>
             </DesignElement>
@@ -894,12 +904,12 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
       </section>
 
       <section className="px-3 py-2.5 sm:px-5 sm:py-4">
-        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border bg-white/88 p-3.5 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.28)] sm:rounded-[34px] sm:p-6" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14) }}>
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border p-3.5 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.28)] sm:rounded-[34px] sm:p-6" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), backgroundColor: withAlpha(ceremonySecondary, 0.24) }}>
           <div className="text-center">
             <div className="text-[8px] uppercase tracking-[0.18em] sm:text-[10px] sm:tracking-[0.4em]" style={{ color: primaryMuted }}>With great joy</div>
             {intro && (
-              <DesignElement id="ceremonyIntro" label="Ceremony Intro" defaultColor="#4b413a">
-                <p className="mt-3 text-[13px] leading-6 text-[#645a52] sm:mt-4 sm:text-sm sm:leading-7">
+              <DesignElement id="ceremonyIntro" label="Ceremony Intro" defaultColor={bodyText}>
+                <p className="mt-3 text-[13px] leading-6 sm:mt-4 sm:text-sm sm:leading-7" style={{ color: bodyText }}>
                   {intro}
                 </p>
               </DesignElement>
@@ -927,7 +937,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
                 key={person.key}
                 data-ceremony-tilt
                 className={cn('grid gap-3 rounded-[20px] border p-3 will-change-transform sm:gap-4 sm:rounded-[28px] sm:p-4', !isCompactPreview && 'sm:grid-cols-[140px_1fr] sm:items-center')}
-                style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: withAlpha(ceremonySecondary, 0.16) }}
+                style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: surfaceSoft }}
               >
                 <div className="overflow-hidden rounded-[16px] border sm:rounded-[24px]" style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: secondaryPanel }}>
                   {person.image ? (
@@ -941,7 +951,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 
                 <div>
                   <div className="text-[8px] uppercase tracking-[0.18em] sm:text-[10px] sm:tracking-[0.36em]" style={{ color: primaryMuted }}>{person.label}</div>
-                  <h2 className="mt-2 break-words text-[clamp(1.55rem,6vw,1.9rem)] font-semibold leading-tight text-[#2d2926] sm:text-3xl">{person.name || person.label}</h2>
+                  <h2 className="mt-2 break-words text-[clamp(1.55rem,6vw,1.9rem)] font-semibold leading-tight sm:text-3xl" style={{ color: primaryText }}>{person.name || person.label}</h2>
                   {person.familyName && (
                     <p className="mt-2 text-[13px] leading-6 sm:mt-3 sm:text-sm sm:leading-7" style={{ color: withAlpha(ceremonyPrimary, 0.78) }}>{person.familyName}</p>
                   )}
@@ -960,15 +970,15 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
           </div>
 
           <div className={cn('mt-5 grid gap-3 sm:mt-6 sm:gap-4', !isCompactPreview && 'sm:grid-cols-3')}>
-            <div className="rounded-[20px] border bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14) }}>
+            <div className="rounded-[20px] border p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), backgroundColor: surfaceStrong }}>
               <div className="text-[9px] uppercase tracking-[0.22em] sm:text-[10px] sm:tracking-[0.35em]" style={{ color: primaryMuted }}>Date</div>
               <p className="mt-2 text-[13px] font-medium leading-6 sm:mt-3 sm:text-sm" style={{ color: ceremonyPrimary }}>{formatElegantDate(event.date) || 'Date to be announced'}</p>
             </div>
-            <div className="rounded-[20px] border bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14) }}>
+            <div className="rounded-[20px] border p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), backgroundColor: surfaceStrong }}>
               <div className="text-[9px] uppercase tracking-[0.22em] sm:text-[10px] sm:tracking-[0.35em]" style={{ color: primaryMuted }}>Time</div>
               <p className="mt-2 text-[13px] font-medium leading-6 sm:mt-3 sm:text-sm" style={{ color: ceremonyPrimary }}>{event.time || 'Time to be announced'}</p>
             </div>
-            <div className="rounded-[20px] border bg-white/85 p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14) }}>
+            <div className="rounded-[20px] border p-3.5 text-center sm:rounded-[24px] sm:p-4" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), backgroundColor: surfaceStrong }}>
               <div className="text-[9px] uppercase tracking-[0.22em] sm:text-[10px] sm:tracking-[0.35em]" style={{ color: primaryMuted }}>Venue</div>
               <p className="mt-2 break-words text-[13px] font-medium leading-6 sm:mt-3 sm:text-sm" style={{ color: ceremonyPrimary }}>{event.venue || 'Venue to be announced'}</p>
             </div>
@@ -984,7 +994,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 
       {gallery.length > 0 && (
         <section ref={gallerySectionRef} className="px-3 py-2.5 sm:px-5 sm:py-4">
-          <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border bg-white/85 p-3.5 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.22)] sm:rounded-[34px] sm:p-6" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14) }}>
+          <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border p-3.5 shadow-[0_24px_60px_-36px_rgba(61,46,33,0.22)] sm:rounded-[34px] sm:p-6" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), backgroundColor: withAlpha(ceremonySecondary, 0.24) }}>
             <div className="text-center">
               <div className="text-[8px] uppercase tracking-[0.18em] sm:text-[10px] sm:tracking-[0.4em]" style={{ color: primaryMuted }}>Our journey</div>
               <h3 className="mt-3 text-[clamp(1.55rem,6vw,1.9rem)] font-semibold sm:mt-4 sm:text-3xl" style={{ color: ceremonyPrimary }}>A few cherished moments</h3>
@@ -1012,7 +1022,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
       )}
 
       <section className="px-3 pb-5 pt-2.5 sm:px-5 sm:pb-8 sm:pt-4">
-        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border px-3.5 py-5 text-center shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:px-6 sm:py-8" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), background: `linear-gradient(180deg, #fffdfb 0%, ${withAlpha(ceremonySecondary, 0.3)} 100%)` }}>
+        <div data-ceremony-reveal className="mx-auto max-w-xl rounded-[24px] border px-3.5 py-5 text-center shadow-[0_24px_60px_-34px_rgba(61,46,33,0.24)] sm:rounded-[34px] sm:px-6 sm:py-8" style={{ borderColor: withAlpha(ceremonyPrimary, 0.14), background: `linear-gradient(180deg, ${withAlpha(ceremonySecondary, 0.18)} 0%, ${withAlpha(ceremonySecondary, 0.42)} 100%)` }}>
           {note && (
             <DesignElement id="ceremonyClosingNote" label="Ceremony Closing Note" defaultColor={ceremonyPrimary}>
               <p className="mx-auto max-w-lg text-[13px] leading-6 sm:text-sm sm:leading-7" style={{ color: withAlpha(ceremonyPrimary, 0.82) }}>{note}</p>
