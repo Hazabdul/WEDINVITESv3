@@ -693,6 +693,38 @@ export function Builder() {
                   className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
+              <Field label="Heading text color">
+                <input
+                  type="color"
+                  value={data.theme?.headingColor || data.theme?.primaryColor || '#6f5642'}
+                  onChange={(event) => updateSection('theme', 'headingColor', event.target.value)}
+                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                />
+              </Field>
+              <Field label="Subheading text color">
+                <input
+                  type="color"
+                  value={data.theme?.subheadingColor || data.theme?.primaryColor || '#876c57'}
+                  onChange={(event) => updateSection('theme', 'subheadingColor', event.target.value)}
+                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                />
+              </Field>
+              <Field label="Body text color">
+                <input
+                  type="color"
+                  value={data.theme?.bodyColor || '#705f53'}
+                  onChange={(event) => updateSection('theme', 'bodyColor', event.target.value)}
+                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                />
+              </Field>
+              <Field label="Meta / label color">
+                <input
+                  type="color"
+                  value={data.theme?.metaColor || '#9a7d66'}
+                  onChange={(event) => updateSection('theme', 'metaColor', event.target.value)}
+                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                />
+              </Field>
 
               <Select
                 label="Heading style"
@@ -767,6 +799,8 @@ export function Builder() {
                 <p className="mt-3 text-sm text-[#72665d]">{activeTemplate.name}</p>
                 <p className="mt-1 text-sm text-[#72665d]">Primary: {data.theme?.primaryColor}</p>
                 <p className="mt-1 text-sm text-[#72665d]">Secondary: {data.theme?.secondaryColor}</p>
+                <p className="mt-1 text-sm text-[#72665d]">Heading: {data.theme?.headingColor}</p>
+                <p className="mt-1 text-sm text-[#72665d]">Subheading: {data.theme?.subheadingColor}</p>
               </div>
             </div>
 
