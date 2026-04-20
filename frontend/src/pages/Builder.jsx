@@ -167,6 +167,8 @@ export function Builder() {
   );
 
   const coverImage = data?.media?.coverImage || data?.media?.coupleImage || '';
+  const brideImage = data?.media?.brideImage || '';
+  const groomImage = data?.media?.groomImage || '';
   const galleryText = useMemo(() => (data?.media?.gallery || []).join('\n'), [data?.media?.gallery]);
   const galleryCount = data?.media?.gallery?.filter(Boolean).length || 0;
   const canPublish = progressInfo.percentage >= 80;
@@ -198,12 +200,22 @@ export function Builder() {
   const handleCoverUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const [uploadedUrl] = await uploadFiles([file], 'Cover image');
+    const [uploadedUrl] = await uploadFiles([file], 'Banner image');
     event.target.value = '';
     if (!uploadedUrl) return;
 
     updateSection('media', 'coverImage', uploadedUrl);
     updateSection('media', 'coupleImage', uploadedUrl);
+  };
+
+  const handleSingleImageUpload = async (event, field, label) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const [uploadedUrl] = await uploadFiles([file], label);
+    event.target.value = '';
+    if (!uploadedUrl) return;
+
+    updateSection('media', field, uploadedUrl);
   };
 
   const handleGalleryUpload = async (event) => {
@@ -428,17 +440,53 @@ export function Builder() {
               </div>
             ) : null}
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <label className={cn(
                 'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
                 isUploadingMedia && 'cursor-wait opacity-70'
               )}>
                 <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
                 <div className="text-sm font-medium text-[#564a42]">
-                  {isUploadingMedia ? 'Uploading...' : 'Upload cover photo'}
+                  {isUploadingMedia ? 'Uploading...' : 'Upload banner'}
                 </div>
-                <div className="mt-1 text-xs leading-5 text-[#8a8178]">Use one strong portrait or wide photo.</div>
+                <div className="mt-1 text-xs leading-5 text-[#8a8178]">One main image for the top section of the invitation.</div>
                 <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
+              </label>
+
+              <label className={cn(
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                isUploadingMedia && 'cursor-wait opacity-70'
+              )}>
+                <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
+                <div className="text-sm font-medium text-[#564a42]">
+                  {isUploadingMedia ? 'Uploading...' : 'Upload bride photo'}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-[#8a8178]">Single portrait used in the bride profile card.</div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => handleSingleImageUpload(event, 'brideImage', 'Bride image')}
+                  disabled={isUploadingMedia}
+                />
+              </label>
+
+              <label className={cn(
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                isUploadingMedia && 'cursor-wait opacity-70'
+              )}>
+                <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
+                <div className="text-sm font-medium text-[#564a42]">
+                  {isUploadingMedia ? 'Uploading...' : 'Upload groom photo'}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-[#8a8178]">Single portrait used in the groom profile card.</div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => handleSingleImageUpload(event, 'groomImage', 'Groom image')}
+                  disabled={isUploadingMedia}
+                />
               </label>
 
               <label className={cn(
@@ -455,8 +503,8 @@ export function Builder() {
             </div>
 
             <TextInput
-              label="Cover image URL"
-              helper="Use a direct image URL if you are hosting the file elsewhere."
+              label="Banner image URL"
+              helper="Use one direct image URL if the banner is hosted elsewhere."
               placeholder="https://..."
               value={coverImage}
               onChange={(event) => {
@@ -465,9 +513,26 @@ export function Builder() {
               }}
             />
 
+            <div className="grid gap-5 md:grid-cols-2">
+              <TextInput
+                label="Bride photo URL"
+                helper="Optional direct image URL for the bride portrait."
+                placeholder="https://..."
+                value={brideImage}
+                onChange={(event) => updateSection('media', 'brideImage', event.target.value)}
+              />
+              <TextInput
+                label="Groom photo URL"
+                helper="Optional direct image URL for the groom portrait."
+                placeholder="https://..."
+                value={groomImage}
+                onChange={(event) => updateSection('media', 'groomImage', event.target.value)}
+              />
+            </div>
+
             <TextAreaInput
               label={`Gallery image URLs${galleryCount ? ` (${galleryCount})` : ''}`}
-              helper="One image URL per line. Uploaded images are added here for live preview."
+              helper="Multiple gallery images supported. Use one image URL per line."
               placeholder={'https://.../photo-1.jpg\nhttps://.../photo-2.jpg'}
               value={galleryText}
               onChange={(event) => handleGalleryUrlsChange(event.target.value)}
