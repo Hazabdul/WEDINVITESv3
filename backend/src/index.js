@@ -26,19 +26,14 @@ const allowedOrigins = new Set([
   'https://weddinginvites.online',
   'https://www.weddinginvites.online',
   'https://wedinvitesv3.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:3002',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3002',
+  'http://127.0.0.1:5173',
   process.env.FRONTEND_URL,
 ].filter(Boolean));
-
-if (process.env.NODE_ENV !== 'production') {
-  [
-    'http://localhost:3000',
-    'http://localhost:3002',
-    'http://localhost:5173',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3002',
-    'http://127.0.0.1:5173',
-  ].forEach((origin) => allowedOrigins.add(origin));
-}
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -81,6 +76,19 @@ app.use('/api/public', publicRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/', metaRoutes);
+
+// Root (helpful landing for the service URL)
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Wedding Invites API',
+    endpoints: {
+      health: '/health',
+      publicInvitations: '/api/public/invitations?page=1&limit=6',
+      publicInvitationBySlug: '/api/public/invitations/:slug',
+    },
+  });
+});
 
 // Health check
 app.get('/health', (req, res) => res.status(200).json({

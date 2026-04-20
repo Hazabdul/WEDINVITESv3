@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const useFallback = process.env.NODE_ENV === 'development' && !process.env.MONGODB_URI;
+const useFallback = process.env.NODE_ENV === 'development' && (global.USE_IN_MEMORY_DB === true || !process.env.MONGODB_URI?.trim());
 
 const rsvpSchema = new mongoose.Schema({
   invitationId: {
@@ -49,6 +49,24 @@ if (!useFallback) {
     };
   };
 
+  const sortItems = (items, sortObject = {}) => {
+    const [[field, direction]] = Object.entries(sortObject);
+    if (!field) return items;
+
+    const sorted = [...items];
+    Array.prototype.sort.call(sorted, (a, b) => {
+      if (a[field] === b[field]) return 0;
+      return direction === -1 ? (a[field] < b[field] ? 1 : -1) : (a[field] < b[field] ? -1 : 1);
+    });
+    return sorted;
+  };
+
+  const queryable = (items) => {
+    const result = items.map((item) => toDocument({ ...item }));
+    result.sort = (sortObject) => queryable(sortItems(items, sortObject));
+    return result;
+  };
+
   RSVP = {
     create: async (data) => {
       const doc = toDocument({
@@ -60,9 +78,7 @@ if (!useFallback) {
       store.push({ ...doc });
       return doc;
     },
-    find: async (filter) => {
-      return store.filter((item) => matchesFilter(item, filter)).map((item) => toDocument({ ...item }));
-    },
+    find: (filter) => queryable(store.filter((item) => matchesFilter(item, filter))),
   };
 }
 

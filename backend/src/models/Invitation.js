@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const useFallback = process.env.NODE_ENV === 'development' && !process.env.MONGODB_URI;
+const useFallback = process.env.NODE_ENV === 'development' && (global.USE_IN_MEMORY_DB === true || !process.env.MONGODB_URI?.trim());
 
 const eventSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -100,16 +100,26 @@ if (!useFallback) {
     };
   };
 
-  const queryable = (items) => {
-    const result = Array.from(items);
-    result.sort = (sortObject) => {
-      const [[field, direction]] = Object.entries(sortObject || {});
-      result.sort((a, b) => {
-        if (a[field] === b[field]) return 0;
-        return direction === -1 ? (a[field] < b[field] ? 1 : -1) : (a[field] < b[field] ? -1 : 1);
-      });
-      return result;
-    };
+  const sortItems = (items, sortObject = {}) => {
+    const [[field, direction]] = Object.entries(sortObject);
+    if (!field) return items;
+
+    const sorted = [...items];
+    Array.prototype.sort.call(sorted, (a, b) => {
+      if (a[field] === b[field]) return 0;
+      return direction === -1 ? (a[field] < b[field] ? 1 : -1) : (a[field] < b[field] ? -1 : 1);
+    });
+    return sorted;
+  };
+
+  const queryable = (items, asLean = false) => {
+    const result = Array.from(asLean ? items.map((item) => ({ ...item })) : items.map((item) => toDocument({ ...item })));
+
+    result.sort = (sortObject) => queryable(sortItems(items, sortObject), asLean);
+    result.skip = (count) => queryable(items.slice(count), asLean);
+    result.limit = (count) => queryable(items.slice(0, count), asLean);
+    result.lean = () => queryable(items, true);
+
     return result;
   };
 
@@ -142,6 +152,7 @@ if (!useFallback) {
       store[index] = { ...store[index], ...nextUpdate, updatedAt: new Date() };
       return options.new ? toDocument({ ...store[index] }) : toDocument({ ...store[index] });
     },
+    countDocuments: async (filter) => store.filter((item) => matchesFilter(item, filter)).length,
   };
 }
 

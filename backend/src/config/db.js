@@ -7,10 +7,14 @@ dns.setServers(['1.1.1.1', '8.8.8.8']);
 mongoose.set('bufferCommands', false);
 
 let connectionPromise = null;
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+const useInMemoryFallback = () => isDevelopment && (global.USE_IN_MEMORY_DB === true || !process.env.MONGODB_URI?.trim());
 
 const connectDB = async () => {
   if (mongoose.connection.readyState === 1) {
     global.DB_CONNECTED = true;
+    global.USE_IN_MEMORY_DB = false;
     return true;
   }
 
@@ -20,9 +24,10 @@ const connectDB = async () => {
 
   const mongoUri = process.env.MONGODB_URI?.trim();
 
-  if (!mongoUri) {
-    console.log('No MongoDB URI configured. Using development in-memory fallback.');
+  if (useInMemoryFallback()) {
+    console.log('Using development in-memory fallback storage.');
     global.DB_CONNECTED = false;
+    global.USE_IN_MEMORY_DB = true;
     return false;
   }
 
@@ -34,10 +39,16 @@ const connectDB = async () => {
       });
       console.log(`MongoDB Connected: ${conn.connection.host}`);
       global.DB_CONNECTED = true;
+      global.USE_IN_MEMORY_DB = false;
       return true;
     } catch (error) {
       global.DB_CONNECTED = false;
       console.error(`MongoDB connection failed: ${error.message}`);
+      if (isDevelopment) {
+        global.USE_IN_MEMORY_DB = true;
+        console.warn('Falling back to in-memory development storage because MongoDB is unavailable.');
+        return false;
+      }
       throw new Error('MongoDB connection failed. Check MONGODB_URI and Atlas access before starting the backend.');
     } finally {
       connectionPromise = null;
@@ -48,12 +59,13 @@ const connectDB = async () => {
 };
 
 export const ensureDBReady = async () => {
-  if (!process.env.MONGODB_URI?.trim()) {
+  if (useInMemoryFallback()) {
     return false;
   }
 
   if (mongoose.connection.readyState === 1) {
     global.DB_CONNECTED = true;
+    global.USE_IN_MEMORY_DB = false;
     return true;
   }
 
