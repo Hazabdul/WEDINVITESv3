@@ -56,11 +56,19 @@ export const updateInvitation = async (req, res, next) => {
   try {
     await ensureDBReady();
     const { id } = req.params;
-    const validatedData = invitationSchema.parse(req.body);
+    const parsed = invitationSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: parsed.error.issues,
+      });
+    }
 
     const updated = await Invitation.findByIdAndUpdate(
       id,
-      { $set: validatedData },
+      { $set: parsed.data },
       { new: true, runValidators: true }
     );
 

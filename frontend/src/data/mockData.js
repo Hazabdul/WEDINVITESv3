@@ -51,8 +51,8 @@ export const initialInvitationData = {
     mapLink: "https://maps.google.com"
   },
   events: [
-    { id: 1, name: "Nikah", date: "2026-12-18", time: "05:00 PM", venue: "Grand Palace Hall", address: "Riyadh, Saudi Arabia", notes: "Please arrive 30 minutes early." },
-    { id: 2, name: "Reception", date: "2026-12-19", time: "08:00 PM", venue: "Emerald Banquet", address: "Riyadh, Saudi Arabia", notes: "Dinner will be served." }
+    { id: "1", name: "Nikah", date: "2026-12-18", time: "05:00 PM", venue: "Grand Palace Hall", address: "Riyadh, Saudi Arabia", notes: "Please arrive 30 minutes early." },
+    { id: "2", name: "Reception", date: "2026-12-19", time: "08:00 PM", venue: "Emerald Banquet", address: "Riyadh, Saudi Arabia", notes: "Dinner will be served." }
   ],
   family: {
     brideParents: "Mr. & Mrs. Rahman",

@@ -33,18 +33,19 @@ export function InvitationProvider({ children }) {
     setData((prev) => ({
       ...prev,
       events: prev.events.map((event) =>
-        event.id === id ? { ...event, [field]: value } : event
+        String(event.id) === String(id) ? { ...event, [field]: value } : event
       )
     }));
   };
 
   const addEvent = () => {
+    const newId = globalThis.crypto?.randomUUID?.() ?? String(Date.now());
     setData((prev) => ({
       ...prev,
       events: [
         ...prev.events,
         {
-          id: Date.now(),
+          id: newId,
           name: "Custom Event",
           date: "",
           time: "",
