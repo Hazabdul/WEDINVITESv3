@@ -208,6 +208,26 @@ class APIClient {
     });
   }
 
+  async generateWebsiteFromImage(file, instructions = '') {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('instructions', instructions);
+
+    const response = await fetch(`${this.baseURL}/api/image-to-website`, {
+      method: 'POST',
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : undefined,
+      body: formData,
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.message || 'Image-to-website generation failed.');
+    }
+
+    return payload;
+  }
+
   // Public endpoints
   async getPublicInvitation(slug) {
     return this.request(`/api/public/invitations/${slug}`, {

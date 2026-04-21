@@ -10,11 +10,13 @@ import { InvitationProvider } from './hooks/useInvitationState';
 import { cn } from './utils/cn';
 
 const InvitationAnalyzer = lazy(() => import('./pages/InvitationAnalyzer'));
+const ImageToWebsite = lazy(() => import('./pages/ImageToWebsite'));
 
 const NAV_ITEMS = [
   { label: 'Home', to: '/' },
   { label: 'Templates', to: '/templates' },
   { label: 'Analyzer', to: '/invitation-analyzer' },
+  { label: 'Image To Web', to: '/image-to-website' },
   { label: 'Pricing', to: '/pricing' },
 ];
 
@@ -148,6 +150,7 @@ function AppShell() {
             <Route path="/builder" element={<Builder />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/invitation-analyzer" element={<InvitationAnalyzer />} />
+            <Route path="/image-to-website" element={<ImageToWebsite />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/invitation/:slug" element={<InvitationView />} />
             <Route path="/invite/:slug" element={<InvitationView />} />

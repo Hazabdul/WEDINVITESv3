@@ -64,6 +64,7 @@ const [
   { default: orderRoutes },
   { default: metaRoutes },
   { default: invitationAiRoutes },
+  { default: websiteAiRoutes },
 ] = await Promise.all([
   import('./routes/authRoutes.js'),
   import('./routes/invitationRoutes.js'),
@@ -72,6 +73,7 @@ const [
   import('./routes/orderRoutes.js'),
   import('./routes/metaRoutes.js'),
   import('./routes/invitationAiRoutes.js'),
+  import('./routes/websiteAiRoutes.js'),
 ]);
 
 app.use('/api/auth', authRoutes);
@@ -81,6 +83,7 @@ app.use('/api/uploads', uploadRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/', metaRoutes);
 app.use('/api', invitationAiRoutes);
+app.use('/api', websiteAiRoutes);
 
 // Root (helpful landing for the service URL)
 app.get('/', (req, res) => {
