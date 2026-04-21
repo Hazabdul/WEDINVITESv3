@@ -19,7 +19,7 @@ export function ExampleAuthComponent() {
       try {
         const userData = await apiClient.getMe();
         setUser(userData);
-      } catch (err) {
+      } catch {
         // User not authenticated
       }
     };

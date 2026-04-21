@@ -1,11 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { CeremonyTemplate } from '../templates/AllTemplates';
+import { CeremonyTemplate, ClassicTemplate, FloralTemplate, ModernTemplate, TraditionalTemplate } from '../templates/AllTemplates';
 import { cn } from '../../utils/cn';
 
 const templates = {
   ceremony: CeremonyTemplate,
+  classic: ClassicTemplate,
+  floral: FloralTemplate,
+  modern: ModernTemplate,
+  traditional: TraditionalTemplate,
 };
 
 export function TemplateRenderer({ type, data, className = "", isPreview = true, previewMode = 'desktop' }) {

@@ -5,6 +5,8 @@ const DEFAULT_ANALYSIS = {
   card_type: '',
   bride_name: '',
   groom_name: '',
+  host_line: '',
+  invitation_message: '',
   event_type: '',
   date: '',
   time: '',
@@ -21,12 +23,35 @@ const DEFAULT_ANALYSIS = {
   },
 };
 
-const TEMPLATE_LIBRARY = {
-  floral: ['/tpl-floral.png', '/tpl-classic.png', '/tpl-modern.png'],
-  minimal: ['/tpl-modern.png', '/tpl-arabic.png', '/tpl-classic.png'],
-  luxury: ['/tpl-classic.png', '/tpl-floral.png', '/tpl-arabic.png'],
-  traditional: ['/tpl-arabic.png', '/tpl-classic.png', '/tpl-floral.png'],
-  modern: ['/tpl-modern.png', '/tpl-classic.png', '/tpl-floral.png'],
+const TEMPLATE_DIRECTIONS = {
+  floral: ['floral', 'ceremony', 'classic'],
+  minimal: ['modern', 'ceremony', 'classic'],
+  luxury: ['classic', 'ceremony', 'modern'],
+  traditional: ['traditional', 'classic', 'ceremony'],
+  modern: ['ceremony', 'modern', 'classic'],
+};
+
+const TEMPLATE_METADATA = {
+  ceremony: {
+    name: 'Ceremony Portrait',
+    description: 'Soft portrait-led invitation with editorial spacing and a formal ceremony tone.',
+  },
+  classic: {
+    name: 'Classic Editorial',
+    description: 'Structured and refined with elegant contrast, ideal for formal and luxury invites.',
+  },
+  floral: {
+    name: 'Botanical Floral',
+    description: 'Light floral styling with soft gradients and a romantic invitation mood.',
+  },
+  modern: {
+    name: 'Modern Minimal',
+    description: 'Clean cinematic styling with stronger contrast and a more minimal rhythm.',
+  },
+  traditional: {
+    name: 'Traditional Gold',
+    description: 'Formal ceremonial styling with ornate warmth and a classic invitation voice.',
+  },
 };
 
 const DATE_PATTERNS = [
@@ -69,6 +94,76 @@ function normalizeHexColor(input) {
 
 function dedupe(values) {
   return [...new Set(values.filter(Boolean))];
+}
+
+function clamp(value, min = 0, max = 255) {
+  return Math.max(min, Math.min(max, Math.round(value)));
+}
+
+function hexToRgb(hex) {
+  const normalized = normalizeHexColor(hex);
+  if (!normalized) return null;
+
+  const value = normalized.slice(1);
+  const expanded = value.length === 3
+    ? value.split('').map((char) => char + char).join('')
+    : value;
+
+  const integer = Number.parseInt(expanded, 16);
+
+  return {
+    r: (integer >> 16) & 255,
+    g: (integer >> 8) & 255,
+    b: integer & 255,
+  };
+}
+
+function rgbToHex(rgb) {
+  if (!rgb) return null;
+  return `#${[rgb.r, rgb.g, rgb.b].map((channel) => clamp(channel).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+}
+
+function mixColors(colorA, colorB, weight = 0.5) {
+  const first = hexToRgb(colorA);
+  const second = hexToRgb(colorB);
+  if (!first) return normalizeHexColor(colorB);
+  if (!second) return normalizeHexColor(colorA);
+
+  const ratio = Math.max(0, Math.min(1, weight));
+  return rgbToHex({
+    r: first.r + (second.r - first.r) * ratio,
+    g: first.g + (second.g - first.g) * ratio,
+    b: first.b + (second.b - first.b) * ratio,
+  });
+}
+
+function shiftColor(hex, amount) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return normalizeHexColor(hex);
+
+  return rgbToHex({
+    r: rgb.r + amount,
+    g: rgb.g + amount,
+    b: rgb.b + amount,
+  });
+}
+
+function relativeLuminance(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return 0;
+
+  const channels = [rgb.r, rgb.g, rgb.b].map((value) => {
+    const normalized = value / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function sortPalette(colors) {
+  return dedupe(colors.map(normalizeHexColor)).sort((left, right) => relativeLuminance(left) - relativeLuminance(right));
 }
 
 function averageHex(pixel) {
@@ -157,6 +252,14 @@ function getLines(text) {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
+}
+
+function extractHostLine(lines) {
+  return lines.find((line) => /together|families|parents|host/i.test(line)) || '';
+}
+
+function extractInvitationMessage(lines) {
+  return lines.find((line) => /invite|request the pleasure|join us|celebration/i.test(line)) || '';
 }
 
 function inferEventType(text) {
@@ -274,6 +377,8 @@ export async function analyzeInvitationImage(file) {
     card_type: cardType,
     bride_name: names.bride_name,
     groom_name: names.groom_name,
+    host_line: extractHostLine(lines),
+    invitation_message: extractInvitationMessage(lines),
     event_type: eventType,
     date: findFirstMatch(text, DATE_PATTERNS),
     time: findFirstMatch(text, TIME_PATTERNS),
@@ -291,13 +396,81 @@ export async function analyzeInvitationImage(file) {
   };
 }
 
+function inferTemplateIds(theme, cardType) {
+  if (theme.includes('floral')) return TEMPLATE_DIRECTIONS.floral;
+  if (theme.includes('minimal')) return TEMPLATE_DIRECTIONS.minimal;
+  if (theme.includes('luxury')) return TEMPLATE_DIRECTIONS.luxury;
+  if (theme.includes('traditional') || cardType === 'nikah') return TEMPLATE_DIRECTIONS.traditional;
+  return TEMPLATE_DIRECTIONS.modern;
+}
+
+function inferFontFamily(fontStyle, templateId) {
+  const style = normalizeString(fontStyle).toLowerCase();
+
+  if (style.includes('script')) {
+    return 'Georgia, Cambria, "Times New Roman", serif';
+  }
+
+  if (style.includes('modern') || style.includes('minimal') || templateId === 'modern') {
+    return '"Segoe UI", "Helvetica Neue", Arial, sans-serif';
+  }
+
+  return '"Palatino Linotype", "Book Antiqua", Georgia, serif';
+}
+
+function buildThemeFromPalette(templateId, visualStyle = {}) {
+  const palette = sortPalette(visualStyle.primary_colors || []);
+  const darkest = palette[0] || '#5C4B44';
+  const medium = palette[Math.max(1, Math.floor(palette.length / 2))] || shiftColor(darkest, 32) || '#876C57';
+  const lightest = palette[palette.length - 1] || '#F4EEE7';
+  const floralAccent = palette[palette.length - 2] || mixColors(medium, lightest, 0.5) || '#D7C9E3';
+
+  const templatePrimary = templateId === 'floral'
+    ? floralAccent
+    : templateId === 'modern'
+      ? darkest
+      : medium;
+
+  const secondaryBase = templateId === 'modern'
+    ? mixColors(lightest, '#F3F4F6', 0.35)
+    : mixColors(lightest, '#FFFFFF', 0.4);
+
+  const headingColor = relativeLuminance(templatePrimary) > 0.52
+    ? shiftColor(templatePrimary, -85)
+    : templatePrimary;
+
+  return {
+    id: templateId,
+    primaryColor: normalizeHexColor(templatePrimary) || '#876C57',
+    secondaryColor: normalizeHexColor(secondaryBase) || '#F4EEE7',
+    headingColor: normalizeHexColor(headingColor) || '#6F5642',
+    subheadingColor: normalizeHexColor(mixColors(templatePrimary, darkest, 0.35)) || '#876C57',
+    bodyColor: normalizeHexColor(mixColors(darkest, lightest, 0.18)) || '#705F53',
+    metaColor: normalizeHexColor(mixColors(medium, lightest, 0.28)) || '#9A7D66',
+    font: inferFontFamily(visualStyle.font_style, templateId),
+    backgroundStyle: visualStyle.layout === 'portrait' ? 'soft-gradient' : 'pattern',
+    borderStyle: templateId === 'modern' ? 'soft' : 'rounded',
+    sectionShape: templateId === 'modern' ? 'rounded-2xl' : 'rounded-3xl',
+    enableAnimation: true,
+    enableCountdown: true,
+    enableGallery: true,
+    enableVideo: false,
+    enableMusic: false,
+  };
+}
+
+function buildTemplateOption(templateId, visualStyle) {
+  return {
+    id: templateId,
+    ...TEMPLATE_METADATA[templateId],
+    theme: buildThemeFromPalette(templateId, visualStyle),
+  };
+}
+
 export async function generateInvitationTemplates(input) {
   const theme = normalizeString(input?.visual_style?.theme || '').toLowerCase();
   const cardType = normalizeString(input?.card_type || '').toLowerCase();
+  const visualStyle = input?.visual_style || {};
 
-  if (theme.includes('floral')) return TEMPLATE_LIBRARY.floral;
-  if (theme.includes('minimal')) return TEMPLATE_LIBRARY.minimal;
-  if (theme.includes('luxury')) return TEMPLATE_LIBRARY.luxury;
-  if (theme.includes('traditional') || cardType === 'nikah') return TEMPLATE_LIBRARY.traditional;
-  return TEMPLATE_LIBRARY.modern;
+  return inferTemplateIds(theme, cardType).map((templateId) => buildTemplateOption(templateId, visualStyle));
 }

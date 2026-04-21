@@ -29,10 +29,6 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
-
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -108,6 +104,7 @@ function Navbar() {
                   <Link
                     key={item.to}
                     to={item.to}
+                    onClick={() => setMobileOpen(false)}
                     className={cn(
                       'rounded-2xl px-4 py-3 text-sm font-semibold transition',
                       isActive(item.to) ? 'bg-[#2f2925] text-white' : 'text-[#5f5348] hover:bg-[#faf5ef]'
@@ -118,6 +115,7 @@ function Navbar() {
                 ))}
                 <Link
                   to="/builder"
+                  onClick={() => setMobileOpen(false)}
                   className="mt-2 rounded-2xl bg-[linear-gradient(135deg,#2f2925_0%,#4b3a2d_100%)] px-4 py-3 text-center text-sm font-semibold text-white"
                 >
                   Start Building

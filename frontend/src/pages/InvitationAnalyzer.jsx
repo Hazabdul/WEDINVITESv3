@@ -2,11 +2,16 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { toPng } from 'html-to-image';
 import {
+  CheckCircle2,
+  Copy,
   Download,
+  ExternalLink,
   ImagePlus,
   LayoutTemplate,
   LoaderCircle,
+  Monitor,
   Palette,
+  Smartphone,
   Sparkles,
   Type,
   WandSparkles,
@@ -14,6 +19,7 @@ import {
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input, Textarea } from '../components/ui/FormElements';
+import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 import apiClient from '../utils/api';
 import { cn } from '../utils/cn';
 
@@ -21,6 +27,8 @@ const EMPTY_ANALYSIS = {
   card_type: '',
   bride_name: '',
   groom_name: '',
+  host_line: '',
+  invitation_message: '',
   event_type: '',
   date: '',
   time: '',
@@ -37,10 +45,30 @@ const EMPTY_ANALYSIS = {
   },
 };
 
+const DEFAULT_THEME = {
+  id: 'ceremony',
+  primaryColor: '#876c57',
+  secondaryColor: '#efe2d3',
+  headingColor: '#6f5642',
+  subheadingColor: '#876c57',
+  bodyColor: '#705f53',
+  metaColor: '#9a7d66',
+  font: '"Palatino Linotype", "Book Antiqua", Georgia, serif',
+  backgroundStyle: 'soft-gradient',
+  borderStyle: 'rounded',
+  sectionShape: 'rounded-3xl',
+  enableAnimation: true,
+  enableCountdown: true,
+  enableGallery: true,
+  enableVideo: false,
+  enableMusic: false,
+};
+
 const DETAIL_FIELDS = [
+  { key: 'host_line', label: 'Host Line', placeholder: 'Together with their families' },
   { key: 'bride_name', label: 'Bride Name', placeholder: 'Enter bride name' },
   { key: 'groom_name', label: 'Groom Name', placeholder: 'Enter groom name' },
-  { key: 'event_type', label: 'Event Type', placeholder: 'Wedding Reception' },
+  { key: 'event_type', label: 'Event Type', placeholder: 'Wedding Celebration' },
   { key: 'date', label: 'Date', placeholder: 'Saturday, 18 October 2026' },
   { key: 'time', label: 'Time', placeholder: '6:30 PM' },
   { key: 'venue', label: 'Venue', placeholder: 'The Grand Pavilion' },
@@ -48,23 +76,100 @@ const DETAIL_FIELDS = [
   { key: 'rsvp_phone', label: 'RSVP Phone', placeholder: '+966 555 123 456' },
 ];
 
-const FONT_STYLE_CLASS = {
-  script: 'font-serif italic tracking-[0.08em]',
-  serif: 'font-serif tracking-[0.04em]',
-  modern: 'font-sans uppercase tracking-[0.18em]',
-  minimal: 'font-sans uppercase tracking-[0.22em]',
-};
+const SCALE = 0.33;
 
 function normalizeAnalysis(payload = {}) {
   return {
     ...EMPTY_ANALYSIS,
     ...payload,
+    host_line: payload.host_line || 'Together with their families',
+    invitation_message:
+      payload.invitation_message ||
+      `Invite you to celebrate their ${payload.event_type || 'special day'}.`,
     visual_style: {
       ...EMPTY_ANALYSIS.visual_style,
       ...(payload.visual_style || {}),
       primary_colors: Array.isArray(payload.visual_style?.primary_colors) ? payload.visual_style.primary_colors : [],
       design_elements: Array.isArray(payload.visual_style?.design_elements) ? payload.visual_style.design_elements : [],
     },
+  };
+}
+
+function normalizeEventDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toISOString().slice(0, 10);
+}
+
+function toWeddingDate(value) {
+  const normalized = normalizeEventDate(value);
+  if (!normalized) return null;
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function buildInvitationData(details, templateOption) {
+  const eventDate = normalizeEventDate(details.date);
+  const theme = templateOption?.theme ? { ...DEFAULT_THEME, ...templateOption.theme } : DEFAULT_THEME;
+  const rsvpText = details.rsvp_phone ? `RSVP: ${details.rsvp_phone}` : '';
+
+  return {
+    brideName: details.bride_name || '',
+    groomName: details.groom_name || '',
+    weddingDate: toWeddingDate(details.date),
+    package: 'STANDARD',
+    couple: {
+      bride: details.bride_name || 'Bride',
+      groom: details.groom_name || 'Groom',
+      title: details.host_line || 'Together with their families',
+    },
+    event: {
+      date: eventDate,
+      time: details.time || '',
+      venue: details.venue || '',
+      address: details.address || '',
+      mapLink: '',
+    },
+    events: [
+      {
+        id: 'primary-event',
+        name: details.event_type || 'Wedding Ceremony',
+        date: eventDate,
+        time: details.time || '',
+        venue: details.venue || '',
+        address: details.address || '',
+        notes: details.notes || '',
+      },
+    ],
+    family: {
+      brideParents: '',
+      groomParents: '',
+    },
+    content: {
+      welcomeHeading: details.event_type || 'Wedding Celebration',
+      introMessage: details.invitation_message || '',
+      invitationText: details.invitation_message || '',
+      quote: '',
+      familyMessage: details.host_line || '',
+      specialNotes: details.notes || '',
+      dressCode: '',
+      rsvpText,
+      contact1: details.rsvp_phone || '',
+      contact2: '',
+    },
+    media: {
+      coverImage: '',
+      backgroundImage: '',
+      brideImage: '',
+      groomImage: '',
+      coupleImage: '',
+      gallery: [],
+      video: '',
+      music: '',
+    },
+    theme,
+    positions: {},
   };
 }
 
@@ -77,7 +182,9 @@ function ColorSwatch({ color }) {
   );
 }
 
-function TemplateOption({ src, isSelected, onSelect, index }) {
+function TemplateOption({ option, details, isSelected, onSelect }) {
+  const previewData = buildInvitationData(details, option);
+
   return (
     <button
       type="button"
@@ -90,32 +197,36 @@ function TemplateOption({ src, isSelected, onSelect, index }) {
       )}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f1ea]">
-        <img src={src} alt={`Generated invitation template ${index + 1}`} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
-      </div>
-      <div className="flex items-center justify-between px-4 py-3">
-        <div>
-          <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#2f2925]">Template {index + 1}</div>
-          <div className="mt-1 text-xs text-slate-500">{isSelected ? 'Selected for editing' : 'Click to preview'}</div>
+        <div
+          className="absolute inset-0 origin-top-left"
+          style={{
+            transform: `scale(${SCALE})`,
+            width: `${100 / SCALE}%`,
+          }}
+        >
+          <TemplateRenderer type={option.id} data={previewData} isPreview previewMode="mobile" />
         </div>
-        <div className={cn('h-3 w-3 rounded-full border', isSelected ? 'border-[#2f2925] bg-[#2f2925]' : 'border-slate-300 bg-white')} />
+      </div>
+
+      <div className="space-y-3 px-4 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#2f2925]">{option.name}</div>
+            <div className="mt-1 text-xs leading-5 text-slate-500">{option.description}</div>
+          </div>
+          <div className={cn('mt-1 h-3 w-3 shrink-0 rounded-full border', isSelected ? 'border-[#2f2925] bg-[#2f2925]' : 'border-slate-300 bg-white')} />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {[option.theme?.primaryColor, option.theme?.secondaryColor, option.theme?.headingColor]
+            .filter(Boolean)
+            .slice(0, 3)
+            .map((color) => (
+              <span key={`${option.id}-${color}`} className="h-5 w-5 rounded-full border border-black/5" style={{ backgroundColor: color }} />
+            ))}
+        </div>
       </div>
     </button>
-  );
-}
-
-function EditableOverlayField({ label, value, onChange, className, multiline = false }) {
-  const sharedClasses =
-    'w-full rounded-2xl border border-white/65 bg-white/72 px-3 py-2 text-center text-sm font-medium text-[#2f2925] shadow-[0_14px_30px_-22px_rgba(47,41,37,0.35)] backdrop-blur-md outline-none transition focus:border-[#b8926d]';
-
-  return (
-    <label className={cn('absolute', className)}>
-      <span className="sr-only">{label}</span>
-      {multiline ? (
-        <textarea value={value} onChange={onChange} rows={2} className={cn(sharedClasses, 'resize-none')} />
-      ) : (
-        <input value={value} onChange={onChange} className={sharedClasses} />
-      )}
-    </label>
   );
 }
 
@@ -124,11 +235,15 @@ export function InvitationAnalyzer() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFilePreview, setSelectedFilePreview] = useState('');
   const [analysis, setAnalysis] = useState(EMPTY_ANALYSIS);
-  const [details, setDetails] = useState(EMPTY_ANALYSIS);
+  const [details, setDetails] = useState(normalizeAnalysis());
   const [templates, setTemplates] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [status, setStatus] = useState({ loading: false, message: '' });
   const [isExporting, setIsExporting] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [previewMode, setPreviewMode] = useState('mobile');
+  const [publishedInvitation, setPublishedInvitation] = useState(null);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -144,24 +259,25 @@ export function InvitationAnalyzer() {
   }, [selectedFile]);
 
   useEffect(() => {
-    if (templates.length === 0) {
-      setSelectedTemplate('');
+    if (!templates.length) {
+      setSelectedTemplateId('');
       return;
     }
 
-    if (!templates.includes(selectedTemplate)) {
-      setSelectedTemplate(templates[0]);
+    if (!templates.some((template) => template.id === selectedTemplateId)) {
+      setSelectedTemplateId(templates[0].id);
     }
-  }, [templates, selectedTemplate]);
+  }, [templates, selectedTemplateId]);
 
   const styleSummary = useMemo(() => normalizeAnalysis(analysis).visual_style, [analysis]);
-  const previewFontClass = useMemo(() => {
-    const value = (styleSummary.font_style || '').toLowerCase();
-    if (value.includes('script')) return FONT_STYLE_CLASS.script;
-    if (value.includes('modern')) return FONT_STYLE_CLASS.modern;
-    if (value.includes('minimal')) return FONT_STYLE_CLASS.minimal;
-    return FONT_STYLE_CLASS.serif;
-  }, [styleSummary.font_style]);
+  const selectedTemplate = useMemo(
+    () => templates.find((template) => template.id === selectedTemplateId) || templates[0] || null,
+    [selectedTemplateId, templates]
+  );
+  const invitationPreviewData = useMemo(
+    () => buildInvitationData(details, selectedTemplate),
+    [details, selectedTemplate]
+  );
 
   const updateDetailField = (key, value) => {
     setDetails((current) => ({ ...current, [key]: value }));
@@ -172,8 +288,9 @@ export function InvitationAnalyzer() {
     setSelectedFile(file || null);
     setError('');
     setAnalysis(EMPTY_ANALYSIS);
-    setDetails(EMPTY_ANALYSIS);
+    setDetails(normalizeAnalysis());
     setTemplates([]);
+    setPublishedInvitation(null);
   };
 
   const handleAnalyze = async () => {
@@ -190,6 +307,7 @@ export function InvitationAnalyzer() {
       setAnalysis(response);
       setDetails(response);
       setTemplates([]);
+      setPublishedInvitation(null);
     } catch (requestError) {
       setError(requestError.message || 'Invitation analysis failed.');
     } finally {
@@ -198,8 +316,13 @@ export function InvitationAnalyzer() {
   };
 
   const handleGenerateTemplates = async () => {
+    if (!analysis.card_type && !styleSummary.theme) {
+      setError('Analyze the invitation first so the generator has a style profile to follow.');
+      return;
+    }
+
     setError('');
-    setStatus({ loading: true, message: 'Generating editable invitation concepts from the extracted style profile.' });
+    setStatus({ loading: true, message: 'Generating live invitation directions from the extracted style profile.' });
 
     try {
       const response = await apiClient.generateInvitationTemplates({
@@ -209,6 +332,7 @@ export function InvitationAnalyzer() {
       });
 
       setTemplates(Array.isArray(response.templates) ? response.templates.slice(0, 3) : []);
+      setPublishedInvitation(null);
     } catch (requestError) {
       setError(requestError.message || 'Template generation failed.');
     } finally {
@@ -217,7 +341,7 @@ export function InvitationAnalyzer() {
   };
 
   const exportPreview = async (format) => {
-    if (!previewCanvasRef.current) return;
+    if (!previewCanvasRef.current || !selectedTemplate) return;
 
     setIsExporting(true);
     setError('');
@@ -253,6 +377,41 @@ export function InvitationAnalyzer() {
     }
   };
 
+  const handlePublish = async () => {
+    if (!selectedTemplate) {
+      setError('Generate and select a template before publishing.');
+      return;
+    }
+
+    setError('');
+    setIsPublishing(true);
+
+    try {
+      const invitationId = publishedInvitation?.id || (await apiClient.createInvitation({}))._id;
+      const payload = buildInvitationData(details, selectedTemplate);
+
+      await apiClient.updateInvitation(invitationId, payload);
+      const published = await apiClient.publishInvitation(invitationId);
+
+      setPublishedInvitation({
+        id: invitationId,
+        slug: published.slug,
+        shareUrl: `${window.location.origin}/invitation/${published.slug}`,
+      });
+    } catch (requestError) {
+      setError(requestError.message || 'Publishing failed.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!publishedInvitation?.shareUrl) return;
+    await navigator.clipboard.writeText(publishedInvitation.shareUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  };
+
   return (
     <div className="bg-[linear-gradient(180deg,#fffaf4_0%,#f8f1e8_100%)]">
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
@@ -264,10 +423,10 @@ export function InvitationAnalyzer() {
                   Invitation Analyzer & Generator
                 </div>
                 <h1 className="mt-5 text-4xl leading-tight text-[#2f2925] sm:text-5xl">
-                  Turn any invite into an editable design workflow.
+                  Turn a static invite into a real editable invitation link.
                 </h1>
                 <p className="mt-4 max-w-md text-sm leading-7 text-[#6d6257]">
-                  Upload an invitation image, extract the event details and design language, then generate matching templates you can edit and export.
+                  Analyze the uploaded card, generate live invitation variations that follow its palette and tone, then publish the selected version as a shareable link.
                 </p>
               </div>
 
@@ -307,7 +466,7 @@ export function InvitationAnalyzer() {
               <Card
                 icon={status.loading ? LoaderCircle : WandSparkles}
                 title="2. Processing Status"
-                subtitle="The page shows a loader while the invitation is being processed."
+                subtitle="The page keeps the workflow responsive while the card is analyzed or generated."
                 className="border-[#eee1d3] bg-white"
               >
                 {status.loading ? (
@@ -320,7 +479,7 @@ export function InvitationAnalyzer() {
                   </div>
                 ) : (
                   <div className="rounded-[24px] border border-dashed border-[#e8d9c8] bg-[#fffdfa] p-4 text-sm text-[#6d6257]">
-                    Upload an invite, analyze it, then generate matching templates from the extracted style profile.
+                    Analyze the original card first, then generate live invitation directions that keep the extracted details and style profile connected.
                   </div>
                 )}
 
@@ -333,7 +492,7 @@ export function InvitationAnalyzer() {
 
               <Card
                 icon={Palette}
-                title="4. Style Analysis"
+                title="3. Style Analysis"
                 subtitle="Auto-detected design traits are summarized here."
                 className="border-[#eee1d3] bg-white"
               >
@@ -386,8 +545,8 @@ export function InvitationAnalyzer() {
 
             <div className="space-y-6">
               <Card
-                title="3. Extracted Details"
-                subtitle="The form is auto-filled from the analysis response, but every field remains editable."
+                title="4. Editable Details"
+                subtitle="The extracted fields stay editable, and these values are what get published into the final invitation link."
                 className="border-[#eee1d3] bg-white"
               >
                 <div className="grid gap-4 md:grid-cols-2">
@@ -401,10 +560,18 @@ export function InvitationAnalyzer() {
                     />
                   ))}
                   <Textarea
-                    label="Notes"
+                    label="Invitation Message"
+                    value={details.invitation_message || ''}
+                    onChange={(event) => updateDetailField('invitation_message', event.target.value)}
+                    placeholder="Invite you to join their wedding celebration on..."
+                    rows={4}
+                    className="md:col-span-2"
+                  />
+                  <Textarea
+                    label="Special Notes"
                     value={details.notes || ''}
                     onChange={(event) => updateDetailField('notes', event.target.value)}
-                    placeholder="Add extra notes or corrections"
+                    placeholder="Add dress code, RSVP deadline, or any corrections"
                     rows={4}
                     className="md:col-span-2"
                   />
@@ -413,7 +580,7 @@ export function InvitationAnalyzer() {
 
               <Card
                 title="5. Generate Similar Template"
-                subtitle="Use the extracted style data to create 2-3 invitation directions, then select one."
+                subtitle="These are real invitation directions using the extracted palette and structure, not static image placeholders."
                 className="border-[#eee1d3] bg-white"
               >
                 <div className="flex flex-col gap-4">
@@ -429,18 +596,18 @@ export function InvitationAnalyzer() {
 
                   <div className="grid gap-4 md:grid-cols-3">
                     {templates.length > 0 ? (
-                      templates.map((template, index) => (
+                      templates.map((template) => (
                         <TemplateOption
-                          key={`${template.slice(0, 48)}-${index}`}
-                          src={template}
-                          index={index}
-                          isSelected={selectedTemplate === template}
-                          onSelect={() => setSelectedTemplate(template)}
+                          key={template.id}
+                          option={template}
+                          details={details}
+                          isSelected={selectedTemplate?.id === template.id}
+                          onSelect={() => setSelectedTemplateId(template.id)}
                         />
                       ))
                     ) : (
                       <div className="md:col-span-3 rounded-[28px] border border-dashed border-[#e8d9c8] bg-[#fffdfa] px-6 py-10 text-center text-sm text-[#6d6257]">
-                        Generate templates after analysis to preview options here.
+                        Generate templates after analysis to preview live invitation options here.
                       </div>
                     )}
                   </div>
@@ -448,97 +615,59 @@ export function InvitationAnalyzer() {
               </Card>
 
               <Card
-                title="6. Editable Preview"
-                subtitle="Select a template, then edit the overlaid fields directly on top of the design."
+                title="6. Live Preview"
+                subtitle="The selected direction stays synchronized with the edited fields, export actions, and published link."
                 className="border-[#eee1d3] bg-white"
               >
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
                   <div className="overflow-hidden rounded-[32px] border border-[#eadfd2] bg-[#f5ece2] p-3">
-                    <div
-                      ref={previewCanvasRef}
-                      className="relative mx-auto aspect-[3/4] w-full max-w-[540px] overflow-hidden rounded-[28px] bg-[#f3e9dd]"
-                    >
+                    <div className="mb-3 flex justify-end">
+                      <div className="inline-flex rounded-full border border-[#e2d7cb] bg-white p-1.5 shadow-sm">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewMode('desktop')}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition',
+                            previewMode === 'desktop' ? 'bg-[#2f2925] text-white' : 'text-[#73675f] hover:bg-[#faf6f1]'
+                          )}
+                        >
+                          <Monitor className="h-4 w-4" /> Desktop
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewMode('mobile')}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition',
+                            previewMode === 'mobile' ? 'bg-[#2f2925] text-white' : 'text-[#73675f] hover:bg-[#faf6f1]'
+                          )}
+                        >
+                          <Smartphone className="h-4 w-4" /> Mobile
+                        </button>
+                      </div>
+                    </div>
+
+                    <div ref={previewCanvasRef} className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_26px_60px_-32px_rgba(47,41,37,0.35)]">
                       {selectedTemplate ? (
-                        <img src={selectedTemplate} alt="Selected invitation template" className="absolute inset-0 h-full w-full object-cover" />
+                        <TemplateRenderer
+                          type={selectedTemplate.id}
+                          data={invitationPreviewData}
+                          isPreview
+                          previewMode={previewMode}
+                          className="w-full"
+                        />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center px-8 text-center text-sm text-[#8b7a68]">
-                          Select a generated template to start editing the preview.
+                        <div className="flex min-h-[460px] items-center justify-center px-8 text-center text-sm text-[#8b7a68]">
+                          Select a generated template to preview the live invitation.
                         </div>
                       )}
-
-                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.06)_100%)]" />
-
-                      <div className={cn('absolute inset-0', previewFontClass)}>
-                        <EditableOverlayField
-                          label="Bride Name"
-                          value={details.bride_name || ''}
-                          onChange={(event) => updateDetailField('bride_name', event.target.value)}
-                          className="left-[14%] top-[14%] w-[72%]"
-                        />
-                        <EditableOverlayField
-                          label="Groom Name"
-                          value={details.groom_name || ''}
-                          onChange={(event) => updateDetailField('groom_name', event.target.value)}
-                          className="left-[14%] top-[24%] w-[72%]"
-                        />
-                        <EditableOverlayField
-                          label="Event Type"
-                          value={details.event_type || ''}
-                          onChange={(event) => updateDetailField('event_type', event.target.value)}
-                          className="left-[18%] top-[37%] w-[64%]"
-                        />
-                        <EditableOverlayField
-                          label="Date"
-                          value={details.date || ''}
-                          onChange={(event) => updateDetailField('date', event.target.value)}
-                          className="left-[10%] top-[53%] w-[36%]"
-                        />
-                        <EditableOverlayField
-                          label="Time"
-                          value={details.time || ''}
-                          onChange={(event) => updateDetailField('time', event.target.value)}
-                          className="right-[10%] top-[53%] w-[28%]"
-                        />
-                        <EditableOverlayField
-                          label="Venue"
-                          value={details.venue || ''}
-                          onChange={(event) => updateDetailField('venue', event.target.value)}
-                          className="left-[12%] top-[66%] w-[76%]"
-                        />
-                        <EditableOverlayField
-                          label="Address"
-                          value={details.address || ''}
-                          onChange={(event) => updateDetailField('address', event.target.value)}
-                          className="left-[12%] top-[75%] w-[76%]"
-                        />
-                        <EditableOverlayField
-                          label="RSVP Phone"
-                          value={details.rsvp_phone || ''}
-                          onChange={(event) => updateDetailField('rsvp_phone', event.target.value)}
-                          className="left-[12%] top-[85%] w-[34%]"
-                        />
-                        <EditableOverlayField
-                          label="Notes"
-                          value={details.notes || ''}
-                          onChange={(event) => updateDetailField('notes', event.target.value)}
-                          className="right-[12%] top-[83%] w-[38%]"
-                          multiline
-                        />
-                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="rounded-[28px] border border-[#eadfd2] bg-[#fffcf8] p-5">
-                      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#9a7757]">Preview Binding</div>
-                      <p className="mt-3 text-sm leading-6 text-[#6d6257]">
-                        The overlay fields are live. Changes in the form and preview stay synchronized so the export reflects the current copy.
-                      </p>
-                    </div>
-
-                    <div className="rounded-[28px] border border-[#eadfd2] bg-[#fffcf8] p-5">
-                      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#9a7757]">Current Style</div>
+                      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#9a7757]">Current Direction</div>
                       <div className="mt-3 space-y-3 text-sm text-[#6d6257]">
+                        <div><span className="font-semibold text-[#2f2925]">Template:</span> {selectedTemplate?.name || 'N/A'}</div>
                         <div><span className="font-semibold text-[#2f2925]">Theme:</span> {styleSummary.theme || 'N/A'}</div>
                         <div><span className="font-semibold text-[#2f2925]">Layout:</span> {styleSummary.layout || 'N/A'}</div>
                         <div><span className="font-semibold text-[#2f2925]">Font:</span> {styleSummary.font_style || 'N/A'}</div>
@@ -546,7 +675,7 @@ export function InvitationAnalyzer() {
                     </div>
 
                     <div className="rounded-[28px] border border-[#eadfd2] bg-[#fffcf8] p-5">
-                      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#9a7757]">7. Export Option</div>
+                      <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#9a7757]">7. Export & Publish</div>
                       <div className="mt-4 grid gap-3">
                         <Button onClick={() => exportPreview('image')} disabled={!selectedTemplate || isExporting} className="w-full bg-[linear-gradient(135deg,#2f2925_0%,#5a4636_100%)] hover:bg-[linear-gradient(135deg,#2f2925_0%,#5a4636_100%)]">
                           {isExporting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -556,8 +685,40 @@ export function InvitationAnalyzer() {
                           {isExporting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                           Download as PDF
                         </Button>
+                        <Button onClick={handlePublish} disabled={!selectedTemplate || isPublishing} className="w-full bg-[linear-gradient(135deg,#6b8f6b_0%,#4e6d53_100%)] hover:bg-[linear-gradient(135deg,#6b8f6b_0%,#4e6d53_100%)]">
+                          {isPublishing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                          {publishedInvitation ? 'Update Live Link' : 'Publish Live Link'}
+                        </Button>
                       </div>
                     </div>
+
+                    {publishedInvitation ? (
+                      <div className="space-y-4 rounded-[24px] border border-[#d7e5d7] bg-[#f7fbf6] p-5">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#4f8a59]" />
+                          <div>
+                            <h4 className="text-sm font-semibold text-[#35563b]">Live invitation ready</h4>
+                            <p className="mt-1 text-sm text-[#58715c]">
+                              This link uses the generated template and the current edited fields. Publish again after edits to update the same link.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="rounded-[18px] border border-[#d7e5d7] bg-white p-3">
+                          <div className="text-xs font-medium uppercase tracking-[0.24em] text-[#7a927d]">Share URL</div>
+                          <div className="mt-2 break-all text-sm text-[#35563b]">{publishedInvitation.shareUrl}</div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          <Button onClick={handleCopyLink} variant="outline" className="border-[#cfe1cf] bg-white text-[#35563b] hover:bg-[#f8fcf8]">
+                            <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy link'}
+                          </Button>
+                          <Button onClick={() => window.open(publishedInvitation.shareUrl, '_blank')} className="bg-[#35563b] text-white hover:bg-[#2e4b33]">
+                            <ExternalLink className="h-4 w-4" /> Open invitation
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </Card>
