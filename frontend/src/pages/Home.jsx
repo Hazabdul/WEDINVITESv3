@@ -3,8 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Heart, Share2, CalendarDays, MapPin } from 'lucide-react';
 import apiClient from '../utils/api';
 
+function resolveMediaSource(item) {
+  if (!item) return '';
+  if (typeof item === 'string') return item;
+  if (typeof item === 'object') {
+    return item.src || item.url || item.image || item.path || item.poster || '';
+  }
+  return '';
+}
+
 function GalleryCard({ invitation, onOpen }) {
-  const coverImage = invitation.media?.coverImage || invitation.media?.coupleImage || invitation.media?.backgroundImage;
+  const coverImage = [
+    invitation.media?.coverImage,
+    invitation.media?.coupleImage,
+    invitation.media?.backgroundImage,
+    ...(Array.isArray(invitation.media?.gallery) ? invitation.media.gallery : []),
+  ]
+    .map(resolveMediaSource)
+    .find(Boolean);
   const brideName = invitation.brideName || invitation.couple?.bride || 'Bride';
   const groomName = invitation.groomName || invitation.couple?.groom || 'Groom';
   const title = invitation.couple?.title || invitation.content?.welcomeHeading || 'Wedding Invitation';
