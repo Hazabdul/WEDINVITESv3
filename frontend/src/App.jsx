@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Globe, Mail, Menu, X } from 'lucide-react';
 import { Home } from './pages/Home';
@@ -9,9 +9,12 @@ import { InvitationView } from './pages/InvitationView';
 import { InvitationProvider } from './hooks/useInvitationState';
 import { cn } from './utils/cn';
 
+const InvitationAnalyzer = lazy(() => import('./pages/InvitationAnalyzer'));
+
 const NAV_ITEMS = [
   { label: 'Home', to: '/' },
   { label: 'Templates', to: '/templates' },
+  { label: 'Analyzer', to: '/invitation-analyzer' },
   { label: 'Pricing', to: '/pricing' },
 ];
 
@@ -133,15 +136,26 @@ function AppShell() {
     <div className="min-h-screen bg-silk font-sans antialiased text-slate-900 flex flex-col">
       <Navbar />
       <main className="flex-grow pt-[104px] sm:pt-[112px] md:pt-[120px]">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/builder" element={<Builder />} />
-          <Route path="/templates" element={<Templates />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/invitation/:slug" element={<InvitationView />} />
-          <Route path="/invite/:slug" element={<InvitationView />} />
-          <Route path="/v/:slug" element={<InvitationView />} />
-        </Routes>
+        <Suspense
+          fallback={
+            <div className="flex min-h-[50vh] items-center justify-center px-4">
+              <div className="rounded-full border border-[#eadfd2] bg-white px-5 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-[#6e6258] shadow-[0_18px_50px_-28px_rgba(61,46,33,0.3)]">
+                Loading page
+              </div>
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/builder" element={<Builder />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/invitation-analyzer" element={<InvitationAnalyzer />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/invitation/:slug" element={<InvitationView />} />
+            <Route path="/invite/:slug" element={<InvitationView />} />
+            <Route path="/v/:slug" element={<InvitationView />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <footer className="py-16 bg-slate-950 border-t border-rose-900/30 text-center mt-auto relative overflow-hidden">

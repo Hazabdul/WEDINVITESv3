@@ -182,6 +182,32 @@ class APIClient {
     return payload;
   }
 
+  async analyzeInvitation(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch(`${this.baseURL}/api/analyze-invitation`, {
+      method: 'POST',
+      headers: this.token ? { 'Authorization': `Bearer ${this.token}` } : undefined,
+      body: formData,
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.message || 'Invitation analysis failed.');
+    }
+
+    return payload;
+  }
+
+  async generateInvitationTemplates(data) {
+    return this.request('/api/generate-template', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Public endpoints
   async getPublicInvitation(slug) {
     return this.request(`/api/public/invitations/${slug}`, {
