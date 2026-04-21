@@ -54,7 +54,7 @@ function Navbar() {
                     <span className="font-serif text-lg italic">W</span>
                   </div>
                   <div className="min-w-0">
-                    <div className="truncate font-serif text-xl tracking-[0.14em] text-[#2f2925] uppercase">Wedding Invites</div>
+                    <div className="truncate font-serif text-xl tracking-[0.14em] text-[#2f2925] uppercase">Wedding Invites v4</div>
                     <div className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#a58a72]">Elegant digital invitations</div>
                   </div>
                 </div>
