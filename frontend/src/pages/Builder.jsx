@@ -26,6 +26,7 @@ import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 import { cn } from '../utils/cn';
 import { templatesList } from '../data/mockData';
 import apiClient from '../utils/api';
+import { normalizeMediaUrl } from '../utils/media';
 
 const STEPS = [
   {
@@ -231,7 +232,7 @@ export function Builder() {
   const handleGalleryUrlsChange = (value) => {
     const urls = value
       .split('\n')
-      .map((item) => item.trim())
+      .map((item) => normalizeMediaUrl(item.trim()))
       .filter(Boolean);
     updateSection('media', 'gallery', urls);
   };
@@ -279,7 +280,17 @@ export function Builder() {
         family: data.family || {},
         content: data.content || {},
         theme: data.theme || { id: 'classic' },
-        media: data.media || { gallery: [] },
+        media: {
+          ...(data.media || { gallery: [] }),
+          coverImage: normalizeMediaUrl(data.media?.coverImage || ''),
+          backgroundImage: normalizeMediaUrl(data.media?.backgroundImage || ''),
+          brideImage: normalizeMediaUrl(data.media?.brideImage || ''),
+          groomImage: normalizeMediaUrl(data.media?.groomImage || ''),
+          coupleImage: normalizeMediaUrl(data.media?.coupleImage || ''),
+          gallery: (data.media?.gallery || []).map((item) => normalizeMediaUrl(item)).filter(Boolean),
+          video: normalizeMediaUrl(data.media?.video || ''),
+          music: normalizeMediaUrl(data.media?.music || ''),
+        },
         positions: data.positions || {},
         events: eventsPayload,
       };

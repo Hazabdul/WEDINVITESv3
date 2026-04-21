@@ -1,5 +1,6 @@
 export function normalizeMediaUrl(src = '') {
   if (!src || typeof src !== 'string') return '';
+  if (src.startsWith('blob:')) return '';
 
   try {
     const url = new URL(src);

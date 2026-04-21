@@ -43,7 +43,8 @@ export const handleUpload = (req, res) => {
   }
 
   const forwardedProto = req.get('x-forwarded-proto');
-  const protocol = forwardedProto ? forwardedProto.split(',')[0].trim() : req.protocol;
+  const requestedProtocol = forwardedProto ? forwardedProto.split(',')[0].trim() : req.protocol;
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : requestedProtocol;
   const fileUrl = `${protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   res.status(201).json({
     url: fileUrl,
