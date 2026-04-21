@@ -2,15 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight, Heart, Share2, CalendarDays, MapPin } from 'lucide-react';
 import apiClient from '../utils/api';
-
-function resolveMediaSource(item) {
-  if (!item) return '';
-  if (typeof item === 'string') return item;
-  if (typeof item === 'object') {
-    return item.src || item.url || item.image || item.path || item.poster || '';
-  }
-  return '';
-}
+import { resolveMediaSource } from '../utils/media';
 
 function GalleryCard({ invitation, onOpen }) {
   const coverImage = [

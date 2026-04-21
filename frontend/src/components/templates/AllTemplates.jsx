@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SharedSections } from './SharedSections';
 import { DesignElement } from '../preview/DesignElement';
+import { resolveMediaSource } from '../../utils/media';
 import { cn } from '../../utils/cn';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -83,15 +84,6 @@ function initialsForCouple(couple = {}) {
 function normalizeList(value) {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
-}
-
-function resolveMediaSource(item) {
-  if (!item) return '';
-  if (typeof item === 'string') return item;
-  if (typeof item === 'object') {
-    return item.src || item.url || item.image || item.path || item.poster || '';
-  }
-  return '';
 }
 
 function isVideoUrl(src = '') {
