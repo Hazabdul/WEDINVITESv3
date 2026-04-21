@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { uploadsDir } from './controllers/uploadController.js';
 
 // Fix for __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -51,8 +52,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve static uploads from the same directory used by Multer storage
+app.use('/uploads', express.static(uploadsDir));
 
 // Routes
 const [

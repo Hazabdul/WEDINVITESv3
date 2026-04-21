@@ -1,15 +1,19 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+export const uploadsDir = path.resolve(__dirname, '../uploads');
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = 'uploads';
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
     }
-    cb(null, dir);
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
