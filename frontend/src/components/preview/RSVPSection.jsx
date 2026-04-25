@@ -58,33 +58,35 @@ export function RSVPSection({ attendanceResponse: externalResponse, onResponse, 
             )}
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              onClick={handleAccept}
-              className={cn(
-                "group relative min-w-[200px] overflow-hidden rounded-full px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-500",
-                response === 'accepted'
-                  ? "scale-105 bg-white text-[#1a3529] shadow-2xl"
-                  : "bg-[#d4af37] text-[#1a3529] hover:scale-[1.03] active:scale-[0.98]"
-              )}
-            >
-              <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
-              <span className="relative flex items-center justify-center gap-2">
-                <PartyPopper className="h-3.5 w-3.5 opacity-70" />
-                Yes, I'll be there
-              </span>
-            </button>
+          {!response && (
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <button
+                onClick={handleAccept}
+                className={cn(
+                  "group relative min-w-[200px] overflow-hidden rounded-full px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-500",
+                  response === 'accepted'
+                    ? "scale-105 bg-white text-[#1a3529] shadow-2xl"
+                    : "bg-[#d4af37] text-[#1a3529] hover:scale-[1.03] active:scale-[0.98]"
+                )}
+              >
+                <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+                <span className="relative flex items-center justify-center gap-2">
+                  <PartyPopper className="h-3.5 w-3.5 opacity-70" />
+                  Yes, I'll be there
+                </span>
+              </button>
 
-            <button
-              onClick={handleDecline}
-              className={cn(
-                "min-w-[200px] rounded-full border border-white/10 bg-white/90 px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] text-[#1a3529] transition-all duration-500 hover:bg-white active:scale-[0.98]",
-                response === 'declined' && "bg-[#1a3529] text-white opacity-100 border-none"
-              )}
-            >
-              Sorry, I can't make it
-            </button>
-          </div>
+              <button
+                onClick={handleDecline}
+                className={cn(
+                  "min-w-[200px] rounded-full border border-white/10 bg-white/90 px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] text-[#1a3529] transition-all duration-500 hover:bg-white active:scale-[0.98]",
+                  response === 'declined' && "bg-[#1a3529] text-white opacity-100 border-none"
+                )}
+              >
+                Sorry, I can't make it
+              </button>
+            </div>
+          )}
 
           {response === 'accepted' && (
             <p className="mt-8 font-serif text-[17px] italic text-[#f5ede0]/80 animate-in fade-in slide-in-from-top-4 duration-700">

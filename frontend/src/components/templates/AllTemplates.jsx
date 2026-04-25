@@ -461,7 +461,7 @@ export function HighEndImmersiveTemplate({ data }) {
   }, []);
 
   return (
-    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-[#1a3529] font-sans selection:bg-[#c9a87c] selection:text-white" style={{ color: '#f5ede0' }}>
+    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-black selection:bg-[#c9a87c] selection:text-white" style={{ color: '#f5ede0' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
         .forest-vault-template h1, .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: 'Cormorant Garamond', serif; }
@@ -486,13 +486,11 @@ export function HighEndImmersiveTemplate({ data }) {
           ) : mediaPack.heroImage ? (
             <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
           ) : (
-            <div className="h-full w-full bg-[#0a1a13]" />
+            <div className="h-full w-full bg-black" />
           )}
 
-          {/* Fog / Mist Effect Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#1a3529] via-[#1a3529]/40 to-transparent blur-2xl opacity-80" />
-          <div className="absolute inset-x-0 bottom-[-5%] h-1/3 bg-[#f5ede0]/5 blur-3xl" />
-          <div className="absolute inset-0 bg-black/15" />
+          {/* Black Blend Overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black to-transparent" />
         </div>
 
         <div className="relative z-10 w-full transition-all duration-1000 animate-in fade-in slide-in-from-bottom-10">
@@ -502,9 +500,7 @@ export function HighEndImmersiveTemplate({ data }) {
             <span className="font-serif italic text-[#c9a87c]/60">&</span>
             <span className="reveal-up inline-block">{groomName}</span>
           </h1>
-          <DesignElement id="emeraldHeroLocation" label="Hero Location">
-            <p className="mt-4 text-[13px] font-medium uppercase tracking-[5px] opacity-70 underline underline-offset-[12px] decoration-[#c9a87c]/40" style={{ color: '#f5ede0' }}>{eventCity || 'Saudi Arabia'}</p>
-          </DesignElement>
+
           <p className="mt-8 text-[11px] font-light tracking-[3px] opacity-50" style={{ color: '#f5ede0' }}>{eventDate}</p>
         </div>
 
@@ -526,40 +522,47 @@ export function HighEndImmersiveTemplate({ data }) {
               <Leaf className="h-8 w-8 rotate-12 text-[#1a3529]" strokeWidth={1} />
             </div>
             <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]">The Union</p>
-            <p className="mx-auto max-w-[480px] font-serif text-[18px] italic leading-relaxed opacity-80 sm:text-[22px]">
-              {intro || 'In the presence of ancestors and the embrace of nature, we journey into forever.'}
+            <p className="mx-auto max-w-[650px] font-serif text-[24px] italic leading-relaxed opacity-90 sm:text-[38px] lg:text-[42px]">
+              {intro || 'We Invite You to Celebrate Our Wedding'}
             </p>
           </div>
 
-          {/* Cinematic Signature Section - Video Background */}
-          <div className="reveal-up relative mb-16 h-[220px] w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-md sm:h-[320px] sm:rounded-[32px]">
-            {mediaPack.video ? (
-              <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-70">
-                <source src={mediaPack.video} type="video/mp4" />
-              </video>
-            ) : mediaPack.heroImage && (
-              <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-60" />
-            )}
+          {/* Cinematic Signature Section - Enhanced Frame with Standard Height */}
+          <div className="reveal-up relative mb-16 h-[320px] w-full sm:h-[400px]">
+            {/* Outer Decorative Frame Border */}
+            <div className="absolute inset-[-6px] rounded-[30px] border border-[#c9a87c]/20 sm:inset-[-10px] sm:rounded-[38px]" />
+            
+            <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30">
+              {mediaPack.video ? (
+                <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-60">
+                  <source src={mediaPack.video} type="video/mp4" />
+                </video>
+              ) : mediaPack.heroImage && (
+                <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-50" />
+              )}
 
-            {/* Dramatic Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1a3529] via-transparent to-[#1a3529]/40" />
+              {/* Cinematic Grain/Texture Overlay */}
+              <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0]">
-              <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
-                <div className="relative">
-                  <p className="mb-2 text-[8px] font-bold uppercase tracking-[6px] text-[#c9a87c]/80">The Union Of</p>
-                  <h2 className="mb-2 font-serif text-[clamp(24px,7vw,48px)] font-light italic leading-none tracking-tight drop-shadow-xl">
-                    {brideName} <span className="not-italic text-[#c9a87c]">&</span> {groomName}
-                  </h2>
-                  <div className="mx-auto h-px w-20 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
-                </div>
-              </DesignElement>
-              <p className="mt-4 text-[10px] font-medium uppercase tracking-[5px] text-[#c9a87c]">{eventCity}</p>
-            </div>
+              {/* Dramatic Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/60" />
 
-            {/* Decorative Leaf in corner */}
-            <div className="absolute bottom-10 right-10 opacity-30">
-              <Leaf className="h-8 w-8 text-[#c9a87c]" strokeWidth={0.5} />
+              {/* Corner Decorative Accents */}
+              <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 border-[#c9a87c]/40 rounded-tl-lg" />
+              <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 border-[#c9a87c]/40 rounded-br-lg" />
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0]">
+                <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
+                  <div className="relative">
+                    <p className="mb-3 text-[9px] font-bold uppercase tracking-[8px] text-[#c9a87c]/90">The Union Of</p>
+                    <h2 className="mb-2 font-serif text-[clamp(26px,8vw,52px)] font-light italic leading-none tracking-tight drop-shadow-2xl">
+                      {brideName} <span className="not-italic text-[#c9a87c]/60 serif-ampersand px-2">&</span> {groomName}
+                    </h2>
+                    <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#c9a87c]/50 to-transparent" />
+                  </div>
+                </DesignElement>
+              </div>
+
             </div>
           </div>
 

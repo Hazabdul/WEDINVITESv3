@@ -165,7 +165,6 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
       }}
     >
       <SelectedTemplate data={data} isPreview={isPreview} previewMode={previewMode} />
-      <RSVPSection isPreview={isPreview} />
     </div>
   );
 }

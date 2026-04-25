@@ -25,6 +25,7 @@ import { Select, Toggle } from '../components/ui/FormElements';
 import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 import { InvitationCover } from '../components/preview/InvitationCover';
 import { cn } from '../utils/cn';
+import { RSVPSection } from '../components/preview/RSVPSection';
 import { templatesList } from '../data/mockData';
 import apiClient from '../utils/api';
 import { normalizeMediaUrl } from '../utils/media';
@@ -1044,6 +1045,7 @@ export function Builder() {
                             )}
                             <div className={cn(showCover ? "pointer-events-none" : "pointer-events-auto")}>
                               <TemplateRenderer type={data.theme?.id} data={data} previewMode={previewMode} />
+                              <RSVPSection isPreview={true} />
                             </div>
                           </div>
                         </PreviewFrame>

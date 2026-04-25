@@ -136,17 +136,20 @@ export function InvitationView() {
     family: invitation.family || {},
     content: invitation.content || {},
     theme,
+    events: invitation.events || [],
     media: invitation.media || { gallery: [] },
     positions: invitation.positions || {},
   };
 
+  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : theme.id === 'noir' ? 'bg-black' : 'bg-slate-50';
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={cn("min-h-screen transition-colors duration-1000", pageBg)}>
       {!isOpened && (
-        <InvitationCover 
-          bride={brideName} 
-          groom={groomName} 
-          onOpen={() => setIsOpened(true)} 
+        <InvitationCover
+          bride={brideName}
+          groom={groomName}
+          onOpen={() => setIsOpened(true)}
         />
       )}
 
@@ -163,8 +166,8 @@ export function InvitationView() {
           />
         </div>
 
-        <RSVPSection 
-          attendanceResponse={attendanceResponse} 
+        <RSVPSection
+          attendanceResponse={attendanceResponse}
           onResponse={(res) => {
             setAttendanceResponse(res);
             if (res === 'accepted') {
@@ -173,7 +176,7 @@ export function InvitationView() {
             } else {
               setShowCelebrate(false);
             }
-          }} 
+          }}
         />
       </div>
     </div>

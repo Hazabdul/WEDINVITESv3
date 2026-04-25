@@ -20,20 +20,26 @@ export function InvitationCover({ bride, groom, onOpen }) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(201,168,124,0.05)_0%,transparent_70%)]" />
       </div>
 
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+        .invitation-cover-emerald { font-family: 'Montserrat', sans-serif; }
+        .invitation-cover-emerald h1, .invitation-cover-emerald .font-serif { font-family: 'Cormorant Garamond', serif; }
+      `}</style>
+
       {/* Content Area */}
-      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-8 text-center text-[#f5ede0]">
-        <div className="mb-10 text-[11px] font-bold uppercase tracking-[0.6em] text-[#c9a87c]/80">
+      <div className="invitation-cover-emerald relative z-10 flex w-full flex-1 flex-col items-center justify-center px-8 text-center text-[#f5ede0]">
+        <div className="mb-6 text-[10px] font-bold uppercase tracking-[8px] text-[#c9a87c]/90">
           You are invited to the wedding of
         </div>
 
-        <h1 className="flex items-center gap-6 font-serif text-[clamp(2.5rem,8vw,5.5rem)] font-light leading-none tracking-tight">
-          <span className="italic">{bride}</span>
-          <span className="text-[0.6em] text-[#c9a87c] serif-ampersand italic">&</span>
-          <span className="italic">{groom}</span>
+        <h1 className="flex items-center justify-center gap-4 text-[clamp(42px,10vw,86px)] font-light leading-none">
+          <span className="inline-block">{bride}</span>
+          <span className="font-serif italic text-[#c9a87c]/60">&</span>
+          <span className="inline-block">{groom}</span>
         </h1>
- 
-        <div className="mt-10 flex flex-col items-center gap-6">
-          <p className="font-serif text-[18px] italic tracking-wide text-[#c9a87c]/90">
+
+        <div className="mt-8 flex flex-col items-center gap-6">
+          <p className="mt-4 text-[11px] font-light tracking-[3px] opacity-50">
             December 18, 2026
           </p>
         </div>
