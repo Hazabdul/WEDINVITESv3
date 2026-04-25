@@ -1,14 +1,36 @@
 export const templatesList = [
   {
-    id: "ceremony",
-    name: "Ceremony Portrait",
-    description: "Quiet portrait-led storytelling with family details and a ceremonial tone.",
+    id: "mountain",
+    name: "High-End Immersive",
+    description: "An ultra-premium cinematic experience with deep emerald tones, golden accents, and delicate petal animations.",
+    badge: "Exclusive",
+    palette: "from-[#1e3d2f] to-[#1e3d2f]",
+    accent: "from-[#c9a87c] via-[#f5ede0] to-[#c9a87c]",
+    mood: "High-End Immersive",
+    tagline: "Wowed at first glance with vibrant colors, elegant transitions, and a premium editorial feel.",
+    features: ["Floating petals", "Heartbeat animations", "Emerald & Gold theme"],
+  },
+  {
+    id: "noir",
+    name: "Noir Editorial",
+    description: "A bold, high-contrast modern design with dramatic typography and minimalist layouts.",
     badge: "New",
-    palette: "from-stone-100 to-amber-50",
-    accent: "from-[#d9c1ac] via-[#efe3d3] to-[#f8f2eb]",
-    mood: "Ceremonial portrait",
-    tagline: "A softer, invitation-first layout inspired by formal wedding microsites and family introductions.",
-    features: ["Portrait-led hero", "Family introduction", "Ceremony story flow"],
+    palette: "from-black to-black",
+    accent: "from-black via-zinc-900 to-black",
+    mood: "Modern Editorial",
+    tagline: "Bold, brave, and undeniably modern for the trend-setting couple.",
+    features: ["High-contrast typography", "Cinematic reveals", "Minimalist aesthetic"],
+  },
+  {
+    id: "solstice",
+    name: "Solstice Minimal",
+    description: "Soft, organic botanical design with delicate serif typography and natural textures.",
+    badge: "Romantic",
+    palette: "from-[#FDFCFB] to-[#FDFCFB]",
+    accent: "from-[#FDFCFB] via-[#F4EFEA] to-[#FDFCFB]",
+    mood: "Organic Minimalist",
+    tagline: "A breath of fresh air with soft tones and natural, flowing elegance.",
+    features: ["Botanical accents", "Organic shapes", "Soft, clean layout"],
   },
 ];
 
@@ -85,7 +107,7 @@ export const initialInvitationData = {
     music: "https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
   },
   theme: {
-    id: "ceremony",
+    id: "mountain",
     primaryColor: "#876c57",
     secondaryColor: "#efe2d3",
     headingColor: "#6f5642",

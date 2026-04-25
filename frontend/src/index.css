@@ -12,11 +12,11 @@
   }
 
   body {
-    @apply bg-[#fcfaf8] text-[#1a2b5a] font-sans selection:bg-rose-100 selection:text-rose-900;
+    @apply bg-[#fcfaf8] text-[#1a1a1a] font-sans selection:bg-rose-100 selection:text-rose-900;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif tracking-tight text-[#1a2b5a];
+    @apply font-serif tracking-tight text-inherit;
   }
 }
 
@@ -113,4 +113,19 @@
 @keyframes artemisReveal {
   from { opacity: 0; filter: blur(15px); transform: scale(1.05); }
   to { opacity: 1; filter: blur(0px); transform: scale(1); }
+}
+@layer utilities {
+  .custom-scrollbar-preview::-webkit-scrollbar {
+    width: 5px;
+  }
+  .custom-scrollbar-preview::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar-preview::-webkit-scrollbar-thumb {
+    background: #d9cec1;
+    border-radius: 10px;
+  }
+  .custom-scrollbar-preview::-webkit-scrollbar-thumb:hover {
+    background: #bfa48a;
+  }
 }

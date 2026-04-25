@@ -4,6 +4,9 @@ import { CheckCircle2, PartyPopper, AlertCircle } from 'lucide-react';
 import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 import apiClient from '../utils/api';
 import { Button } from '../components/ui/Button';
+import { cn } from '../utils/cn';
+import { InvitationCover } from '../components/preview/InvitationCover';
+import { RSVPSection } from '../components/preview/RSVPSection';
 
 function playCelebrationTone() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -37,6 +40,19 @@ export function InvitationView() {
   const [error, setError] = useState(null);
   const [attendanceResponse, setAttendanceResponse] = useState(null);
   const [showCelebrate, setShowCelebrate] = useState(false);
+  const [isOpened, setIsOpened] = useState(false);
+
+  useEffect(() => {
+    // Lock scroll if cover is active
+    if (!isOpened) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpened]);
 
   useEffect(() => {
     const fetchInvitation = async () => {
@@ -126,75 +142,39 @@ export function InvitationView() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="w-full">
-        <TemplateRenderer
-          type={theme.id || theme.templateId || 'ceremony'}
-          data={templateData}
-          isPreview={false}
-          className="w-full"
+      {!isOpened && (
+        <InvitationCover 
+          bride={brideName} 
+          groom={groomName} 
+          onOpen={() => setIsOpened(true)} 
         />
-      </div>
+      )}
 
-      <div className="mx-auto max-w-4xl px-4 pb-16">
-        <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
-          <h2 className="mb-4 text-2xl font-bold text-slate-900">Will You Attend?</h2>
-          <p className="mb-6 text-slate-600">
-            Let the couple know whether you will be joining their celebration.
-          </p>
-
-          <div className="relative min-h-14">
-            {showCelebrate && (
-              <div className="pointer-events-none absolute inset-x-0 -top-12 flex justify-center">
-                <div className="animate-[popIn_420ms_cubic-bezier(0.22,1,0.36,1)] rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-white shadow-xl">
-                  <span className="inline-flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    RSVP saved. We cannot wait to celebrate with you.
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button
-              className={`px-8 py-3 transition-all duration-300 ${attendanceResponse === 'accepted' ? 'scale-105 bg-emerald-600 shadow-[0_18px_40px_rgba(16,185,129,0.28)] hover:bg-emerald-500' : ''}`}
-              onClick={handleAccept}
-            >
-              <PartyPopper className="h-4 w-4" />
-              Yes, I&apos;ll be there
-            </Button>
-            <Button
-              variant="outline"
-              className={`px-8 py-3 transition-all duration-300 ${attendanceResponse === 'declined' ? 'border-slate-400 bg-slate-50' : ''}`}
-              onClick={handleDecline}
-            >
-              Sorry, I can&apos;t make it
-            </Button>
-          </div>
-
-          {attendanceResponse === 'declined' && (
-            <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm leading-7 text-amber-900 shadow-sm">
-              Sorry to hear that. Please keep us in your prayers.
-            </div>
-          )}
-
-          <style>{`
-            @keyframes popIn {
-              0% {
-                opacity: 0;
-                transform: translateY(14px) scale(0.82);
-              }
-              70% {
-                opacity: 1;
-                transform: translateY(-4px) scale(1.04);
-              }
-              100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-              }
-            }
-          `}</style>
+      <div className={cn(
+        "transition-opacity duration-1000",
+        isOpened ? "opacity-100" : "opacity-0"
+      )}>
+        <div className="mx-auto w-full">
+          <TemplateRenderer
+            type={theme.id || theme.templateId || 'ceremony'}
+            data={templateData}
+            isPreview={false}
+            className="w-full"
+          />
         </div>
+
+        <RSVPSection 
+          attendanceResponse={attendanceResponse} 
+          onResponse={(res) => {
+            setAttendanceResponse(res);
+            if (res === 'accepted') {
+              setShowCelebrate(true);
+              playCelebrationTone();
+            } else {
+              setShowCelebrate(false);
+            }
+          }} 
+        />
       </div>
     </div>
   );

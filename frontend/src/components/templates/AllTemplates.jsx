@@ -1,10 +1,51 @@
 import React, { useEffect, useRef } from 'react';
+import { Sparkles, Heart, Moon, Zap, Leaf, ArrowRight as ArrowRightIcon, Calendar, Clock, MapPin } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SharedSections } from './SharedSections';
 import { DesignElement } from '../preview/DesignElement';
 import { resolveMediaSource } from '../../utils/media';
 import { cn } from '../../utils/cn';
+
+/* ── Cinematic Timer Helper ── */
+function CinematicTimer({ date, dark = true }) {
+  const [timeLeft, setTimeLeft] = React.useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  React.useEffect(() => {
+    const tick = () => {
+      if (!date) return;
+      const diff = new Date(date).getTime() - Date.now();
+      if (diff <= 0) return;
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000)) % 60,
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [date]);
+
+  return (
+    <div className={cn("flex items-center gap-5", dark ? "text-[#f5ede0]" : "text-[#1a3529]")}>
+      {Object.entries(timeLeft).map(([label, value], i) => (
+        <React.Fragment key={label}>
+          <div className="text-center">
+            <div className="font-serif text-3xl font-light tracking-tighter sm:text-4xl">
+              {String(value).padStart(2, '0')}
+            </div>
+            <div className="text-[8px] font-bold uppercase tracking-[4px] opacity-40">
+              {label}
+            </div>
+          </div>
+          {i < 3 && <div className={cn("h-8 w-px", dark ? "bg-white/10" : "bg-[#1a3529]/20")} />}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -35,6 +76,15 @@ function formatShortDate(dateStr) {
   if (isNaN(d.getTime())) return dateStr;
   return `${MONTHS[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}`;
 }
+
+function formatLongDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+
 
 function getDateParts(dateStr) {
   if (!dateStr) return { month: '', day: '', year: '' };
@@ -158,12 +208,22 @@ function buildMediaPackage(media = {}) {
     .map(resolveMediaSource)
     .find(Boolean) || '';
 
+  const video = [
+    media.video,
+    media.videoUrl,
+    media.storyVideo,
+    media.inviteVideo,
+  ]
+    .map(resolveMediaSource)
+    .find(Boolean) || '';
+
   return {
     heroVideo,
     secondaryVideo: secondaryVideo && secondaryVideo !== heroVideo ? secondaryVideo : '',
+    video,
     heroImage,
     poster,
-    gallery: galleryCandidates.slice(0, 6),
+    gallery: galleryCandidates.slice(0, 12),
   };
 }
 
@@ -313,7 +373,304 @@ function EditorialNames({ brideId, groomId, bride, groom, brideColor, groomColor
   );
 }
 
+
+/* ─── Mountain / Forest Vault Immersive ────────────────── */
+export function HighEndImmersiveTemplate({ data }) {
+  const rootRef = useRef(null);
+  const mainContentRef = useRef(null);
+  const { couple = {}, content = {}, event = {}, events = [], family = {}, media = {}, theme = {} } = data;
+
+  const mediaPack = buildMediaPackage(media);
+  const intro = pickIntro(content);
+
+  const brideName = couple.bride || 'Bride Name';
+  const groomName = couple.groom || 'Groom Name';
+  const heroSubtitle = couple.title || 'You are invited to the wedding of';
+  const eventDate = event.date ? formatLongDate(event.date) : 'Month DD, YYYY';
+  const eventTime = event.time || '11:00 AM – 11:30 AM';
+  const eventVenue = event.venue || 'Venue Name';
+  const eventCity = event.address ? event.address.split(',').pop().trim() : 'City, State';
+
+  const goldLeaf = '/premium-leaf-v2.png';
+  const greenLeaf = '/premium-leaf-v2.png';
+
+  useEffect(() => {
+    if (!rootRef.current || typeof window === 'undefined') return undefined;
+    gsap.registerPlugin(ScrollTrigger);
+    const container = rootRef.current.closest('.custom-scrollbar-preview') ||
+      rootRef.current.closest('.overflow-y-auto') ||
+      window;
+
+    const ctx = gsap.context(() => {
+      // Float Animation for leaves
+      gsap.to('.leaf-float', {
+        y: -15,
+        rotation: 12,
+        duration: 4,
+        repeat: -1,
+        yoyo: true,
+        stagger: 0.8,
+        ease: 'sine.inOut'
+      });
+
+      // Arch Reveal Parallax - THE WHITE ELEMENT
+      gsap.fromTo('#vault-arch',
+        { y: 120, autoAlpha: 0.8 },
+        {
+          y: 0,
+          autoAlpha: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: '#vault-arch',
+            scroller: container,
+            start: "top bottom",
+            end: "top center",
+            scrub: 1.2
+          }
+        }
+      );
+
+      // Hero Media Parallax
+      gsap.to('.hero-media', {
+        y: 100,
+        scale: 1.1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: '.hero-media',
+          scroller: container,
+          start: "top top",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+
+      // Snappy Reveal
+      gsap.from('.reveal-up', {
+        opacity: 0,
+        y: 40,
+        duration: 0.8,
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: '.reveal-up',
+          scroller: container,
+          start: 'top 98%'
+        }
+      });
+    }, rootRef);
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-[#1a3529] font-sans selection:bg-[#c9a87c] selection:text-white" style={{ color: '#f5ede0' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+        .forest-vault-template h1, .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .forest-vault-template { font-family: 'Montserrat', sans-serif; }
+        .vault-frame { 
+          border-radius: 999px 999px 0 0;
+          overflow: hidden;
+        }
+        .arch-container {
+          border-radius: clamp(120px, 15vw, 400px) clamp(120px, 15vw, 400px) 0 0;
+        }
+      `}</style>
+
+      {/* Hero with Cinematic Video */}
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center">
+        {/* Background Media */}
+        <div className="absolute inset-0 z-0 hero-media">
+          {mediaPack.heroVideo ? (
+            <video autoPlay muted loop playsInline className="h-full w-full object-cover">
+              <source src={mediaPack.heroVideo} type="video/mp4" />
+            </video>
+          ) : mediaPack.heroImage ? (
+            <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full bg-[#0a1a13]" />
+          )}
+
+          {/* Fog / Mist Effect Overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#1a3529] via-[#1a3529]/40 to-transparent blur-2xl opacity-80" />
+          <div className="absolute inset-x-0 bottom-[-5%] h-1/3 bg-[#f5ede0]/5 blur-3xl" />
+          <div className="absolute inset-0 bg-black/15" />
+        </div>
+
+        <div className="relative z-10 w-full transition-all duration-1000 animate-in fade-in slide-in-from-bottom-10">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-[8px] text-[#c9a87c]/90">{heroSubtitle}</p>
+          <h1 className="flex items-center justify-center gap-4 text-[clamp(42px,10vw,86px)] font-light leading-none" style={{ color: '#f5ede0' }}>
+            <span className="reveal-up inline-block">{brideName}</span>
+            <span className="font-serif italic text-[#c9a87c]/60">&</span>
+            <span className="reveal-up inline-block">{groomName}</span>
+          </h1>
+          <DesignElement id="emeraldHeroLocation" label="Hero Location">
+            <p className="mt-4 text-[13px] font-medium uppercase tracking-[5px] opacity-70 underline underline-offset-[12px] decoration-[#c9a87c]/40" style={{ color: '#f5ede0' }}>{eventCity || 'Saudi Arabia'}</p>
+          </DesignElement>
+          <p className="mt-8 text-[11px] font-light tracking-[3px] opacity-50" style={{ color: '#f5ede0' }}>{eventDate}</p>
+        </div>
+
+        {/* Floating Icons */}
+        <div className="leaf-float absolute left-[12%] top-[30%] rotate-[-15deg] opacity-20">
+          <Leaf className="h-10 w-10 text-[#c9a87c]" strokeWidth={0.5} />
+        </div>
+        <div className="leaf-float absolute right-[10%] top-[15%] rotate-[140deg] opacity-15">
+          <Leaf className="h-12 w-12 text-[#c9a87c]" strokeWidth={0.5} />
+        </div>
+      </section>
+
+      {/* The Vault Arch Content */}
+      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32">
+        <div className="mx-auto max-w-[840px]">
+
+          <div className="reveal-up mb-20 text-center">
+            <div className="mx-auto mb-6 flex justify-center opacity-40">
+              <Leaf className="h-8 w-8 rotate-12 text-[#1a3529]" strokeWidth={1} />
+            </div>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]">The Union</p>
+            <p className="mx-auto max-w-[480px] font-serif text-[18px] italic leading-relaxed opacity-80 sm:text-[22px]">
+              {intro || 'In the presence of ancestors and the embrace of nature, we journey into forever.'}
+            </p>
+          </div>
+
+          {/* Cinematic Signature Section - Video Background */}
+          <div className="reveal-up relative mb-16 h-[220px] w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-md sm:h-[320px] sm:rounded-[32px]">
+            {mediaPack.video ? (
+              <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-70">
+                <source src={mediaPack.video} type="video/mp4" />
+              </video>
+            ) : mediaPack.heroImage && (
+              <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-60" />
+            )}
+
+            {/* Dramatic Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a3529] via-transparent to-[#1a3529]/40" />
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0]">
+              <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
+                <div className="relative">
+                  <p className="mb-2 text-[8px] font-bold uppercase tracking-[6px] text-[#c9a87c]/80">The Union Of</p>
+                  <h2 className="mb-2 font-serif text-[clamp(24px,7vw,48px)] font-light italic leading-none tracking-tight drop-shadow-xl">
+                    {brideName} <span className="not-italic text-[#c9a87c]">&</span> {groomName}
+                  </h2>
+                  <div className="mx-auto h-px w-20 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
+                </div>
+              </DesignElement>
+              <p className="mt-4 text-[10px] font-medium uppercase tracking-[5px] text-[#c9a87c]">{eventCity}</p>
+            </div>
+
+            {/* Decorative Leaf in corner */}
+            <div className="absolute bottom-10 right-10 opacity-30">
+              <Leaf className="h-8 w-8 text-[#c9a87c]" strokeWidth={0.5} />
+            </div>
+          </div>
+
+
+          {/* Cinematic Event Schedule - Premium Vertical Timeline */}
+          <div className="reveal-up mb-32 px-4 sm:px-0">
+            <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
+            <h2 className="mb-16 text-center font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight text-[#c9a87c]">The Schedule</h2>
+
+            <div className="mx-auto max-w-[700px] space-y-24">
+              {(events || []).map((evt, i) => (
+                <div key={i} className={cn("reveal-up flex flex-col gap-8 sm:items-center sm:gap-16", i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse")}>
+                  {/* Arched Portrait for Event */}
+                  <div className="vault-frame relative h-[320px] w-full shrink-0 shadow-2xl sm:h-[420px] sm:w-[300px]">
+                    {mediaPack.gallery[i + 2] ? (
+                      <img src={mediaPack.gallery[i + 2]} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-[#1a3529]/5 opacity-20">
+                        <Leaf className="h-12 w-12 text-[#c9a87c]" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a3529]/40 via-transparent to-transparent" />
+                  </div>
+
+                  {/* Event Details */}
+                  <div className="flex-1 space-y-6 text-center sm:text-left">
+                    <div>
+                      <p className="mb-2 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]/80">Ceremony {i + 1}</p>
+                      <h3 className="font-serif text-[clamp(24px,4vw,36px)] leading-tight text-[#1a3529]">{evt.name}</h3>
+                    </div>
+
+                    <div className="mx-auto h-px w-12 bg-[#c9a87c]/30 sm:mx-0" />
+
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-4 text-sm text-[#1a3529]/70 sm:flex-row sm:items-center sm:gap-6">
+                        <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#c9a87c]/80" /> {evt.date}</span>
+                        <span className="hidden h-4 w-px bg-[#1a3529]/10 sm:block" />
+                        <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-[#c9a87c]/80" /> {evt.time}</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-[#1a3529]/70">
+                        <MapPin className="h-4 w-4 shrink-0 text-[#c9a87c]/80 mt-1" />
+                        <div>
+                          <p className="font-serif text-lg leading-tight text-[#1a3529]">{evt.venue}</p>
+                          <p className="mt-1 text-[11px] uppercase tracking-[2px] opacity-50">{evt.address}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {evt.notes && (
+                      <p className="font-serif text-sm italic opacity-60">“{evt.notes}”</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center">
+            <h2 className="reveal-up mb-12 font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight opacity-90">Our Journey</h2>
+
+            <div className="grid grid-cols-2 gap-3 pb-24 sm:grid-cols-3 sm:gap-4">
+              {[0, 2, 3, 4, 5, 6].map((idx) => (
+                <div key={idx} className="reveal-up vault-frame overflow-hidden bg-stone-200/30 h-[240px] sm:h-[400px]">
+                  {mediaPack.gallery[idx] ? (
+                    <img
+                      src={mediaPack.gallery[idx]}
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
+                      alt={`Moment ${idx}`}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[10px] font-bold uppercase tracking-[3px] opacity-20">MOMENT</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Detail */}
+        <div className="mt-12 border-t border-[#1a3529]/10 pt-16 text-center">
+          <div className="leaf-float mx-auto mb-10 flex justify-center text-[#c9a87c] opacity-60">
+            <Leaf size={40} strokeWidth={1} />
+          </div>
+
+          {theme.enableCountdown && (
+            <div className="reveal-up mb-10 flex justify-center text-[#1a3529]">
+              <CinematicTimer date={event.date} dark={false} />
+            </div>
+          )}
+
+          <p className="font-serif text-[clamp(24px,4vw,36px)] font-light opacity-90">{brideName} & {groomName}</p>
+
+          <DesignElement id="emeraldEndInvite" label="End Invitation Text">
+            <p className="mx-auto mt-8 max-w-[280px] text-[11px] font-medium uppercase leading-relaxed tracking-[4px] opacity-50 sm:max-w-none">
+              We look forward to celebrating <br className="hidden sm:block" /> this special day with you.
+            </p>
+          </DesignElement>
+
+
+        </div>
+      </section>
+
+
+    </div>
+  );
+}
+
+export const EmeraldTemplate = HighEndImmersiveTemplate;
+
 /* ─── Classic / Editorial Luxe ──────────────────────────── */
+
 export function ClassicTemplate({ data }) {
   const { couple = {}, content = {}, event = {}, media = {} } = data;
   const intro = pickIntro(content);
@@ -840,7 +1197,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
         backgroundSize: theme?.backgroundStyle === 'pattern' ? '18px 18px, auto' : undefined,
       }}
     >
-      <section className="relative overflow-hidden px-3 pb-5 pt-4 sm:px-5 sm:pb-8 sm:pt-8">
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-3 py-10 sm:px-5">
         <div data-ceremony-float className="absolute left-[-90px] top-[-40px] h-48 w-48 rounded-full blur-3xl" style={{ backgroundColor: withAlpha(ceremonySecondary, 0.7) }} />
         <div data-ceremony-float className="absolute right-[-80px] top-24 h-52 w-52 rounded-full blur-3xl" style={{ backgroundColor: withAlpha(ceremonyPrimary, 0.12) }} />
 
@@ -1031,3 +1388,74 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
     </div>
   );
 }
+
+
+/* ─── Mountain / Paper-cut Immersive ────────────────────── */
+
+
+/* ─── Noir Editorial / High-End Modern ─────────────────── */
+export function NoirTemplate({ data, isPreview = false }) {
+  const rootRef = useRef(null);
+  const { couple = {}, event = {}, content = {} } = data;
+
+  useEffect(() => {
+    if (!rootRef.current || typeof window === 'undefined' || data.theme?.enableAnimation === false) return undefined;
+    gsap.registerPlugin(ScrollTrigger);
+    const ctx = gsap.context(() => {
+      gsap.fromTo('[data-noir-reveal]',
+        { autoAlpha: 0, x: -30 },
+        { autoAlpha: 1, x: 0, stagger: 0.2, duration: 1, ease: 'power4.out', scrollTrigger: { trigger: rootRef.current, start: 'top 80%', once: true } }
+      );
+    }, rootRef);
+    return () => ctx.revert();
+  }, [data.theme.enableAnimation]);
+
+  return (
+    <div ref={rootRef} className="min-h-screen bg-black text-white px-8 py-24 flex flex-col items-center justify-center text-center font-sans tracking-tighter">
+      <div data-noir-reveal className="mb-8 h-px w-32 bg-white/20" />
+      <div data-noir-reveal className="text-[10px] font-black uppercase tracking-[0.8em] text-white/50 mb-12">Premier Event 2026</div>
+      <h1 data-noir-reveal className="text-[clamp(4rem,15vw,10rem)] font-black leading-[0.85] uppercase mb-12">
+        {couple.bride} <br />
+        <span className="text-white/20 italic font-serif">&amp;</span> <br />
+        {couple.groom}
+      </h1>
+      <div data-noir-reveal className="space-y-4">
+        <p className="text-2xl font-serif italic text-white/70">{formatElegantDate(event.date)}</p>
+        <p className="text-[12px] font-bold uppercase tracking-[0.4em]">{event.venue}</p>
+      </div>
+      <div data-noir-reveal className="mt-20 h-[300px] w-px bg-gradient-to-b from-white/40 to-transparent" />
+    </div>
+  );
+}
+
+/* ─── Solstice Minimal / Organic Botanical ─────────────── */
+export function SolsticeTemplate({ data, isPreview = false }) {
+  const rootRef = useRef(null);
+  const { couple = {}, event = {} } = data;
+
+  return (
+    <div ref={rootRef} className="min-h-screen bg-[#FDFCFB] text-[#1A2B2F] p-10 flex flex-col items-center justify-center text-center font-serif text-sm">
+      <div className="absolute top-10 left-10 opacity-10">
+        <Leaf className="h-32 w-32 rotate-45" strokeWidth={0.5} />
+      </div>
+      <div className="absolute bottom-10 right-10 opacity-10">
+        <Leaf className="h-32 w-32 -rotate-12" strokeWidth={0.5} />
+      </div>
+
+      <div className="relative z-10">
+        <div className="mb-6 text-[10px] font-bold uppercase tracking-[0.4em] text-[#C5A059]">You are invited</div>
+        <h1 className="text-[clamp(3rem,10vw,6rem)] font-normal italic leading-tight mb-8">
+          {couple.bride} <br />
+          <span className="text-2xl not-italic font-sans font-light opacity-30">to be wed with</span> <br />
+          {couple.groom}
+        </h1>
+        <div className="h-px w-20 bg-[#C5A059]/30 mx-auto mb-10" />
+        <p className="text-xl font-light tracking-wide">{formatLongDate(event.date)}</p>
+        <p className="mt-4 text-[11px] uppercase tracking-[0.3em] opacity-60">{event.venue}</p>
+      </div>
+    </div>
+  );
+}
+
+
+

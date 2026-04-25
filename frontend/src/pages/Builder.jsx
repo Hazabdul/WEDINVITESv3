@@ -23,6 +23,7 @@ import { useInvitationState } from '../hooks/useInvitationState';
 import { Button } from '../components/ui/Button';
 import { Select, Toggle } from '../components/ui/FormElements';
 import { TemplateRenderer } from '../components/preview/TemplateRenderer';
+import { InvitationCover } from '../components/preview/InvitationCover';
 import { cn } from '../utils/cn';
 import { templatesList } from '../data/mockData';
 import apiClient from '../utils/api';
@@ -57,10 +58,10 @@ const STEPS = [
 
 function Field({ label, helper, className, children }) {
   return (
-    <label className={cn('block space-y-2', className)}>
+    <label className={cn('block space-y-1', className)}>
       <div>
-        <div className="text-sm font-medium text-[#5f5a55]">{label}</div>
-        {helper ? <p className="mt-1 text-xs leading-5 text-[#8a8178]">{helper}</p> : null}
+        <div className="text-[11px] font-bold uppercase tracking-wider text-[#5f5a55]">{label}</div>
+        {helper ? <p className="mt-1 text-[10px] leading-relaxed text-[#8a8178]">{helper}</p> : null}
       </div>
       {children}
     </label>
@@ -75,7 +76,7 @@ function TextInput({ label, helper, value, onChange, placeholder, type = 'text',
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] px-4 py-3.5 text-[15px] text-[#2f2925] outline-none transition placeholder:text-[#b2a79b] focus:border-[#bfa48a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(191,164,138,0.12)]"
+        className="w-full rounded-[5px] border border-[#e8dfd5] bg-[#fffdf9] px-3 py-1.5 text-[13px] text-[#2f2925] outline-none transition placeholder:text-[#b2a79b] focus:border-[#bfa48a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(191,164,138,0.12)]"
       />
     </Field>
   );
@@ -89,7 +90,7 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
         onChange={onChange}
         placeholder={placeholder}
         rows={rows}
-        className="w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] px-4 py-3.5 text-[15px] leading-6 text-[#2f2925] outline-none transition placeholder:text-[#b2a79b] focus:border-[#bfa48a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(191,164,138,0.12)]"
+        className="w-full rounded-[5px] border border-[#e8dfd5] bg-[#fffdf9] px-3 py-1.5 text-[13px] leading-relaxed text-[#2f2925] outline-none transition placeholder:text-[#b2a79b] focus:border-[#bfa48a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(191,164,138,0.12)]"
       />
     </Field>
   );
@@ -98,25 +99,25 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
 function PreviewFrame({ mode, children }) {
   if (mode === 'mobile') {
     return (
-      <div className="mx-auto w-full max-w-[340px] rounded-[34px] border border-[#d9cec1] bg-[#2b2623] p-3 shadow-[0_28px_70px_-28px_rgba(41,31,23,0.55)]">
-        <div className="overflow-hidden rounded-[26px] bg-white">
+      <div className="mx-auto w-full max-w-[340px] rounded-[16px] border border-[#d9cec1] bg-[#2b2623] p-3 shadow-[0_28px_70px_-28px_rgba(41,31,23,0.55)]">
+        <div className="overflow-hidden rounded-[12px] bg-white">
           <div className="flex items-center justify-center px-6 py-3">
             <div className="h-1.5 w-24 rounded-full bg-black/70" />
           </div>
-          <div className="max-h-[560px] overflow-auto">{children}</div>
+          <div className="h-[680px] overflow-auto custom-scrollbar-preview">{children}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[#e3d9ce] bg-white shadow-[0_30px_70px_-30px_rgba(61,46,33,0.35)]">
-      <div className="flex items-center gap-2 border-b border-[#eee5dc] bg-[#f8f3ed] px-5 py-4">
+    <div className="mx-auto w-full overflow-hidden rounded-[12px] bg-[#f5ede0] shadow-[0_30px_70px_-30px_rgba(61,46,33,0.35)]">
+      <div className="flex items-center gap-2 bg-[#f8f3ed] px-5 py-4">
         <span className="h-2.5 w-2.5 rounded-full bg-[#d7b59b]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#e4d3b9]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#c0c5b4]" />
       </div>
-      <div className="max-h-[780px] overflow-auto">{children}</div>
+      <div>{children}</div>
     </div>
   );
 }
@@ -130,6 +131,7 @@ export function Builder() {
   const [publishedInvitation, setPublishedInvitation] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showCover, setShowCover] = useState(true);
   const [checkingBackend, setCheckingBackend] = useState(false);
   const [backendHealth, setBackendHealth] = useState(null);
   const [backendHealthError, setBackendHealthError] = useState('');
@@ -338,8 +340,8 @@ export function Builder() {
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-8">
-            <div className="grid gap-5 md:grid-cols-2">
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride name"
                 placeholder="Aaliyah"
@@ -362,7 +364,7 @@ export function Builder() {
               onChange={(event) => updateSection('couple', 'title', event.target.value)}
             />
 
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride's parents"
                 helper="Optional. Add father & mother names (e.g. Mr. Ahmed & Mrs. Sara)."
@@ -392,8 +394,8 @@ export function Builder() {
 
       case 1:
         return (
-          <div className="space-y-8">
-            <div className="grid gap-5 md:grid-cols-2">
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Date"
                 type="date"
@@ -444,16 +446,16 @@ export function Builder() {
 
       case 2:
         return (
-          <div className="space-y-8">
+          <div className="space-y-4">
             {mediaUploadError ? (
-              <div className="rounded-[22px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 {mediaUploadError}
               </div>
             ) : null}
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
                 isUploadingMedia && 'cursor-wait opacity-70'
               )}>
                 <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
@@ -465,7 +467,7 @@ export function Builder() {
               </label>
 
               <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
                 isUploadingMedia && 'cursor-wait opacity-70'
               )}>
                 <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
@@ -483,7 +485,7 @@ export function Builder() {
               </label>
 
               <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
                 isUploadingMedia && 'cursor-wait opacity-70'
               )}>
                 <UploadCloud className="mb-4 h-8 w-8 text-[#b08f72]" />
@@ -501,7 +503,7 @@ export function Builder() {
               </label>
 
               <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
+                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-[#dccfc1] bg-[#fbf7f2] px-6 py-8 text-center transition hover:border-[#bfa48a] hover:bg-[#fffdfa]',
                 isUploadingMedia && 'cursor-wait opacity-70'
               )}>
                 <Images className="mb-4 h-8 w-8 text-[#b08f72]" />
@@ -524,7 +526,7 @@ export function Builder() {
               }}
             />
 
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride photo URL"
                 helper="Optional direct image URL for the bride portrait."
@@ -555,7 +557,7 @@ export function Builder() {
       case 3:
         return (
           <div className="space-y-6">
-            <div className="rounded-[24px] border border-[#e8dfd5] bg-[#fbf7f2] p-5">
+            <div className="rounded-[10px] border border-[#e8dfd5] bg-[#fbf7f2] p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-[#2f2925]">Main celebration</h3>
@@ -614,12 +616,12 @@ export function Builder() {
               </div>
 
               {(data.events || []).slice(1).length === 0 ? (
-                <div className="rounded-[24px] border border-dashed border-[#e4d8cb] bg-[#fcf8f3] p-5 text-sm text-[#867b71]">
+                <div className="rounded-[10px] border border-dashed border-[#e4d8cb] bg-[#fcf8f3] p-5 text-sm text-[#867b71]">
                   No additional blocks yet. Add a reception, dinner, welcome party, or any moment guests should plan around.
                 </div>
               ) : (
                 (data.events || []).slice(1).map((eventItem) => (
-                  <div key={eventItem.id} className="rounded-[24px] border border-[#ece3d9] bg-white p-5 shadow-[0_10px_30px_-24px_rgba(61,46,33,0.4)]">
+                  <div key={eventItem.id} className="rounded-[10px] border border-[#ece3d9] bg-white p-5 shadow-[0_10px_30px_-24px_rgba(61,46,33,0.4)]">
                     <div className="grid gap-4 md:grid-cols-2">
                       <TextInput
                         label="Time"
@@ -658,7 +660,7 @@ export function Builder() {
 
       case 4:
         return (
-          <div className="space-y-8">
+          <div className="space-y-4">
             <div className="grid gap-4">
               {templatesList.map((template) => {
                 const selected = activeTemplate.id === template.id;
@@ -668,7 +670,7 @@ export function Builder() {
                     key={template.id}
                     onClick={() => setTemplate(template.id)}
                     className={cn(
-                      'rounded-[26px] border p-5 text-left transition-all',
+                      'rounded-[12px] border p-5 text-left transition-all',
                       selected
                         ? 'border-[#bfa48a] bg-[#fffaf5] shadow-[0_16px_40px_-26px_rgba(94,73,51,0.45)]'
                         : 'border-[#ece3d9] bg-white hover:border-[#d8c9b8] hover:bg-[#fdf9f4]'
@@ -687,13 +689,13 @@ export function Builder() {
               })}
             </div>
 
-            <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <Field label="Primary color">
                 <input
                   type="color"
                   value={data.theme?.primaryColor || '#b68d40'}
                   onChange={(event) => updateSection('theme', 'primaryColor', event.target.value)}
-                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                  className="h-14 w-full rounded-[10px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
               <Field label="Secondary color">
@@ -701,7 +703,7 @@ export function Builder() {
                   type="color"
                   value={data.theme?.secondaryColor || '#f7e7ce'}
                   onChange={(event) => updateSection('theme', 'secondaryColor', event.target.value)}
-                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                  className="h-14 w-full rounded-[10px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
               <Field label="Heading text color">
@@ -709,7 +711,7 @@ export function Builder() {
                   type="color"
                   value={data.theme?.headingColor || data.theme?.primaryColor || '#6f5642'}
                   onChange={(event) => updateSection('theme', 'headingColor', event.target.value)}
-                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                  className="h-14 w-full rounded-[10px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
               <Field label="Subheading text color">
@@ -717,7 +719,7 @@ export function Builder() {
                   type="color"
                   value={data.theme?.subheadingColor || data.theme?.primaryColor || '#876c57'}
                   onChange={(event) => updateSection('theme', 'subheadingColor', event.target.value)}
-                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                  className="h-14 w-full rounded-[10px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
               <Field label="Body text color">
@@ -725,7 +727,7 @@ export function Builder() {
                   type="color"
                   value={data.theme?.bodyColor || '#705f53'}
                   onChange={(event) => updateSection('theme', 'bodyColor', event.target.value)}
-                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                  className="h-14 w-full rounded-[10px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
               <Field label="Meta / label color">
@@ -733,7 +735,7 @@ export function Builder() {
                   type="color"
                   value={data.theme?.metaColor || '#9a7d66'}
                   onChange={(event) => updateSection('theme', 'metaColor', event.target.value)}
-                  className="h-14 w-full rounded-[22px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
+                  className="h-14 w-full rounded-[10px] border border-[#e8dfd5] bg-[#fffdf9] p-2"
                 />
               </Field>
 
@@ -785,7 +787,7 @@ export function Builder() {
       case 5:
         return (
           <div className="space-y-6">
-            <div className="rounded-[26px] border border-[#e7ddd1] bg-[linear-gradient(135deg,#fffdf9_0%,#f8f2ea_100%)] p-6">
+            <div className="rounded-[12px] border border-[#e7ddd1] bg-[linear-gradient(135deg,#fffdf9_0%,#f8f2ea_100%)] p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#b08f72]">Final review</div>
@@ -799,13 +801,13 @@ export function Builder() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-[22px] border border-[#ece3d9] bg-white p-5">
+              <div className="rounded-[10px] border border-[#ece3d9] bg-white p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]"><CalendarDays className="h-4 w-4 text-[#b08f72]" /> Event</div>
                 <p className="mt-3 text-sm text-[#72665d]">{data.event?.date || 'No date yet'}</p>
                 <p className="mt-1 text-sm text-[#72665d]">{data.event?.time || 'No time yet'}</p>
                 <p className="mt-1 text-sm text-[#72665d]">{data.event?.venue || 'No venue yet'}</p>
               </div>
-              <div className="rounded-[22px] border border-[#ece3d9] bg-white p-5">
+              <div className="rounded-[10px] border border-[#ece3d9] bg-white p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]"><Palette className="h-4 w-4 text-[#b08f72]" /> Theme</div>
                 <p className="mt-3 text-sm text-[#72665d]">{activeTemplate.name}</p>
                 <p className="mt-1 text-sm text-[#72665d]">Primary: {data.theme?.primaryColor}</p>
@@ -816,7 +818,7 @@ export function Builder() {
             </div>
 
             {progressInfo.missingFields.length > 0 ? (
-              <div className="rounded-[22px] border border-[#ead8c6] bg-[#fff8f0] p-5">
+              <div className="rounded-[10px] border border-[#ead8c6] bg-[#fff8f0] p-5">
                 <h4 className="text-sm font-semibold text-[#5a493a]">Complete these before publishing</h4>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {progressInfo.missingFields.map((item) => (
@@ -827,35 +829,43 @@ export function Builder() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-[22px] border border-[#d8e5d1] bg-[#f5fbf1] p-5 text-sm text-[#4d6b40]">
-                Core details are complete. The invitation is ready to publish.
+              <div className="rounded-[10px] border border-[#d8e5d1] bg-[linear-gradient(135deg,#f8fcf7_0%,#eff6ed_100%)] p-5 text-sm text-[#46603d] shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-[#5d854f] animate-pulse" />
+                  Core details are complete. The invitation is ready to publish.
+                </div>
               </div>
             )}
 
             {submitError ? (
-              <div className="rounded-[22px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{submitError}</div>
+              <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{submitError}</div>
             ) : null}
 
             {publishedInvitation ? (
-              <div className="space-y-4 rounded-[24px] border border-[#d7e5d7] bg-[#f7fbf6] p-5">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#4f8a59]" />
+              <div className="space-y-5 rounded-[12px] border border-[#d7e5d7] bg-[linear-gradient(135deg,#fbfdfb_0%,#f0f7f0_100%)] p-5 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#4f8a59]/10 text-[#4f8a59]">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-[#35563b]">Invitation published</h4>
-                    <p className="mt-1 text-sm text-[#58715c]">Your live link is ready to share.</p>
+                    <h4 className="text-[15px] font-bold text-[#2d4c39]">Invitation published</h4>
+                    <p className="mt-1 text-sm text-[#5d7a61]">Your live boutique link is ready to share.</p>
                   </div>
                 </div>
 
-                <div className="rounded-[18px] border border-[#d7e5d7] bg-white p-3">
-                  <div className="text-xs font-medium uppercase tracking-[0.24em] text-[#7a927d]">Share URL</div>
-                  <div className="mt-2 break-all text-sm text-[#35563b]">{publishedInvitation.shareUrl}</div>
+                <div className="rounded-[12px] border border-[#d7e5d7]/60 bg-white/80 p-4 backdrop-blur-sm shadow-inner">
+                  <div className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#7a927d]">Public URL</div>
+                  <div className="mt-2 break-all font-mono text-[13px] text-[#2d4c39]">{publishedInvitation.shareUrl}</div>
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button onClick={handleCopyLink} variant="outline" className="border-[#cfe1cf] bg-white text-[#35563b] hover:bg-[#f8fcf8]">
+                  <Button onClick={handleCopyLink} variant="outline" className="flex-1 border-[#cfe1cf] bg-white text-[#35563b] hover:bg-[#f8fcf8]">
                     <Copy className="h-4 w-4" /> {copied ? 'Copied' : 'Copy link'}
                   </Button>
-                  <Button onClick={() => window.open(publishedInvitation.shareUrl, '_blank')} className="bg-[#35563b] text-white hover:bg-[#2e4b33]">
+                  <Button
+                    onClick={() => window.open(publishedInvitation.shareUrl, '_blank')}
+                    className="flex-1 bg-[linear-gradient(135deg,#3c5c45_0%,#24402d_100%)] text-white hover:shadow-lg hover:shadow-emerald-900/10 transition-all font-bold tracking-wide"
+                  >
                     <ExternalLink className="h-4 w-4" /> Open invitation
                   </Button>
                 </div>
@@ -871,117 +881,120 @@ export function Builder() {
 
   return (
     <div className="mx-auto max-w-[1520px] px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
-        <div className="rounded-[34px] border border-[#ece2d6] bg-[linear-gradient(180deg,#fffdf9_0%,#f7f2eb_100%)] p-4 shadow-[0_20px_70px_-40px_rgba(61,46,33,0.32)] sm:p-6 lg:p-8">
-        <div className="mb-6 flex flex-col gap-4 rounded-[28px] border border-[#efe5da] bg-white/80 p-5 backdrop-blur sm:flex-row sm:items-start sm:justify-between lg:mb-8 lg:p-6">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.34em] text-[#b08f72]">Wedding invitation builder</div>
-            <h1 className="mt-3 text-3xl text-[#2f2925] sm:text-4xl">Simple, sequential, and easy to finish</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#7e7369]">
-              One focused section at a time on the left, live preview on the right, and a fixed action bar so the next step is always clear.
-            </p>
-            <p className="mt-2 max-w-2xl text-xs leading-5 text-[#9a8f84]">
-              Use <span className="font-medium text-[#6e5c4d]">Clear builder</span> to reset all entered details and start over with a fresh invitation.
-            </p>
-          </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={handleCheckBackend}
-              className="border-[#d7e1f0] bg-white text-[#41566f] hover:bg-[#f5f8fd]"
-            >
-              {checkingBackend ? 'Checking...' : backendHealth?.status === 'ok' ? (backendHealth.dbConnected ? 'Backend: OK' : 'Backend: Degraded') : 'Check backend'}
-            </Button>
-            <Button variant="outline" onClick={clearData} className="border-[#dccdbb] bg-white text-[#725d4b] hover:bg-[#fbf7f2]">
-              <Trash2 className="h-4 w-4" /> Clear builder
-            </Button>
-          </div>
+      {backendHealthError ? (
+        <div className="mb-6 rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {backendHealthError}
         </div>
+      ) : null}
 
-        {backendHealthError ? (
-          <div className="mb-6 rounded-[22px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {backendHealthError}
-          </div>
-        ) : null}
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)] xl:gap-8">
-          <div className="min-w-0">
-            <div className="overflow-hidden rounded-[30px] border border-[#eadfd2] bg-white shadow-[0_24px_80px_-45px_rgba(61,46,33,0.42)]">
-              <div className="border-b border-[#f0e7dc] bg-[linear-gradient(180deg,#fffcf8_0%,#faf5ee_100%)] px-5 py-6 sm:px-7">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-medium text-[#8d7d6e]">Step {currentStep + 1} of {STEPS.length}</div>
-                    <h2 className="mt-2 text-3xl text-[#2f2925]">{currentStepMeta.title}</h2>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-[#81756b]">{currentStepMeta.description}</p>
-                  </div>
-                  <div className="rounded-full border border-[#e6d9ca] bg-white px-4 py-2 text-sm font-medium text-[#6d5b4c]">
-                    {progressInfo.percentage}% complete
-                  </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,520px)_minmax(0,1fr)] xl:gap-8">
+        <div className="min-w-0">
+          <div className="overflow-hidden rounded-[14px] border border-[#eadfd2] bg-white shadow-[0_24px_80px_-45px_rgba(61,46,33,0.42)]">
+            <div className="border-b border-[#e8dfd5] bg-[#fbf7f2]/80 px-4 py-4 sm:px-6">
+              <div className="flex items-start justify-between gap-6">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#b08f72]/70">Step {currentStep + 1} of {STEPS.length}</span>
+                  <h2 className="font-serif text-3xl italic text-[#2f2925] tracking-tight">{currentStepMeta.title}</h2>
                 </div>
 
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#f0e8de]">
-                  <div
-                    className="h-full rounded-full bg-[linear-gradient(90deg,#cab098_0%,#a98462_100%)] transition-all duration-500"
-                    style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
-                  />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleCheckBackend}
+                    className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#e8dfd5] bg-white transition-all hover:border-[#b08f72] hover:bg-[#fffdfa]"
+                    title="Backend Status"
+                  >
+                    <Sparkles className={cn("h-4 w-4 transition-colors", backendHealth?.status === 'ok' ? "text-emerald-500" : "text-[#b08f72]/40")} />
+                    <span className="absolute -bottom-6 scale-0 text-[8px] font-bold uppercase tracking-widest text-[#b08f72] transition-all group-hover:scale-100 whitespace-nowrap">Status</span>
+                  </button>
+
+                  <button
+                    onClick={clearData}
+                    className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#e8dfd5] bg-white transition-all hover:border-red-200 hover:bg-red-50"
+                    title="Reset Section"
+                  >
+                    <Trash2 className="h-4 w-4 text-[#2f2925]/40 transition-colors group-hover:text-red-500/70" />
+                    <span className="absolute -bottom-6 scale-0 text-[8px] font-bold uppercase tracking-widest text-red-500/70 transition-all group-hover:scale-100">Reset</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="flex flex-col xl:min-h-[780px]">
-                <div className="flex-1 px-5 py-6 sm:px-7 sm:py-8">{renderStepContent()}</div>
+              <div className="mt-4 flex items-center gap-4">
+                <div className="h-[1.5px] flex-1 bg-[#e8dfd5]/50">
+                  <div
+                    className="h-full bg-[#b08f72] transition-all duration-700 ease-in-out shadow-[0_0_8px_rgba(176,143,114,0.3)]"
+                    style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+                  />
+                </div>
+                <div className="text-[10px] font-bold text-[#b08f72] whitespace-nowrap">{progressInfo.percentage}%</div>
+              </div>
+            </div>
 
-                <div className="sticky bottom-0 mt-auto border-t border-[#efe4d7] bg-[linear-gradient(180deg,rgba(255,252,248,0.92)_0%,rgba(252,247,240,0.98)_100%)] px-4 py-4 shadow-[0_-18px_40px_-30px_rgba(61,46,33,0.45)] backdrop-blur sm:px-6">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col xl:min-h-[780px]">
+              <div className="flex-1 px-4 py-4 sm:px-6">{renderStepContent()}</div>
+
+              <div className="sticky bottom-0 mt-auto border-t border-[#efe4d7] bg-[linear-gradient(180deg,rgba(255,252,248,0.92)_0%,rgba(252,247,240,0.98)_100%)] px-4 py-4 shadow-[0_-18px_40px_-30px_rgba(61,46,33,0.45)] backdrop-blur sm:px-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={previousStep}
+                    disabled={currentStep === 0}
+                    className="w-full border-[#dccdbb] bg-white text-[#6c5848] hover:bg-[#faf5ef] sm:w-auto"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Previous
+                  </Button>
+
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+                    {isLastStep && !canPublish ? (
+                      <p className="text-sm text-[#9a7656]">Complete at least 80% of the essentials before publishing.</p>
+                    ) : null}
                     <Button
-                      variant="outline"
-                      onClick={previousStep}
-                      disabled={currentStep === 0}
-                      className="w-full border-[#dccdbb] bg-white text-[#6c5848] hover:bg-[#faf5ef] sm:w-auto"
+                      onClick={isLastStep ? handleSubmitInvitation : nextStep}
+                      disabled={isLastStep ? isSubmitting || !canPublish || Boolean(publishedInvitation) : false}
+                      className="w-full min-w-[180px] bg-[#2f2925] text-white hover:bg-[#231e1a] sm:w-auto"
                     >
-                      <ChevronLeft className="h-4 w-4" /> Previous
-                    </Button>
-
-                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
-                      {isLastStep && !canPublish ? (
-                        <p className="text-sm text-[#9a7656]">Complete at least 80% of the essentials before publishing.</p>
-                      ) : null}
-                      <Button
-                        onClick={isLastStep ? handleSubmitInvitation : nextStep}
-                        disabled={isLastStep ? isSubmitting || !canPublish || Boolean(publishedInvitation) : false}
-                        className="w-full min-w-[180px] bg-[#2f2925] text-white hover:bg-[#231e1a] sm:w-auto"
-                      >
-                        {isLastStep ? (
-                          publishedInvitation ? (
-                            'Published'
-                          ) : isSubmitting ? (
-                            'Publishing...'
-                          ) : (
-                            <>
-                              <Send className="h-4 w-4" /> Publish
-                            </>
-                          )
+                      {isLastStep ? (
+                        publishedInvitation ? (
+                          'Published'
+                        ) : isSubmitting ? (
+                          'Publishing...'
                         ) : (
                           <>
-                            Next <ChevronRight className="h-4 w-4" />
+                            <Send className="h-4 w-4" /> Publish
                           </>
-                        )}
-                      </Button>
-                    </div>
+                        )
+                      ) : (
+                        <>
+                          Next <ChevronRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="min-w-0">
-            <div className="xl:sticky xl:top-24">
-              <div className="overflow-hidden rounded-[30px] border border-[#e7ddd1] bg-[linear-gradient(180deg,#fffdf9_0%,#f4ede4_100%)] shadow-[0_24px_80px_-45px_rgba(61,46,33,0.38)]">
-                <div className="flex flex-col gap-4 border-b border-[#eee3d6] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b08f72]">Live preview</div>
-                    <h3 className="mt-2 text-2xl text-[#2f2925]">See changes instantly</h3>
-                    <p className="mt-1 text-sm text-[#7e7369]">Toggle between desktop and mobile without leaving the builder.</p>
-                  </div>
+        <div className="min-w-0">
+          <div className="xl:sticky xl:top-24">
+            <div className="overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,#fffdf9_0%,#f4ede4_100%)] shadow-[0_24px_80px_-45px_rgba(61,46,33,0.38)]">
+              <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b08f72]">Live preview</div>
+                  <h3 className="mt-2 text-2xl text-[#2f2925]">See changes instantly</h3>
+                  <p className="mt-1 text-sm text-[#7e7369]">Toggle between desktop and mobile without leaving the builder.</p>
+                </div>
+
+                <div className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowCover(true)}
+                    className="mr-3 inline-flex items-center gap-1.5 rounded-full border border-[#e2d7cb] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#73675f] transition hover:bg-[#faf6f1] active:scale-95"
+                    title="Replay entrance experience"
+                  >
+                    <Send className="h-3 w-3" /> Replay
+                  </button>
 
                   <div className="inline-flex rounded-full border border-[#e2d7cb] bg-white p-1.5 shadow-sm">
                     <button
@@ -1006,32 +1019,36 @@ export function Builder() {
                     </button>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-5 p-5 sm:p-6">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-[22px] border border-white/60 bg-white/75 p-4">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]"><Heart className="h-4 w-4 text-[#b08f72]" /> Couple</div>
-                      <p className="mt-2 text-sm text-[#776b62]">{data.couple?.bride || 'Bride'} & {data.couple?.groom || 'Groom'}</p>
+              <div className="p-3">
+                <div className="overflow-hidden bg-[#fbf7f2] rounded-xl">
+                  {/* Scaled Preview Frame Container */}
+                  <div className={cn(
+                    "relative w-full transition-all duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar-preview bg-[#f5ede0]/50 rounded-xl",
+                    previewMode === 'desktop' ? "h-[calc(100vh-200px)]" : "h-auto"
+                  )}>
+                    <div className="flex w-full justify-center py-8">
+                      <div className={cn(
+                        "transition-all duration-700",
+                        previewMode === 'desktop' ? "w-[1100px] scale-[0.65] lg:scale-[0.7] xl:scale-[0.75] origin-top" : "w-full scale-100 origin-top-left"
+                      )}>
+                        <PreviewFrame mode={previewMode}>
+                          <div className={cn("relative w-full", showCover ? "h-[820px] overflow-hidden" : "min-h-0")}>
+                            {showCover && (
+                              <InvitationCover
+                                bride={data.couple?.bride || "Bride"}
+                                groom={data.couple?.groom || "Groom"}
+                                onOpen={() => setShowCover(false)}
+                              />
+                            )}
+                            <div className={cn(showCover ? "pointer-events-none" : "pointer-events-auto")}>
+                              <TemplateRenderer type={data.theme?.id} data={data} previewMode={previewMode} />
+                            </div>
+                          </div>
+                        </PreviewFrame>
+                      </div>
                     </div>
-                    <div className="rounded-[22px] border border-white/60 bg-white/75 p-4">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]"><Clock3 className="h-4 w-4 text-[#b08f72]" /> Date</div>
-                      <p className="mt-2 text-sm text-[#776b62]">{data.event?.date || 'Add the event date'}</p>
-                    </div>
-                    <div className="rounded-[22px] border border-white/60 bg-white/75 p-4">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]"><MapPin className="h-4 w-4 text-[#b08f72]" /> Venue</div>
-                      <p className="mt-2 text-sm text-[#776b62]">{data.event?.venue || 'Add the venue'}</p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[28px] bg-[radial-gradient(circle_at_top,#fff8ef_0%,#efe4d8_100%)] p-4 sm:p-5">
-                    <PreviewFrame mode={previewMode}>
-                      <TemplateRenderer type={data.theme?.id} data={data} previewMode={previewMode} />
-                    </PreviewFrame>
-                  </div>
-
-                  <div className="rounded-[22px] border border-[#eadfd2] bg-white/75 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]"><Sparkles className="h-4 w-4 text-[#b08f72]" /> Current direction</div>
-                    <p className="mt-2 text-sm leading-6 text-[#776b62]">{activeTemplate.name} - {activeTemplate.tagline}</p>
                   </div>
                 </div>
               </div>

@@ -1,81 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight, Heart, Share2, CalendarDays, MapPin } from 'lucide-react';
-import apiClient from '../utils/api';
-import { resolveMediaSource } from '../utils/media';
-
-function GalleryCard({ invitation, onOpen }) {
-  const coverImage = [
-    invitation.media?.coverImage,
-    invitation.media?.coupleImage,
-    invitation.media?.backgroundImage,
-    ...(Array.isArray(invitation.media?.gallery) ? invitation.media.gallery : []),
-  ]
-    .map(resolveMediaSource)
-    .find(Boolean);
-  const brideName = invitation.brideName || invitation.couple?.bride || 'Bride';
-  const groomName = invitation.groomName || invitation.couple?.groom || 'Groom';
-  const title = invitation.couple?.title || invitation.content?.welcomeHeading || 'Wedding Invitation';
-  const venue = invitation.event?.venue || 'Venue to be announced';
-  const eventDate = invitation.event?.date || invitation.weddingDate;
-  const formattedDate = eventDate
-    ? new Date(eventDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-    : 'Date to be announced';
-
-  return (
-    <article className="group h-full overflow-hidden rounded-[24px] glass-card p-1.5 transition-all duration-700 hover:-translate-y-3 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)]">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[20px]">
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={`${brideName} and ${groomName}`}
-            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#fdfcfb] text-slate-300">
-            Preview
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-4 p-8">
-        <div>
-          <h3 className="text-2xl font-serif text-[#1a2b5a]">{brideName} & {groomName}</h3>
-          <p className="mt-2 min-h-12 text-[13px] leading-relaxed text-[#1a2b5a]/60 font-medium">{title}</p>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-[#1a2b5a]/40">
-          <div className="flex items-center gap-1.5">
-            <CalendarDays className="h-3.5 w-3.5" />
-            <span>{formattedDate}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3.5 w-3.5" />
-            <span className="truncate max-w-[120px]">{venue}</span>
-          </div>
-        </div>
-
-        <button onClick={onOpen} className="group/btn relative w-full overflow-hidden rounded-full border border-[#1a2b5a]/10 bg-white/50 py-3.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#1a2b5a] transition-all hover:bg-[#1a2b5a] hover:text-white">
-          <span className="relative z-10">View Detail</span>
-        </button>
-      </div>
-    </article>
-  );
-}
-
-function GallerySkeleton() {
-  return (
-    <article className="overflow-hidden rounded-[24px] glass-card p-1.5">
-      <div className="aspect-[4/3] animate-pulse bg-slate-50/50 rounded-[20px]" />
-      <div className="space-y-4 p-8">
-        <div className="h-8 animate-pulse rounded bg-slate-50/50" />
-        <div className="h-12 animate-pulse rounded bg-slate-50/50" />
-        <div className="h-12 animate-pulse rounded-full bg-slate-50/50" />
-      </div>
-    </article>
-  );
-}
+import { Sparkles, Heart, Share2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useInvitationState } from '../hooks/useInvitationState';
+import { templatesList } from '../data/mockData';
+import { TemplateRenderer } from '../components/preview/TemplateRenderer';
 
 const featureHighlights = [
   {
@@ -96,9 +24,9 @@ const featureHighlights = [
     eyebrow: 'Publish once',
     tags: ['Private link', 'Mobile ready'],
     accent: 'from-[#fff7e8] via-white to-[#fffbf2]',
-    glow: 'bg-[#c6a66b]/16',
-    tint: 'text-[#c6a66b]',
-    badgeShadow: 'shadow-[0_18px_40px_-24px_rgba(198,166,107,0.60)]',
+    glow: 'bg-[#d4c39c]/16',
+    tint: 'text-[#d4c39c]',
+    badgeShadow: 'shadow-[0_18px_40px_-24px_rgba(212,195,156,0.60)]',
   },
   {
     icon: Sparkles,
@@ -113,79 +41,78 @@ const featureHighlights = [
   },
 ];
 
+function TemplateCard({ template, onSelect, previewData }) {
+  return (
+    <div className="group relative flex flex-col overflow-hidden rounded-[40px] border border-[#1a2b5a]/5 bg-white shadow-[0_20px_50px_-20px_rgba(26,43,90,0.12)] transition-all duration-700 hover:-translate-y-4 hover:shadow-[0_50px_100px_-30px_rgba(26,43,90,0.22)]">
+      {/* Premium Badge */}
+      <div className="absolute left-6 top-6 z-20">
+        <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-3.5 py-1.5 backdrop-blur-xl shadow-lg transition-transform duration-500 group-hover:scale-110">
+          <div className="h-1.5 w-1.5 rounded-full bg-[#ff2d55]" />
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#1a2b5a]">
+            {template.badge || 'Limited Edition'}
+          </span>
+        </div>
+      </div>
+
+      {/* Portrait Preview Container */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#fbf9f7] transition-all duration-700 group-hover:bg-[#f6f2ef]">
+        {/* Render area with intentional padding for 'Physical Card' look */}
+        <div className="flex h-full w-full items-center justify-center p-6 sm:p-8">
+           <div className="h-full w-full overflow-hidden rounded-[24px] border border-white bg-white shadow-[0_25px_60px_-15px_rgba(47,41,37,0.15)] transition-transform duration-700 group-hover:scale-[1.04] group-hover:rotate-1">
+              <div className="origin-top-left w-[250%] scale-[0.4]">
+                 <TemplateRenderer type={template.id} data={{ ...previewData, theme: { ...previewData.theme, id: template.id } }} />
+              </div>
+           </div>
+        </div>
+        
+        {/* Designer Overlay */}
+        <div className="absolute inset-x-0 bottom-0 z-10 flex translate-y-full items-center justify-center bg-gradient-to-t from-[#1a2b5a]/40 to-transparent p-10 backdrop-blur-[2px] transition-all duration-700 group-hover:translate-y-0">
+           <button 
+             onClick={() => onSelect(template.id)}
+             className="flex items-center gap-3 rounded-full bg-white px-8 py-4 text-[11px] font-black uppercase tracking-[0.25em] text-[#1a2b5a] shadow-2xl transition-all hover:bg-[#ff2d55] hover:text-white active:scale-95"
+           >
+             Start Crafting
+             <ArrowRight className="h-4 w-4" />
+           </button>
+        </div>
+      </div>
+
+      {/* Editorial Info Panel */}
+      <div className="flex flex-1 flex-col justify-between bg-white px-8 py-8">
+        <div>
+          <div className="flex items-center gap-4 mb-3">
+            <div className="h-px flex-1 bg-[#1a2b5a]/10" />
+            <div className="text-[9px] font-black uppercase tracking-[0.4em] text-[#ff2d55]/70">{template.mood}</div>
+            <div className="h-px flex-1 bg-[#1a2b5a]/10" />
+          </div>
+          
+          <h3 className="text-center font-serif text-[28px] italic leading-tight text-[#1a2b5a] tracking-tight">{template.name}</h3>
+          
+          <p className="mt-4 text-center text-[12px] font-medium leading-relaxed text-[#1a2b5a]/50 line-clamp-2 px-2">
+            " {template.description} "
+          </p>
+        </div>
+
+        <div className="mt-10 flex items-center justify-between border-t border-[#1a2b5a]/5 pt-6 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1a2b5a]/30">
+          <span>Premium Flow</span>
+          <div className="flex gap-1">
+             {[1,2,3].map(i => <div key={i} className="h-1 w-1 rounded-full bg-[#1a2b5a]/20" />)}
+          </div>
+          <span>Ref: 0{template.id?.length || 9}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Home() {
   const navigate = useNavigate();
-  const [invitations, setInvitations] = useState([]);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [galleryError, setGalleryError] = useState('');
-  const loaderRef = useRef(null);
-  const fetchingRef = useRef(false);
+  const { data, setTemplate } = useInvitationState();
 
-  useEffect(() => {
-    let ignore = false;
-
-    const fetchInvitations = async (nextPage = 1, append = false) => {
-      if (fetchingRef.current) return;
-      if (!append && nextPage !== 1) return;
-      if (append && !hasMore) return;
-
-      fetchingRef.current = true;
-      setGalleryError('');
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setInitialLoading(true);
-      }
-
-      try {
-        const response = await apiClient.getPublishedInvitations(nextPage, 6);
-        if (ignore) return;
-
-        const nextItems = Array.isArray(response.items) ? response.items : [];
-        setInvitations((prev) => {
-          if (!append) return nextItems;
-          const existingIds = new Set(prev.map((item) => item._id));
-          return [...prev, ...nextItems.filter((item) => !existingIds.has(item._id))];
-        });
-        setPage(response.pagination?.page ?? nextPage);
-        setHasMore(Boolean(response.pagination?.hasMore));
-      } catch {
-        if (!ignore) {
-          setGalleryError('Could not load published invitations right now.');
-        }
-      } finally {
-        if (!ignore) {
-          setInitialLoading(false);
-          setLoadingMore(false);
-        }
-        fetchingRef.current = false;
-      }
-    };
-
-    fetchInvitations(1, false);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const firstEntry = entries[0];
-        if (!firstEntry?.isIntersecting) return;
-        if (fetchingRef.current || !hasMore) return;
-        fetchInvitations(page + 1, true);
-      },
-      { rootMargin: '200px 0px' }
-    );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => {
-      ignore = true;
-      observer.disconnect();
-    };
-  }, [hasMore, page]);
+  const handleUseTemplate = (id) => {
+    setTemplate(id);
+    navigate('/builder');
+  };
 
   return (
     <main className="min-h-screen bg-white">
@@ -257,55 +184,54 @@ export function Home() {
         </div>
       </section>
 
-      {/* GALLERY SECTION */}
-      <section id="published-gallery" aria-labelledby="gallery-heading" className="container mx-auto px-6 py-40">
-        <header className="mb-24 text-center">
-           <div className="animate-artemis-reveal stagger-1 text-[10px] font-black uppercase tracking-[0.6em] text-[#ff2d55]/40 mb-4">Registry of Love</div>
-          <h2 id="gallery-heading" className="font-serif text-[42px] sm:text-[56px] italic text-[#1a2b5a] leading-tight">Featured Collections</h2>
-          <p className="mx-auto mt-6 max-w-xl text-[14px] text-[#1a2b5a]/50 font-medium leading-relaxed">
-            Explore live invitations created on the platform.
-          </p>
-        </header>
+      {/* TEMPLATES SECTION */}
+      <section
+        id="templates-section"
+        aria-labelledby="templates-heading"
+        className="relative overflow-hidden border-t border-[#1a2b5a]/5 bg-[linear-gradient(180deg,#ffffff_0%,#fdf9f7_50%,#faf5f0_100%)] py-24 sm:py-32"
+      >
+        {/* Subtle background glows */}
+        <div className="pointer-events-none absolute top-[-80px] left-[-60px] h-[480px] w-[480px] rounded-full bg-rose-50/40 blur-[120px]" />
+        <div className="pointer-events-none absolute bottom-[-60px] right-[-40px] h-[360px] w-[360px] rounded-full bg-amber-50/50 blur-[100px]" />
 
-        {galleryError && (
-          <div className="mx-auto mb-16 max-w-2xl rounded-2xl border border-rose-50 bg-rose-50/50 p-6 text-center text-sm font-medium text-[#ff2d55] backdrop-blur-md">
-            {galleryError}
-          </div>
-        )}
+        <div className="container relative mx-auto max-w-7xl px-6">
+          {/* Section Header */}
+          <header className="mb-20 text-center">
+            <div className="animate-artemis-reveal stagger-1 mb-4 text-[10px] font-black uppercase tracking-[0.6em] text-[#ff2d55]/50">
+              Curated Design System
+            </div>
+            <h2
+              id="templates-heading"
+              className="animate-artemis-reveal stagger-2 font-serif text-[42px] italic leading-tight text-[#1a2b5a] sm:text-[56px]"
+            >
+              Exquisite Templates
+            </h2>
+            <p className="animate-artemis-reveal stagger-3 mx-auto mt-5 max-w-xl text-[14px] font-medium leading-relaxed text-[#1a2b5a]/50">
+              Select a foundation to start crafting your story. Each design is fully customizable to fit your unique celebration.
+            </p>
+          </header>
 
-        {initialLoading ? (
-          <div className="mx-auto grid max-w-7xl gap-x-12 gap-y-16 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <GallerySkeleton key={i} />
-            ))}
-          </div>
-        ) : invitations.length === 0 && !galleryError ? (
-          <div className="mx-auto max-w-3xl rounded-[32px] glass-card p-20 text-center shadow-sm">
-            <h3 className="text-3xl font-serif italic text-[#1a2b5a]">Start Your Collection</h3>
-            <p className="mt-4 text-[#1a2b5a]/50">Every wedding begins with a single invitation.</p>
-            <button onClick={() => navigate('/builder')} className="mt-10 rounded-full border border-[#ff2d55]/30 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#ff2d55] transition-all hover:bg-[#ff2d55] hover:text-white">
-              Create My First
-            </button>
-          </div>
-        ) : (
-          <div className="mx-auto grid max-w-7xl gap-x-12 gap-y-16 md:grid-cols-2 lg:grid-cols-3">
-            {invitations.map((inv) => (
-              <GalleryCard
-                key={inv._id}
-                invitation={inv}
-                onOpen={() => navigate(`/invitation/${inv.slug}`)}
+          {/* Templates Grid */}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {templatesList.slice(0, 3).map((tmplt) => (
+              <TemplateCard 
+                key={tmplt.id} 
+                template={tmplt} 
+                onSelect={handleUseTemplate} 
+                previewData={data}
               />
             ))}
           </div>
-        )}
 
-        <div ref={loaderRef} className="flex min-h-40 items-center justify-center pt-24">
-          {loadingMore && <div className="h-6 w-6 border-2 border-[#ff2d55] border-t-transparent animate-spin rounded-full" />}
-          {!loadingMore && !hasMore && invitations.length > 0 && (
-            <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#ff2d55]/20">
-              End of Gallery
-            </div>
-          )}
+          <div className="mt-20 flex justify-center">
+            <button
+               onClick={() => navigate('/templates')}
+               className="group flex items-center gap-3 rounded-full border border-[#1a2b5a]/15 px-10 py-4 text-[11px] font-black uppercase tracking-[0.25em] text-[#1a2b5a] transition-all hover:bg-[#1a2b5a] hover:text-white"
+            >
+               View All Template Options
+               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -316,7 +242,7 @@ export function Home() {
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_top,rgba(180,91,107,0.12),transparent_62%)]" />
         <div className="pointer-events-none absolute left-[-7%] top-24 h-52 w-52 rounded-full bg-[#b45b6b]/10 blur-3xl" />
-        <div className="pointer-events-none absolute right-[-4%] top-10 h-64 w-64 rounded-full bg-[#c6a66b]/12 blur-3xl" />
+        <div className="pointer-events-none absolute right-[-4%] top-10 h-64 w-64 rounded-full bg-[#d4c39c]/12 blur-3xl" />
 
         <div className="container relative mx-auto max-w-7xl px-6">
           <header className="mx-auto max-w-3xl text-center">
@@ -347,7 +273,7 @@ export function Home() {
                     <div className={`flex h-16 w-16 items-center justify-center rounded-[22px] border border-white/70 bg-white/85 ${feature.tint} ${feature.badgeShadow} transition-transform duration-500 group-hover:scale-110`}>
                       <feature.icon className="h-6 w-6" />
                     </div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#c6a66b]/40">
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#d4c39c]/40">
                       0{i + 1}
                     </div>
                   </div>
@@ -373,8 +299,8 @@ export function Home() {
                     ))}
                   </div>
 
-                  <div className="mt-8 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.32em] text-[#c6a66b]/55">
-                    <span className="h-px flex-1 bg-[#c6a66b]/18" />
+                  <div className="mt-8 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.32em] text-[#d4c39c]/55">
+                    <span className="h-px flex-1 bg-[#d4c39c]/18" />
                     Invitation-ready
                   </div>
                 </div>
