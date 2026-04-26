@@ -26,7 +26,7 @@ function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    const handleScroll = () => setIsScrolled(window.scrollY > 120);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -39,26 +39,30 @@ function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-[700ms] ease-[cubic-bezier(0.23,1,0.32,1)]',
         isScrolled
-          ? 'border-b border-[#eadfd2] bg-[#fffaf4]/92 shadow-[0_18px_50px_-28px_rgba(61,46,33,0.25)] backdrop-blur-2xl'
+          ? 'bg-transparent'
           : 'bg-transparent'
       )}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={cn(
+        "mx-auto transition-all duration-[700ms] ease-[cubic-bezier(0.23,1,0.32,1)] px-4 sm:px-6",
+        isScrolled ? "max-w-[1100px]" : "w-[94%] max-w-[1600px] lg:px-10"
+      )}>
         <div className="py-4">
-          <div className="rounded-full border border-white/70 bg-white/72 px-4 py-3 shadow-[0_14px_40px_-24px_rgba(61,46,33,0.35)] backdrop-blur-xl sm:px-6">
-            <div className="flex items-center justify-between gap-4">
+          <div className={cn(
+            "rounded-full transition-all duration-[700ms] ease-[cubic-bezier(0.23,1,0.32,1)]",
+            isScrolled || location.pathname !== '/'
+              ? "bg-[#111111]/85 pl-8 pr-4 py-3 backdrop-blur-3xl border border-white/10 shadow-none"
+              : "bg-transparent px-6 py-3 border border-transparent shadow-none"
+          )}>
+            <div className="flex items-center justify-between gap-6">
               <Link to="/" className="min-w-0 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,#f7eadb_0%,#e2c6aa_100%)] text-[#6f5643] shadow-inner">
-                    <span className="font-serif text-lg italic">W</span>
-                  </div>
-                  <div className="min-w-0">
-                    <div className="truncate font-serif text-xl tracking-[0.14em] text-[#2f2925] uppercase">Wedding Invites v4</div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#a58a72]">Elegant digital invitations</div>
-                  </div>
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="Wedding Invites Logo"
+                  className="h-8 w-auto transition-all duration-[700ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
+                />
               </Link>
 
               <nav aria-label="Main navigation" className="hidden items-center gap-2 md:flex">
@@ -69,8 +73,8 @@ function Navbar() {
                     className={cn(
                       'rounded-full px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.22em] transition-all',
                       isActive(item.to)
-                        ? 'bg-[#2f2925] text-white shadow-[0_12px_24px_-18px_rgba(47,41,37,0.8)]'
-                        : 'text-[#6e6258] hover:bg-[#f7f1ea] hover:text-[#2f2925]'
+                        ? (isScrolled || location.pathname !== '/' ? 'bg-white/10 text-white' : 'bg-white text-black')
+                        : (isScrolled || location.pathname !== '/' ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-white/80 hover:bg-white/10 hover:text-white')
                     )}
                   >
                     {item.label}
@@ -80,7 +84,7 @@ function Navbar() {
 
               <Link
                 to="/builder"
-                className="hidden rounded-full bg-[linear-gradient(135deg,#2f2925_0%,#4b3a2d_100%)] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white transition-transform hover:-translate-y-0.5 md:inline-flex"
+                className="hidden rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-white shadow-[0_10px_30px_-10px_rgba(182,141,64,0.4)] transition-all hover:scale-[1.05] hover:shadow-[0_12px_40px_-10px_rgba(182,141,64,0.6)] md:inline-flex"
               >
                 Start Building
               </Link>
@@ -88,7 +92,7 @@ function Navbar() {
               <button
                 type="button"
                 onClick={() => setMobileOpen((open) => !open)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#e8ddd0] bg-white text-[#5e5247] transition hover:bg-[#faf5ef] md:hidden"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#111111]/50 text-white transition hover:bg-[#111111]/80 md:hidden"
                 aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 aria-expanded={mobileOpen}
               >
@@ -118,7 +122,7 @@ function Navbar() {
                 <Link
                   to="/builder"
                   onClick={() => setMobileOpen(false)}
-                  className="mt-2 rounded-2xl bg-[linear-gradient(135deg,#2f2925_0%,#4b3a2d_100%)] px-4 py-3 text-center text-sm font-semibold text-white"
+                  className="mt-2 rounded-2xl bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-4 py-3 text-center text-sm font-semibold text-white shadow-lg"
                 >
                   Start Building
                 </Link>
@@ -133,16 +137,16 @@ function Navbar() {
 
 function AppShell() {
   const location = useLocation();
-  const isInvitation = location.pathname.startsWith('/invitation/') || 
-                       location.pathname.startsWith('/invite/') || 
-                       location.pathname.startsWith('/v/');
+  const isInvitation = location.pathname.startsWith('/invitation/') ||
+    location.pathname.startsWith('/invite/') ||
+    location.pathname.startsWith('/v/');
 
   return (
     <div className="min-h-screen bg-silk font-sans antialiased text-slate-900 flex flex-col">
       {!isInvitation && <Navbar />}
       <main className={cn(
         "flex-grow",
-        !isInvitation && "pt-[104px] sm:pt-[112px] md:pt-[120px]"
+        !isInvitation && location.pathname !== '/' && "pt-[104px] sm:pt-[112px] md:pt-[120px]"
       )}>
         <Suspense
           fallback={
@@ -168,44 +172,76 @@ function AppShell() {
       </main>
 
       {!isInvitation && (
-        <footer className="py-16 bg-slate-950 border-t border-rose-900/30 text-center mt-auto relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent,#4c0519)] opacity-30" aria-hidden="true" />
+        <footer className="bg-white pt-24 pb-12 text-[#003d4d]">
+          <div className="container mx-auto max-w-7xl px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
+              {/* Branding & Social Column */}
+              <div className="lg:col-span-4 flex flex-col items-start gap-8">
+                <img src="/logo_black.png" alt="Weddinginvites Logo" className="h-10 w-auto" />
 
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="mb-10 flex flex-col md:flex-row items-center justify-center gap-12 text-slate-300">
-              <div className="flex flex-col items-center gap-3">
-                <h4 className="text-white font-serif italic text-2xl tracking-tight mb-1">
-                  <a href="https://triredglobal.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[#ff2d55] transition-colors cursor-pointer">Trired Global</a>
-                </h4>
-                <p className="text-[12px] font-medium text-slate-400 tracking-wide uppercase opacity-60">Empowering digital transformation globally.</p>
-                <div className="mt-4 flex items-center gap-8">
-                  <a href="https://triredglobal.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#ff2d55] transition-colors text-[11px] font-bold uppercase tracking-widest opacity-80">
-                    <Globe className="w-3.5 h-3.5" /> Site
-                  </a>
-                  <span className="flex items-center gap-2 hover:text-[#ff2d55] transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-widest opacity-80">
-                    <Mail className="w-3.5 h-3.5" /> Support
-                  </span>
+                <div className="flex items-center gap-6 mt-6">
+                  <div className="text-[#E4405F] hover:scale-110 transition-all duration-300 cursor-pointer flex items-center justify-center">
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                  </div>
+                  <div className="text-[#FF0000] hover:scale-110 transition-all duration-300 cursor-pointer flex items-center justify-center">
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-6">
+                  <div className="text-[13px] font-medium text-[#003d4d]/60">
+                    &copy; {new Date().getFullYear()} Weddinginvites. All rights reserved.
+                  </div>
+                </div>
+              </div>
+
+              {/* Links Columns */}
+              <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="flex flex-col gap-4">
+                  <h4 className="font-serif text-[18px] italic font-normal tracking-tight">Collection</h4>
+                  <nav className="flex flex-col gap-3 text-[14px] text-[#003d4d]/70">
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Immersive Series</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Editorial Noir</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Minimalist Suite</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Seasonal Editions</span>
+                  </nav>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <h4 className="font-serif text-[18px] italic font-normal tracking-tight">Experience</h4>
+                  <nav className="flex flex-col gap-3 text-[14px] text-[#003d4d]/70">
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">AI Suite</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">RSVP Engine</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Live Preview</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Guest List</span>
+                  </nav>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <h4 className="font-serif text-[18px] italic font-normal tracking-tight">Journal</h4>
+                  <nav className="flex flex-col gap-3 text-[14px] text-[#003d4d]/70">
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Case Studies</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Wedding Trends</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Design Guide</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">FAQ</span>
+                  </nav>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <h4 className="font-serif text-[18px] italic font-normal tracking-tight">Studio</h4>
+                  <nav className="flex flex-col gap-3 text-[14px] text-[#003d4d]/70">
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Our Vision</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Careers</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Contact</span>
+                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Privacy Policy</span>
+                  </nav>
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center justify-center gap-4 mb-10">
-              {['instagram', 'linkedin'].map((social) => (
-                <a key={social} href={`https://${social}.com`} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center hover:bg-[#ff2d55] hover:border-[#ff2d55] text-white transition-all hover:-translate-y-1">
-                  <div className="w-5 h-5 opacity-80">
-                    {social === 'instagram' ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" /></svg>
-                    )}
-                  </div>
-                </a>
-              ))}
-            </div>
-
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
-              &copy; {new Date().getFullYear()} <span className="text-white/40">Powered by</span> <a href="https://triredglobal.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Trired Global</a>
-            </p>
           </div>
         </footer>
       )}
