@@ -65,13 +65,13 @@ function Navbar() {
                 />
               </Link>
 
-              <nav aria-label="Main navigation" className="hidden items-center gap-2 md:flex">
+              <nav aria-label="Main navigation" className="hidden items-center gap-1.5 md:flex">
                 {NAV_ITEMS.map((item) => (
                   <Link
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      'rounded-full px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.22em] transition-all',
+                      'rounded-full px-3.5 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] transition-all whitespace-nowrap',
                       isActive(item.to)
                         ? (isScrolled || location.pathname !== '/' ? 'bg-white/10 text-white' : 'bg-white text-black')
                         : (isScrolled || location.pathname !== '/' ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'text-white/80 hover:bg-white/10 hover:text-white')
@@ -84,7 +84,7 @@ function Navbar() {
 
               <Link
                 to="/builder"
-                className="hidden rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-white shadow-[0_10px_30px_-10px_rgba(182,141,64,0.4)] transition-all hover:scale-[1.05] hover:shadow-[0_12px_40px_-10px_rgba(182,141,64,0.6)] md:inline-flex"
+                className="hidden shrink-0 rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-white shadow-[0_10px_30px_-10px_rgba(182,141,64,0.4)] transition-all hover:scale-[1.05] hover:shadow-[0_12px_40px_-10px_rgba(182,141,64,0.6)] md:inline-flex"
               >
                 Start Building
               </Link>
@@ -102,31 +102,56 @@ function Navbar() {
           </div>
         </div>
 
+        {/* Redesigned Mobile Menu — Fullscreen Editorial Overlay */}
         {mobileOpen ? (
-          <div className="pb-4 md:hidden">
-            <div className="rounded-[28px] border border-[#ece1d4] bg-white/96 p-3 shadow-[0_18px_50px_-28px_rgba(61,46,33,0.3)] backdrop-blur-xl">
-              <nav aria-label="Mobile navigation" className="grid gap-2">
-                {NAV_ITEMS.map((item) => (
+          <div className="fixed inset-0 z-[60] flex flex-col bg-[#111111]/98 backdrop-blur-2xl transition-all duration-500 ease-out">
+            {/* Close Header */}
+            <div className="flex h-24 items-center justify-between px-6">
+              <Link to="/" onClick={() => setMobileOpen(false)}>
+                <img src="/logo.png" alt="Logo" className="h-8 w-auto" />
+              </Link>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:bg-white/10"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Menu Content */}
+            <div className="flex flex-1 flex-col items-center justify-center px-6">
+              <nav aria-label="Mobile navigation" className="flex flex-col items-center gap-6 text-center">
+                {NAV_ITEMS.map((item, index) => (
                   <Link
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
-                      'rounded-2xl px-4 py-3 text-sm font-semibold transition',
-                      isActive(item.to) ? 'bg-[#2f2925] text-white' : 'text-[#5f5348] hover:bg-[#faf5ef]'
+                      'font-serif text-[32px] italic tracking-tight transition-all duration-500 hover:scale-105',
+                      isActive(item.to) ? 'text-white' : 'text-white/40 hover:text-white'
                     )}
                   >
                     {item.label}
                   </Link>
                 ))}
+              </nav>
+
+              <div className="mt-16 w-full max-w-[280px]">
                 <Link
                   to="/builder"
                   onClick={() => setMobileOpen(false)}
-                  className="mt-2 rounded-2xl bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-4 py-3 text-center text-sm font-semibold text-white shadow-lg"
+                  className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] py-5 text-[14px] font-black uppercase tracking-[0.3em] text-white shadow-[0_20px_50px_-10px_rgba(182,141,64,0.4)] transition-all active:scale-95"
                 >
                   Start Building
                 </Link>
-              </nav>
+              </div>
+            </div>
+
+            {/* Bottom Footer Info */}
+            <div className="py-12 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">
+                &copy; 2026 WedInvites. All rights reserved.
+              </p>
             </div>
           </div>
         ) : null}
