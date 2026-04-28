@@ -514,7 +514,7 @@ export function HighEndImmersiveTemplate({ data }) {
       </section>
 
       {/* The Vault Arch Content */}
-      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32">
+      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32 border-none">
         <div className="mx-auto max-w-[840px]">
 
           <div className="reveal-up mb-20 text-center">
@@ -642,7 +642,7 @@ export function HighEndImmersiveTemplate({ data }) {
         </div>
 
         {/* Footer Detail */}
-        <div className="mt-12 border-t border-[#1a3529]/10 pt-16 text-center">
+        <div className="mt-12 pt-16 text-center">
           <div className="leaf-float mx-auto mb-10 flex justify-center text-[#c9a87c] opacity-60">
             <Leaf size={40} strokeWidth={1} />
           </div>

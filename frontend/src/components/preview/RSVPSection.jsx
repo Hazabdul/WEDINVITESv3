@@ -28,9 +28,9 @@ export function RSVPSection({ attendanceResponse: externalResponse, onResponse, 
   };
 
   return (
-    <div className={cn("mx-auto w-full px-4 mt-4 pb-12 sm:mt-6", isPreview ? "max-w-full" : "max-w-3xl")}>
+    <div className={cn("mx-auto w-full px-4 pb-12", isPreview ? "max-w-full" : "max-w-3xl")}>
       <div className={cn(
-        "relative overflow-hidden bg-gradient-to-br from-[#1a3529] to-[#244a39] text-center transition-all duration-700",
+        "relative overflow-hidden bg-gradient-to-br from-[#1a3529] to-[#244a39] text-center transition-all duration-700 border-none shadow-none",
         isPreview ? "rounded-[24px] py-8 px-8 sm:py-12 sm:px-16" : "rounded-[28px] py-12 px-10 sm:py-16 sm:px-24"
       )}>
         {/* Subtle background glow */}
