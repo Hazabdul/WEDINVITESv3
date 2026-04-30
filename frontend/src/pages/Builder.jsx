@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CalendarDays,
   CheckCircle2,
@@ -9,15 +10,18 @@ import {
   ExternalLink,
   Heart,
   Images,
+  LayoutGrid,
   MapPin,
   Monitor,
   Palette,
   Plus,
   Send,
+  RotateCcw,
   Smartphone,
   Sparkles,
   Trash2,
   UploadCloud,
+  X,
 } from 'lucide-react';
 import { useInvitationState } from '../hooks/useInvitationState';
 import { Button } from '../components/ui/Button';
@@ -95,33 +99,50 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
 }
 
 function PreviewFrame({ mode, children }) {
-  if (mode === 'mobile') {
+  const [isMobileSize, setIsMobileSize] = React.useState(false);
+
+  React.useEffect(() => {
+    const check = () => {
+      setIsMobileSize(window.innerWidth < 1024);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // On mobile screens or in mobile mode, we render the mobile phone frame
+  if (mode === 'mobile' || isMobileSize) {
     return (
-      <div className="mx-auto w-full max-w-[414px] relative">
+      <div className="mx-auto w-[375px] relative">
         <div className="rounded-[40px] border-[12px] border-[#1a1a1a] bg-[#1a1a1a] p-1 shadow-2xl relative z-10">
           <div className="overflow-hidden rounded-[28px] bg-white relative">
             <div className="absolute top-0 inset-x-0 flex items-center justify-center pt-3 z-50 pointer-events-none">
               <div className="h-6 w-32 rounded-full bg-[#1a1a1a]" />
             </div>
-            <div className="h-[796px] overflow-hidden rounded-b-[28px]">{children}</div>
+            <div className="overflow-y-auto custom-scrollbar-preview rounded-b-[28px] h-[667px]">
+              {children}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // On desktop screens when in desktop mode, render the laptop frame
   return (
-    <div className="mx-auto w-full relative">
-      <div className="relative rounded-t-xl border-[8px] border-[#1a1a1a] bg-[#1a1a1a] shadow-2xl overflow-hidden z-10">
-        <div className="flex items-center gap-2 bg-[#1a1a1a] px-4 py-3">
-          <span className="h-3 w-3 rounded-full bg-red-500/80" />
-          <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-          <span className="h-3 w-3 rounded-full bg-green-500/80" />
+    <div className="w-full">
+      <div className="mx-auto w-full relative">
+        <div className="relative rounded-t-xl border-[8px] border-[#1a1a1a] bg-[#1a1a1a] shadow-2xl overflow-hidden z-10">
+          <div className="flex items-center gap-2 bg-[#1a1a1a] px-4 py-3">
+            <span className="h-3 w-3 rounded-full bg-red-500/80" />
+            <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+            <span className="h-3 w-3 rounded-full bg-green-500/80" />
+          </div>
+          <div className="bg-white aspect-[16/10] overflow-hidden">{children}</div>
         </div>
-        <div className="bg-white aspect-[16/10] overflow-hidden">{children}</div>
-      </div>
-      <div className="relative h-3 w-[106%] -ml-[3%] bg-[#2a2a2a] rounded-b-xl border-t border-white/5 shadow-xl z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-black/40 rounded-b-md" />
+        <div className="relative h-3 w-[106%] -ml-[3%] bg-[#2a2a2a] rounded-b-xl border-t border-white/5 shadow-xl z-0">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-black/40 rounded-b-md" />
+        </div>
       </div>
     </div>
   );
@@ -199,6 +220,12 @@ export function Builder() {
   const groomImage = data?.media?.groomImage || '';
   const galleryText = useMemo(() => (data?.media?.gallery || []).join('\n'), [data?.media?.gallery]);
   const galleryCount = data?.media?.gallery?.filter(Boolean).length || 0;
+  const handleReplay = () => {
+    if (iframeRef.current) {
+      iframeRef.current.contentWindow.location.reload();
+    }
+  };
+
   const canPublish = progressInfo.percentage >= 80;
 
   const nextStep = () => setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
@@ -478,104 +505,200 @@ export function Builder() {
               </div>
             ) : null}
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-gray-200 bg-white px-6 py-8 text-center transition hover:border-[#0f172a] hover:bg-white',
-                isUploadingMedia && 'cursor-wait opacity-70'
-              )}>
-                <UploadCloud className="mb-4 h-8 w-8 text-[#94a3b8]" />
-                <div className="text-sm font-medium text-[#0f172a]">
-                  {isUploadingMedia ? 'Uploading...' : 'Upload banner'}
+            <div className="space-y-6">
+              {/* Hero Banner Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Main Banner</span>
+                  {coverImage && (
+                    <button 
+                      onClick={() => {
+                        updateSection('media', 'coverImage', '');
+                        updateSection('media', 'coupleImage', '');
+                      }}
+                      className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
-                <div className="mt-1 text-xs leading-5 text-[#94a3b8]">One main image for the top section of the invitation.</div>
-                <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
-              </label>
+                <label className={cn(
+                  'group relative flex h-36 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
+                  isUploadingMedia && 'cursor-wait opacity-70'
+                )}>
+                  {coverImage ? (
+                    <div className="absolute inset-0 z-0">
+                      <img src={normalizeMediaUrl(coverImage)} alt="Banner Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-all group-hover:bg-black/40" />
+                    </div>
+                  ) : null}
+                  <div className="relative z-10 flex flex-col items-center text-center px-6">
+                    <div className={cn(
+                      "mb-3 flex h-10 w-10 items-center justify-center rounded-full transition-all",
+                      coverImage ? "bg-white/20 text-white backdrop-blur-md" : "bg-white text-slate-400 shadow-sm"
+                    )}>
+                      <UploadCloud className="h-5 w-5" />
+                    </div>
+                    <div className={cn("text-[11px] font-bold tracking-tight", coverImage ? "text-white" : "text-slate-900")}>
+                      {isUploadingMedia ? '...' : (coverImage ? 'Change Banner' : 'Upload Banner')}
+                    </div>
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
+                </label>
+              </div>
 
-              <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-gray-200 bg-white px-6 py-8 text-center transition hover:border-[#0f172a] hover:bg-white',
-                isUploadingMedia && 'cursor-wait opacity-70'
-              )}>
-                <UploadCloud className="mb-4 h-8 w-8 text-[#94a3b8]" />
-                <div className="text-sm font-medium text-[#0f172a]">
-                  {isUploadingMedia ? 'Uploading...' : 'Upload bride photo'}
+              {/* Couple Portraits Section */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Bride */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride Portrait</span>
+                    {brideImage && (
+                      <button 
+                        onClick={() => updateSection('media', 'brideImage', '')}
+                        className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <label className={cn(
+                    'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
+                    isUploadingMedia && 'cursor-wait opacity-70'
+                  )}>
+                    {brideImage ? (
+                      <div className="absolute inset-0 z-0">
+                        <img src={normalizeMediaUrl(brideImage)} alt="Bride Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-all group-hover:bg-black/40" />
+                      </div>
+                    ) : null}
+                    <div className="relative z-10 flex flex-col items-center text-center px-4">
+                      <div className={cn(
+                        "mb-2 flex h-8 w-8 items-center justify-center rounded-full transition-all",
+                        brideImage ? "bg-white/20 text-white backdrop-blur-md" : "bg-white text-slate-400 shadow-sm"
+                      )}>
+                        <UploadCloud className="h-3.5 w-3.5" />
+                      </div>
+                      <div className={cn("text-[10px] font-bold tracking-tight", brideImage ? "text-white" : "text-slate-900")}>
+                        {isUploadingMedia ? '...' : (brideImage ? 'Change' : 'Bride')}
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => handleSingleImageUpload(event, 'brideImage', 'Bride image')}
+                      disabled={isUploadingMedia}
+                    />
+                  </label>
                 </div>
-                <div className="mt-1 text-xs leading-5 text-[#94a3b8]">Single portrait used in the bride profile card.</div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => handleSingleImageUpload(event, 'brideImage', 'Bride image')}
-                  disabled={isUploadingMedia}
-                />
-              </label>
 
-              <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-gray-200 bg-white px-6 py-8 text-center transition hover:border-[#0f172a] hover:bg-white',
-                isUploadingMedia && 'cursor-wait opacity-70'
-              )}>
-                <UploadCloud className="mb-4 h-8 w-8 text-[#94a3b8]" />
-                <div className="text-sm font-medium text-[#0f172a]">
-                  {isUploadingMedia ? 'Uploading...' : 'Upload groom photo'}
+                {/* Groom */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom Portrait</span>
+                    {groomImage && (
+                      <button 
+                        onClick={() => updateSection('media', 'groomImage', '')}
+                        className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <label className={cn(
+                    'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
+                    isUploadingMedia && 'cursor-wait opacity-70'
+                  )}>
+                    {groomImage ? (
+                      <div className="absolute inset-0 z-0">
+                        <img src={normalizeMediaUrl(groomImage)} alt="Groom Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-all group-hover:bg-black/40" />
+                      </div>
+                    ) : null}
+                    <div className="relative z-10 flex flex-col items-center text-center px-4">
+                      <div className={cn(
+                        "mb-2 flex h-8 w-8 items-center justify-center rounded-full transition-all",
+                        groomImage ? "bg-white/20 text-white backdrop-blur-md" : "bg-white text-slate-400 shadow-sm"
+                      )}>
+                        <UploadCloud className="h-3.5 w-3.5" />
+                      </div>
+                      <div className={cn("text-[10px] font-bold tracking-tight", groomImage ? "text-white" : "text-slate-900")}>
+                        {isUploadingMedia ? '...' : (groomImage ? 'Change' : 'Groom')}
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => handleSingleImageUpload(event, 'groomImage', 'Groom image')}
+                      disabled={isUploadingMedia}
+                    />
+                  </label>
                 </div>
-                <div className="mt-1 text-xs leading-5 text-[#94a3b8]">Single portrait used in the groom profile card.</div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => handleSingleImageUpload(event, 'groomImage', 'Groom image')}
-                  disabled={isUploadingMedia}
-                />
-              </label>
+              </div>
 
-              <label className={cn(
-                'flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-gray-200 bg-white px-6 py-8 text-center transition hover:border-[#0f172a] hover:bg-white',
-                isUploadingMedia && 'cursor-wait opacity-70'
-              )}>
-                <Images className="mb-4 h-8 w-8 text-[#94a3b8]" />
-                <div className="text-sm font-medium text-[#0f172a]">
-                  {isUploadingMedia ? 'Uploading...' : 'Add gallery photos'}
+              {/* Gallery Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Gallery Collection</span>
+                    {data.media?.gallery?.length > 0 && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-500">
+                        {data.media.gallery.length} Images
+                      </span>
+                    )}
+                  </div>
+                  {data.media?.gallery?.length > 0 && (
+                    <button 
+                      onClick={() => updateSection('media', 'gallery', [])}
+                      className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  )}
                 </div>
-                <div className="mt-1 text-xs leading-5 text-[#94a3b8]">Upload multiple images for the invitation gallery.</div>
-                <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={isUploadingMedia} />
-              </label>
+
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                  {/* Existing Gallery Images */}
+                  {(data.media?.gallery || []).map((url, i) => (
+                    <div key={i} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
+                      <img 
+                        src={normalizeMediaUrl(url)} 
+                        alt={`Gallery ${i}`} 
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const newGallery = [...data.media.gallery];
+                          newGallery.splice(i, 1);
+                          updateSection('media', 'gallery', newGallery);
+                        }}
+                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-md transition-all hover:bg-red-500 group-hover:opacity-100"
+                        title="Remove image"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Add More Moments Button */}
+                  <label className={cn(
+                    'group relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
+                    isUploadingMedia && 'cursor-wait opacity-70'
+                  )}>
+                    <div className="flex flex-col items-center text-center">
+                      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
+                        <Plus className="h-4 w-4" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-900">Add More</span>
+                    </div>
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={isUploadingMedia} />
+                  </label>
+                </div>
+              </div>
             </div>
-
-            <TextInput
-              label="Banner image URL"
-              helper="Use one direct image URL if the banner is hosted elsewhere."
-              placeholder="https://..."
-              value={coverImage}
-              onChange={(event) => {
-                updateSection('media', 'coverImage', event.target.value);
-                updateSection('media', 'coupleImage', event.target.value);
-              }}
-            />
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <TextInput
-                label="Bride photo URL"
-                helper="Optional direct image URL for the bride portrait."
-                placeholder="https://..."
-                value={brideImage}
-                onChange={(event) => updateSection('media', 'brideImage', event.target.value)}
-              />
-              <TextInput
-                label="Groom photo URL"
-                helper="Optional direct image URL for the groom portrait."
-                placeholder="https://..."
-                value={groomImage}
-                onChange={(event) => updateSection('media', 'groomImage', event.target.value)}
-              />
-            </div>
-
-            <TextAreaInput
-              label={`Gallery image URLs${galleryCount ? ` (${galleryCount})` : ''}`}
-              helper="Multiple gallery images supported. Use one image URL per line."
-              placeholder={'https://.../photo-1.jpg\nhttps://.../photo-2.jpg'}
-              value={galleryText}
-              onChange={(event) => handleGalleryUrlsChange(event.target.value)}
-              rows={6}
-            />
           </div>
         );
 
@@ -904,8 +1027,42 @@ export function Builder() {
     }
   };
 
+  const navigate = useNavigate();
+
   return (
-    <div className="mx-auto max-w-[1520px] px-4 py-4 sm:px-6 lg:px-8 lg:py-8">
+    <div className="min-h-screen bg-silk">
+      {/* Premium Builder Header */}
+      <header className="sticky top-0 z-[60] border-b border-gray-100 bg-white/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="shrink-0 transition-transform active:scale-95">
+              <img src="/logo_black.png" alt="Logo" className="h-7 w-auto" />
+            </Link>
+            
+            <div className="h-4 w-[1.5px] bg-gray-100" />
+            
+            <button 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-slate-900"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              <span>Back</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/templates"
+              className="flex items-center gap-2 rounded-full border border-gray-100 bg-white px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 shadow-sm transition-all hover:border-slate-200 hover:bg-slate-50 active:scale-95"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span>Templates</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-[1620px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
 
       {backendHealthError ? (
         <div className="mb-6 rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -1004,58 +1161,65 @@ export function Builder() {
         <div className="min-w-0">
           <div className="xl:sticky xl:top-24">
             <div className="overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f4ede4_100%)] border border-gray-100 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.08)]">
-              <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#94a3b8]">Live preview</div>
-                  <h3 className="mt-2 text-2xl text-[#0f172a]">See changes instantly</h3>
-                  <p className="mt-1 text-sm text-[#64748b]">Toggle between desktop and mobile without leaving the builder.</p>
+              <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 border-b border-gray-100/50 bg-white/50 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-medium tracking-tight text-[#0f172a] italic font-serif">Live Preview</span>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center gap-4">
                   <button
                     type="button"
-                    onClick={() => setShowCover(true)}
-                    className="mr-3 inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-600 transition hover:bg-slate-50 active:scale-95"
+                    onClick={handleReplay}
+                    className="group flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-all hover:text-[#0f172a]"
                     title="Replay entrance experience"
                   >
-                    <Send className="h-3 w-3" /> Replay
+                    <RotateCcw className="h-3.5 w-3.5 transition-transform group-hover:rotate-[-45deg]" />
+                    <span>Replay</span>
                   </button>
 
-                  <div className="inline-flex rounded-full border border-gray-200 bg-white p-1.5 shadow-sm">
+                  <div className="hidden md:block h-4 w-[1px] bg-gray-200" />
+
+                  <div className="hidden md:flex items-center gap-1 rounded-xl bg-slate-100/80 p-1 backdrop-blur-sm">
                     <button
                       type="button"
                       onClick={() => setPreviewMode('desktop')}
                       className={cn(
-                        'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition',
-                        previewMode === 'desktop' ? 'bg-[#0f172a] text-white' : 'text-slate-600 hover:bg-slate-50'
+                        'flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-300',
+                        previewMode === 'desktop'
+                          ? 'bg-white text-[#0f172a] shadow-sm shadow-black/5'
+                          : 'text-slate-500 hover:text-slate-700'
                       )}
                     >
-                      <Monitor className="h-4 w-4" /> Desktop
+                      <Monitor className="h-3.5 w-3.5" />
+                      <span>Desktop</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setPreviewMode('mobile')}
                       className={cn(
-                        'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition',
-                        previewMode === 'mobile' ? 'bg-[#0f172a] text-white' : 'text-slate-600 hover:bg-slate-50'
+                        'flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-300',
+                        previewMode === 'mobile'
+                          ? 'bg-white text-[#0f172a] shadow-sm shadow-black/5'
+                          : 'text-slate-500 hover:text-slate-700'
                       )}
                     >
-                      <Smartphone className="h-4 w-4" /> Mobile
+                      <Smartphone className="h-3.5 w-3.5" />
+                      <span>Mobile</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3">
+              <div className="p-0 md:p-3">
                 <div className="overflow-hidden bg-white rounded-xl">
                   {/* Scaled Preview Frame Container */}
                   <div className={cn(
                     "relative w-full transition-all duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar-preview bg-[#f1f5f9]/50 rounded-xl"
                   )}>
-                    <div className="flex w-full justify-center py-8">
+                    <div className="flex w-full justify-center py-4 md:py-8">
                       <div className={cn(
                         "transition-all duration-700 flex justify-center",
-                        previewMode === 'desktop' ? "w-[1440px] scale-[0.45] lg:scale-[0.5] xl:scale-[0.55] 2xl:scale-[0.8] origin-top" : "w-[414px] scale-[0.55] lg:scale-[0.6] xl:scale-[0.65] 2xl:scale-[0.7] origin-top mx-auto"
+                        previewMode === 'desktop' ? "w-[414px] md:w-[1440px] scale-[0.85] md:scale-[0.45] lg:scale-[0.5] xl:scale-[0.55] 2xl:scale-[0.8] origin-top" : "w-[375px] scale-[0.88] origin-top mx-auto"
                       )}>
                         <PreviewFrame mode={previewMode}>
                           <iframe
@@ -1073,6 +1237,7 @@ export function Builder() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

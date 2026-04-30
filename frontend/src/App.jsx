@@ -166,6 +166,7 @@ function AppShell() {
   const isInvitation = location.pathname.startsWith('/invitation/') ||
     location.pathname.startsWith('/invite/') ||
     location.pathname.startsWith('/v/') ||
+    location.pathname.startsWith('/builder') ||
     location.pathname.startsWith('/preview-render');
 
   return (
