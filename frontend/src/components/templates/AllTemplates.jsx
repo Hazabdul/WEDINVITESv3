@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SharedSections } from './SharedSections';
 import { DesignElement } from '../preview/DesignElement';
+import { CouplePortraits } from '../preview/CouplePortraits';
 import { resolveMediaSource } from '../../utils/media';
 import { cn } from '../../utils/cn';
 
@@ -467,7 +468,7 @@ export function HighEndImmersiveTemplate({ data }) {
         .forest-vault-template h1, .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: 'Cormorant Garamond', serif; }
         .forest-vault-template { font-family: 'Montserrat', sans-serif; }
         .vault-frame { 
-          border-radius: 999px 999px 0 0;
+          border-radius: 999px 999px 80px 80px;
           overflow: hidden;
         }
         .arch-container {
@@ -516,7 +517,6 @@ export function HighEndImmersiveTemplate({ data }) {
       {/* The Vault Arch Content */}
       <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32 border-none">
         <div className="mx-auto max-w-[840px]">
-
           <div className="reveal-up mb-20 text-center">
             <div className="mx-auto mb-6 flex justify-center opacity-40">
               <Leaf className="h-8 w-8 rotate-12 text-[#1a3529]" strokeWidth={1} />
@@ -526,12 +526,28 @@ export function HighEndImmersiveTemplate({ data }) {
               {intro || 'We Invite You to Celebrate Our Wedding'}
             </p>
           </div>
+        </div>
+
+        {/* SECTION: Redesigned Couple Portraits */}
+        {(media.brideImage || media.groomImage) && (
+          <div className="reveal-up">
+            <CouplePortraits
+              brideImage={resolveMediaSource(media.brideImage) || ''}
+              groomImage={resolveMediaSource(media.groomImage) || ''}
+              brideName={brideName}
+              groomName={groomName}
+              nameColor="rgba(26, 53, 41, 0.82)"
+            />
+          </div>
+        )}
+
+        <div className="mx-auto max-w-[840px]"> {/* Re-open restricted container */}
 
           {/* Cinematic Signature Section - Enhanced Frame with Standard Height */}
           <div className="reveal-up relative mb-16 h-[320px] w-full sm:h-[400px]">
             {/* Outer Decorative Frame Border */}
             <div className="absolute inset-[-6px] rounded-[30px] border border-[#c9a87c]/20 sm:inset-[-10px] sm:rounded-[38px]" />
-            
+
             <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30">
               {mediaPack.video ? (
                 <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-60">
@@ -576,7 +592,7 @@ export function HighEndImmersiveTemplate({ data }) {
               {(events || []).map((evt, i) => (
                 <div key={i} className={cn("reveal-up flex flex-col gap-8 sm:items-center sm:gap-16", i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse")}>
                   {/* Arched Portrait for Event */}
-                  <div className="vault-frame relative h-[320px] w-full shrink-0 shadow-2xl sm:h-[420px] sm:w-[300px]">
+                  <div className="vault-frame relative h-[320px] w-full shrink-0 sm:h-[420px] sm:w-[300px]">
                     {mediaPack.gallery[i + 2] ? (
                       <img src={mediaPack.gallery[i + 2]} className="h-full w-full object-cover" />
                     ) : (

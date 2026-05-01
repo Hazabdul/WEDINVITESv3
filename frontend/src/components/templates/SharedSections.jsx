@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Phone } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DesignElement } from '../preview/DesignElement';
+import { CouplePortraits } from '../preview/CouplePortraits';
+import { resolveMediaSource } from '../../utils/media';
 
 /* ─── Live Countdown ──────────────────────────────────────── */
 function Countdown({ date, dark }) {
@@ -46,7 +48,7 @@ function Countdown({ date, dark }) {
 
 /* ─── SharedSections ──────────────────────────────────────── */
 export function SharedSections({ data, dark = false, hideGallery = false, hideVideo = false, hideRSVP = false, hideMap = false, hideEvents = false, hideFamily = false, hideBlessings = false, hideCountdown = false }) {
-  const { event, events, family, content, media, theme } = data;
+  const { couple, event, events, family, content, media, theme } = data;
 
   const textPrimary = dark ? 'text-white' : 'text-slate-900';
   const textMuted = dark ? 'text-white/65' : 'text-slate-500';
@@ -56,8 +58,24 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
   /* section shape from user theme, fallback to rounded-2xl */
   const shape = theme?.sectionShape || 'rounded-2xl';
 
+  const brideImage = resolveMediaSource(media?.brideImage) || '';
+  const groomImage = resolveMediaSource(media?.groomImage) || '';
+  const brideName  = couple?.bride  || '';
+  const groomName  = couple?.groom  || '';
+
   return (
     <div className="space-y-4 p-4">
+
+      {/* ── Couple Portraits ── */}
+      {(brideImage || groomImage) && (
+        <CouplePortraits
+          brideImage={brideImage}
+          groomImage={groomImage}
+          brideName={brideName}
+          groomName={groomName}
+          nameColor={dark ? 'rgba(245,237,220,0.9)' : '#5C4A2A'}
+        />
+      )}
 
       {/* ── Countdown ── */}
       {theme.enableCountdown && !hideCountdown && <Countdown date={event.date} dark={dark} />}

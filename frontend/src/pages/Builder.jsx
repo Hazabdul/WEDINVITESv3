@@ -41,12 +41,12 @@ const STEPS = [
     description: 'Add the main celebration details clearly so guests know exactly when and where to arrive.',
   },
   {
-    title: 'Photos',
-    description: 'Choose the hero image and gallery moments that shape the look of the invitation.',
-  },
-  {
     title: 'Schedule',
     description: 'Lay out the flow of the celebration with simple time blocks.',
+  },
+  {
+    title: 'Photos',
+    description: 'Choose the hero image and gallery moments that shape the look of the invitation.',
   },
   {
     title: 'Theme',
@@ -99,18 +99,27 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
 }
 
 function PreviewFrame({ mode, children }) {
-  const [isMobileSize, setIsMobileSize] = React.useState(false);
+  const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   React.useEffect(() => {
-    const check = () => {
-      setIsMobileSize(window.innerWidth < 1024);
-    };
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // On mobile screens or in mobile mode, we render the mobile phone frame
+  const isSmallScreen = windowWidth < 480;
+  const isMobileSize = windowWidth < 1024;
+
+  // On very small screens, render without the device frame to save space
+  if (isSmallScreen) {
+    return (
+      <div className="w-full bg-white shadow-sm overflow-hidden min-h-[500px]">
+        {children}
+      </div>
+    );
+  }
+
+  // On mobile-ish screens or in mobile mode, we render the mobile phone frame
   if (mode === 'mobile' || isMobileSize) {
     return (
       <div className="mx-auto w-[375px] relative">
@@ -283,6 +292,16 @@ export function Builder() {
     updateSection('media', 'gallery', [...(data.media?.gallery || []), ...uploadedUrls]);
   };
 
+  const handleVenueImageUpload = async (event, eventId, label) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const [uploadedUrl] = await uploadFiles([file], label);
+    event.target.value = '';
+    if (!uploadedUrl) return;
+
+    updateEvent(eventId, 'image', uploadedUrl);
+  };
+
   const handleGalleryUrlsChange = (value) => {
     const urls = value
       .split('\n')
@@ -410,7 +429,6 @@ export function Builder() {
 
             <TextInput
               label="Tagline"
-              helper="Keep this short. It sits near the hero area in most themes."
               placeholder="Together with their families"
               value={data.couple?.title || ''}
               onChange={(event) => updateSection('couple', 'title', event.target.value)}
@@ -419,14 +437,12 @@ export function Builder() {
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride's parents"
-                helper="Optional. Add father & mother names (e.g. Mr. Ahmed & Mrs. Sara)."
                 placeholder="Mr. & Mrs. Rahman"
                 value={data.family?.brideParents || ''}
                 onChange={(event) => updateSection('family', 'brideParents', event.target.value)}
               />
               <TextInput
                 label="Groom's parents"
-                helper="Optional. Add father & mother names (e.g. Mr. Khalid & Mrs. Huda)."
                 placeholder="Mr. & Mrs. Kareem"
                 value={data.family?.groomParents || ''}
                 onChange={(event) => updateSection('family', 'groomParents', event.target.value)}
@@ -435,7 +451,6 @@ export function Builder() {
 
             <TextAreaInput
               label="Intro message"
-              helper="A short welcome note is enough. Avoid turning this into a paragraph wall."
               placeholder="With joy in our hearts, we invite you to celebrate our wedding day."
               value={data.content?.introMessage || ''}
               onChange={(event) => updateSection('content', 'introMessage', event.target.value)}
@@ -477,26 +492,119 @@ export function Builder() {
               />
               <TextInput
                 label="Map link"
-                helper="Optional, but useful if guests will open directions from the invite."
                 placeholder="https://maps.google.com/..."
                 value={data.event?.mapLink || ''}
                 onChange={(event) => updateSection('event', 'mapLink', event.target.value)}
                 className="md:col-span-2"
               />
             </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="rounded-[10px] border border-[#e2e8f0] bg-white p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-[#0f172a]">Main celebration</h3>
+                  <p className="mt-1 text-xs leading-6 text-[#64748b]">This appears as the anchor event in the invitation.</p>
+                </div>
+                <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#0f172a]">Primary</div>
+              </div>
+              <div className="mt-5 grid gap-4 grid-cols-2">
+                <TextInput
+                  label="Time"
+                  placeholder="07:30 PM"
+                  value={data.event?.time || ''}
+                  onChange={(event) => updateSection('event', 'time', event.target.value)}
+                />
+                <TextInput
+                  label="Title"
+                  placeholder="Wedding Ceremony"
+                  value={data.events?.[0]?.name || 'Wedding Ceremony'}
+                  onChange={(event) => {
+                    if (data.events?.[0]) {
+                      updateEvent(data.events[0].id, 'name', event.target.value);
+                    }
+                  }}
+                />
+                <TextInput
+                  label="Location"
+                  placeholder="The Grand Pearl Ballroom"
+                  value={data.event?.venue || ''}
+                  onChange={(event) => updateSection('event', 'venue', event.target.value)}
+                  className="col-span-2"
+                />
+                <TextAreaInput
+                  label="Note"
+                  placeholder="Dinner follows after the ceremony."
+                  value={data.events?.[0]?.notes || ''}
+                  onChange={(event) => {
+                    if (data.events?.[0]) {
+                      updateEvent(data.events[0].id, 'notes', event.target.value);
+                    }
+                  }}
+                  rows={3}
+                  className="col-span-2"
+                />
+              </div>
+            </div>
 
-            <TextAreaInput
-              label="RSVP message"
-              helper="This text appears in the RSVP area of the invitation."
-              placeholder="Please confirm your attendance before December 1st, 2026."
-              value={data.content?.rsvpText || ''}
-              onChange={(event) => updateSection('content', 'rsvpText', event.target.value)}
-              rows={3}
-            />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-[#0f172a]">Additional schedule blocks</h3>
+                  <p className="text-xs text-[#64748b]">Add only the moments guests need to plan around.</p>
+                </div>
+                <Button onClick={addEvent} variant="outline" className="border-[#e2e8f0] bg-white text-slate-700 hover:bg-slate-50">
+                  <Plus className="h-4 w-4" /> Add block
+                </Button>
+              </div>
+
+              {(data.events || []).slice(1).length === 0 ? (
+                <div className="rounded-[10px] border border-dashed border-[#e2e8f0] bg-[#f8fafc] p-5 text-sm text-[#64748b]">
+                  No additional blocks yet. Add a reception, dinner, welcome party, or any moment guests should plan around.
+                </div>
+              ) : (
+                (data.events || []).slice(1).map((eventItem) => (
+                  <div key={eventItem.id} className="rounded-[10px] border border-[#f1f5f9] bg-white p-4 sm:p-5 shadow-sm">
+                    <div className="grid gap-4 grid-cols-2">
+                      <TextInput
+                        label="Time"
+                        placeholder="05:00 PM"
+                        value={eventItem.time || ''}
+                        onChange={(event) => updateEvent(eventItem.id, 'time', event.target.value)}
+                      />
+                      <TextInput
+                        label="Title"
+                        placeholder="Nikah"
+                        value={eventItem.name || ''}
+                        onChange={(event) => updateEvent(eventItem.id, 'name', event.target.value)}
+                      />
+                      <TextInput
+                        label="Location"
+                        placeholder="Grand Palace Hall"
+                        value={eventItem.venue || ''}
+                        onChange={(event) => updateEvent(eventItem.id, 'venue', event.target.value)}
+                        className="col-span-2"
+                      />
+                      <TextAreaInput
+                        label="Note"
+                        placeholder="Please arrive 30 minutes early."
+                        value={eventItem.notes || ''}
+                        onChange={(event) => updateEvent(eventItem.id, 'notes', event.target.value)}
+                        rows={3}
+                        className="col-span-2"
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         );
 
-      case 2:
+      case 3:
         return (
           <div className="space-y-4">
             {mediaUploadError ? (
@@ -510,39 +618,33 @@ export function Builder() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Main Banner</span>
-                  {coverImage && (
-                    <button 
-                      onClick={() => {
-                        updateSection('media', 'coverImage', '');
-                        updateSection('media', 'coupleImage', '');
-                      }}
-                      className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  )}
                 </div>
                 <label className={cn(
                   'group relative flex h-36 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
                   isUploadingMedia && 'cursor-wait opacity-70'
                 )}>
                   {coverImage ? (
-                    <div className="absolute inset-0 z-0">
-                      <img src={normalizeMediaUrl(coverImage)} alt="Banner Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-all group-hover:bg-black/40" />
+                    <>
+                      <div className="absolute inset-0 z-0">
+                        <img src={normalizeMediaUrl(coverImage)} alt="Banner Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
+                      </div>
+                      <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
+                          <UploadCloud className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="relative z-10 flex flex-col items-center text-center px-6">
+                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+                        <UploadCloud className="h-5 w-5" />
+                      </div>
+                      <div className="text-[11px] font-bold tracking-tight text-slate-900">
+                        {isUploadingMedia ? '...' : 'Upload Banner'}
+                      </div>
                     </div>
-                  ) : null}
-                  <div className="relative z-10 flex flex-col items-center text-center px-6">
-                    <div className={cn(
-                      "mb-3 flex h-10 w-10 items-center justify-center rounded-full transition-all",
-                      coverImage ? "bg-white/20 text-white backdrop-blur-md" : "bg-white text-slate-400 shadow-sm"
-                    )}>
-                      <UploadCloud className="h-5 w-5" />
-                    </div>
-                    <div className={cn("text-[11px] font-bold tracking-tight", coverImage ? "text-white" : "text-slate-900")}>
-                      {isUploadingMedia ? '...' : (coverImage ? 'Change Banner' : 'Upload Banner')}
-                    </div>
-                  </div>
+                  )}
                   <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
                 </label>
               </div>
@@ -552,37 +654,34 @@ export function Builder() {
                 {/* Bride */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride Portrait</span>
-                    {brideImage && (
-                      <button 
-                        onClick={() => updateSection('media', 'brideImage', '')}
-                        className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    )}
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride</span>
                   </div>
                   <label className={cn(
                     'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
                     isUploadingMedia && 'cursor-wait opacity-70'
                   )}>
                     {brideImage ? (
-                      <div className="absolute inset-0 z-0">
-                        <img src={normalizeMediaUrl(brideImage)} alt="Bride Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-all group-hover:bg-black/40" />
+                      <>
+                        <div className="absolute inset-0 z-0">
+                          <img src={normalizeMediaUrl(brideImage)} alt="Bride Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
+                        </div>
+                        <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
+                            <UploadCloud className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="relative z-10 flex flex-col items-center text-center px-4">
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+                          <UploadCloud className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="text-[10px] font-bold tracking-tight text-slate-900">
+                          {isUploadingMedia ? '...' : 'Upload Bride'}
+                        </div>
                       </div>
-                    ) : null}
-                    <div className="relative z-10 flex flex-col items-center text-center px-4">
-                      <div className={cn(
-                        "mb-2 flex h-8 w-8 items-center justify-center rounded-full transition-all",
-                        brideImage ? "bg-white/20 text-white backdrop-blur-md" : "bg-white text-slate-400 shadow-sm"
-                      )}>
-                        <UploadCloud className="h-3.5 w-3.5" />
-                      </div>
-                      <div className={cn("text-[10px] font-bold tracking-tight", brideImage ? "text-white" : "text-slate-900")}>
-                        {isUploadingMedia ? '...' : (brideImage ? 'Change' : 'Bride')}
-                      </div>
-                    </div>
+                    )}
                     <input
                       type="file"
                       accept="image/*"
@@ -596,37 +695,34 @@ export function Builder() {
                 {/* Groom */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom Portrait</span>
-                    {groomImage && (
-                      <button 
-                        onClick={() => updateSection('media', 'groomImage', '')}
-                        className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    )}
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom</span>
                   </div>
                   <label className={cn(
                     'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
                     isUploadingMedia && 'cursor-wait opacity-70'
                   )}>
                     {groomImage ? (
-                      <div className="absolute inset-0 z-0">
-                        <img src={normalizeMediaUrl(groomImage)} alt="Groom Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px] transition-all group-hover:bg-black/40" />
+                      <>
+                        <div className="absolute inset-0 z-0">
+                          <img src={normalizeMediaUrl(groomImage)} alt="Groom Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
+                        </div>
+                        <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
+                            <UploadCloud className="h-4 w-4" />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="relative z-10 flex flex-col items-center text-center px-4">
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+                          <UploadCloud className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="text-[10px] font-bold tracking-tight text-slate-900">
+                          {isUploadingMedia ? '...' : 'Upload Groom'}
+                        </div>
                       </div>
-                    ) : null}
-                    <div className="relative z-10 flex flex-col items-center text-center px-4">
-                      <div className={cn(
-                        "mb-2 flex h-8 w-8 items-center justify-center rounded-full transition-all",
-                        groomImage ? "bg-white/20 text-white backdrop-blur-md" : "bg-white text-slate-400 shadow-sm"
-                      )}>
-                        <UploadCloud className="h-3.5 w-3.5" />
-                      </div>
-                      <div className={cn("text-[10px] font-bold tracking-tight", groomImage ? "text-white" : "text-slate-900")}>
-                        {isUploadingMedia ? '...' : (groomImage ? 'Change' : 'Groom')}
-                      </div>
-                    </div>
+                    )}
                     <input
                       type="file"
                       accept="image/*"
@@ -635,6 +731,60 @@ export function Builder() {
                       disabled={isUploadingMedia}
                     />
                   </label>
+                </div>
+              </div>
+
+              {/* Venue Portfolios Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Venue</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                  {(data.events || []).map((eventItem, index) => {
+                    const galleryImages = data.media?.gallery || [];
+                    const fallbackImages = [
+                      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=80",
+                      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=900&q=80",
+                      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=900&q=80",
+                    ];
+
+                    const displayImage = eventItem.image || galleryImages[index] || fallbackImages[index % fallbackImages.length];
+                    const isActualVenueImage = Boolean(eventItem.image);
+
+                    return (
+                      <div key={eventItem.id} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
+                        <img
+                          src={normalizeMediaUrl(displayImage)}
+                          alt="Venue"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+
+                        {/* Upload Overlay (on hover) */}
+                        <div className="absolute inset-0 rounded-xl flex flex-col items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                          <label className="inline-flex cursor-pointer p-1.5 rounded-full bg-white/90 shadow-sm hover:bg-white transition-colors">
+                            <UploadCloud className="h-3 w-3 text-slate-600" />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(event) => handleVenueImageUpload(event, eventItem.id, `${eventItem.name || 'Venue'} image`)}
+                              disabled={isUploadingMedia}
+                            />
+                          </label>
+                        </div>
+
+                        {/* Remove Button (only if custom image is uploaded) */}
+                        {isActualVenueImage && (
+                          <button
+                            onClick={() => updateEvent(eventItem.id, 'image', '')}
+                            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-md transition-all hover:bg-red-500 group-hover:opacity-100"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -650,7 +800,7 @@ export function Builder() {
                     )}
                   </div>
                   {data.media?.gallery?.length > 0 && (
-                    <button 
+                    <button
                       onClick={() => updateSection('media', 'gallery', [])}
                       className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors"
                     >
@@ -663,10 +813,10 @@ export function Builder() {
                   {/* Existing Gallery Images */}
                   {(data.media?.gallery || []).map((url, i) => (
                     <div key={i} className="group relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50 shadow-sm">
-                      <img 
-                        src={normalizeMediaUrl(url)} 
-                        alt={`Gallery ${i}`} 
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      <img
+                        src={normalizeMediaUrl(url)}
+                        alt={`Gallery ${i}`}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <button
                         onClick={(e) => {
@@ -692,116 +842,11 @@ export function Builder() {
                       <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
                         <Plus className="h-4 w-4" />
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-900">Add More</span>
                     </div>
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={isUploadingMedia} />
                   </label>
                 </div>
               </div>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="rounded-[10px] border border-[#e2e8f0] bg-white p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-[#0f172a]">Main celebration</h3>
-                  <p className="mt-1 text-sm leading-6 text-[#64748b]">This appears as the anchor event in the invitation.</p>
-                </div>
-                <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#0f172a]">Primary</div>
-              </div>
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <TextInput
-                  label="Time"
-                  placeholder="07:30 PM"
-                  value={data.event?.time || ''}
-                  onChange={(event) => updateSection('event', 'time', event.target.value)}
-                />
-                <TextInput
-                  label="Title"
-                  placeholder="Wedding Ceremony"
-                  value={data.events?.[0]?.name || 'Wedding Ceremony'}
-                  onChange={(event) => {
-                    if (data.events?.[0]) {
-                      updateEvent(data.events[0].id, 'name', event.target.value);
-                    }
-                  }}
-                />
-                <TextInput
-                  label="Location"
-                  placeholder="The Grand Pearl Ballroom"
-                  value={data.event?.venue || ''}
-                  onChange={(event) => updateSection('event', 'venue', event.target.value)}
-                  className="md:col-span-2"
-                />
-                <TextAreaInput
-                  label="Note"
-                  placeholder="Dinner follows after the ceremony."
-                  value={data.events?.[0]?.notes || ''}
-                  onChange={(event) => {
-                    if (data.events?.[0]) {
-                      updateEvent(data.events[0].id, 'notes', event.target.value);
-                    }
-                  }}
-                  rows={3}
-                  className="md:col-span-2"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-[#0f172a]">Additional schedule blocks</h3>
-                  <p className="text-sm text-[#64748b]">Add only the moments guests need to plan around.</p>
-                </div>
-                <Button onClick={addEvent} variant="outline" className="border-[#e2e8f0] bg-white text-slate-700 hover:bg-slate-50">
-                  <Plus className="h-4 w-4" /> Add block
-                </Button>
-              </div>
-
-              {(data.events || []).slice(1).length === 0 ? (
-                <div className="rounded-[10px] border border-dashed border-[#e2e8f0] bg-[#f8fafc] p-5 text-sm text-[#64748b]">
-                  No additional blocks yet. Add a reception, dinner, welcome party, or any moment guests should plan around.
-                </div>
-              ) : (
-                (data.events || []).slice(1).map((eventItem) => (
-                  <div key={eventItem.id} className="rounded-[10px] border border-[#f1f5f9] bg-white p-5 shadow-sm">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <TextInput
-                        label="Time"
-                        placeholder="05:00 PM"
-                        value={eventItem.time || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'time', event.target.value)}
-                      />
-                      <TextInput
-                        label="Title"
-                        placeholder="Nikah"
-                        value={eventItem.name || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'name', event.target.value)}
-                      />
-                      <TextInput
-                        label="Location"
-                        placeholder="Grand Palace Hall"
-                        value={eventItem.venue || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'venue', event.target.value)}
-                        className="md:col-span-2"
-                      />
-                      <TextAreaInput
-                        label="Note"
-                        placeholder="Please arrive 30 minutes early."
-                        value={eventItem.notes || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'notes', event.target.value)}
-                        rows={3}
-                        className="md:col-span-2"
-                      />
-                    </div>
-                  </div>
-                ))
-              )}
             </div>
           </div>
         );
@@ -1038,10 +1083,10 @@ export function Builder() {
             <Link to="/" className="shrink-0 transition-transform active:scale-95">
               <img src="/logo_black.png" alt="Logo" className="h-7 w-auto" />
             </Link>
-            
+
             <div className="h-4 w-[1.5px] bg-gray-100" />
-            
-            <button 
+
+            <button
               onClick={() => navigate(-1)}
               className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 transition-colors hover:text-slate-900"
             >
@@ -1051,7 +1096,7 @@ export function Builder() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link 
+            <Link
               to="/templates"
               className="flex items-center gap-2 rounded-full border border-gray-100 bg-white px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 shadow-sm transition-all hover:border-slate-200 hover:bg-slate-50 active:scale-95"
             >
@@ -1064,171 +1109,173 @@ export function Builder() {
 
       <div className="mx-auto max-w-[1620px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
 
-      {backendHealthError ? (
-        <div className="mb-6 rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {backendHealthError}
-        </div>
-      ) : null}
+        {backendHealthError ? (
+          <div className="mb-6 rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {backendHealthError}
+          </div>
+        ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,520px)_minmax(0,1fr)] xl:gap-8">
-        <div className="min-w-0">
-          <div className="overflow-hidden rounded-[14px] border border-gray-100 bg-white shadow-[0_30px_70px_-20px_rgba(0,0,0,0.08)]">
-            <div className="border-b border-[#e2e8f0] bg-white/80 px-4 py-4 sm:px-6">
-              <div className="flex items-start justify-between gap-6">
-                <div className="space-y-1">
-                  <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#94a3b8]/70">Step {currentStep + 1} of {STEPS.length}</span>
-                  <h2 className="font-serif text-3xl italic text-[#0f172a] tracking-tight">{currentStepMeta.title}</h2>
-                </div>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,520px)_minmax(0,1fr)] xl:gap-8">
+          <div className="min-w-0">
+            <div className="overflow-hidden rounded-[14px] border border-gray-100 bg-white shadow-[0_30px_70px_-20px_rgba(0,0,0,0.08)]">
+              <div className="border-b border-[#e2e8f0] bg-white/80 px-4 py-4 sm:px-6">
+                <div className="flex items-start justify-between gap-6">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#94a3b8]/70">Step {currentStep + 1} of {STEPS.length}</span>
+                    <h2 className="text-2xl font-bold text-[#0f172a] tracking-tight">{currentStepMeta.title}</h2>
+                    <p className="text-[11px] leading-relaxed text-[#64748b] max-w-md">{currentStepMeta.description}</p>
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleCheckBackend}
-                    className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#e2e8f0] bg-white transition-all hover:border-[#94a3b8] hover:bg-white"
-                    title="Backend Status"
-                  >
-                    <Sparkles className={cn("h-4 w-4 transition-colors", backendHealth?.status === 'ok' ? "text-emerald-500" : "text-[#94a3b8]/40")} />
-                    <span className="absolute -bottom-6 scale-0 text-[8px] font-bold uppercase tracking-widest text-[#94a3b8] transition-all group-hover:scale-100 whitespace-nowrap">Status</span>
-                  </button>
-
-                  <button
-                    onClick={clearData}
-                    className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#e2e8f0] bg-white transition-all hover:border-red-200 hover:bg-red-50"
-                    title="Reset Section"
-                  >
-                    <Trash2 className="h-4 w-4 text-[#0f172a]/40 transition-colors group-hover:text-red-500/70" />
-                    <span className="absolute -bottom-6 scale-0 text-[8px] font-bold uppercase tracking-widest text-red-500/70 transition-all group-hover:scale-100">Reset</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center gap-4">
-                <div className="h-[1.5px] flex-1 bg-[#e2e8f0]/50">
-                  <div
-                    className="h-full bg-slate-900 transition-all duration-700 ease-in-out shadow-md shadow-amber-900/10"
-                    style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
-                  />
-                </div>
-                <div className="text-[10px] font-bold text-[#94a3b8] whitespace-nowrap">{progressInfo.percentage}%</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col xl:min-h-[780px]">
-              <div className="flex-1 px-4 py-4 sm:px-6">{renderStepContent()}</div>
-
-              <div className="sticky bottom-0 mt-auto border-t border-gray-100 bg-white/95 px-4 py-4 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.05)] backdrop-blur sm:px-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <Button
-                    variant="outline"
-                    onClick={previousStep}
-                    disabled={currentStep === 0}
-                    className="w-full border-gray-200 bg-white text-slate-700 hover:bg-slate-50 sm:w-auto"
-                  >
-                    <ChevronLeft className="h-4 w-4" /> Previous
-                  </Button>
-
-                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
-                    {isLastStep && !canPublish ? (
-                      <p className="text-sm text-slate-500">Complete at least 80% of the essentials before publishing.</p>
-                    ) : null}
-                    <Button
-                      onClick={isLastStep ? handleSubmitInvitation : nextStep}
-                      disabled={isLastStep ? isSubmitting || !canPublish || Boolean(publishedInvitation) : false}
-                      className="w-full min-w-[180px] bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-7 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-white transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-900/20 sm:w-auto"
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleCheckBackend}
+                      className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#e2e8f0] bg-white transition-all hover:border-[#94a3b8] hover:bg-white"
+                      title="Backend Status"
                     >
-                      {isLastStep ? (
-                        publishedInvitation ? (
-                          'Published'
-                        ) : isSubmitting ? (
-                          'Publishing...'
+                      <Sparkles className={cn("h-4 w-4 transition-colors", backendHealth?.status === 'ok' ? "text-emerald-500" : "text-[#94a3b8]/40")} />
+                      <span className="absolute -bottom-6 scale-0 text-[8px] font-bold uppercase tracking-widest text-[#94a3b8] transition-all group-hover:scale-100 whitespace-nowrap">Status</span>
+                    </button>
+
+                    <button
+                      onClick={clearData}
+                      className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#e2e8f0] bg-white transition-all hover:border-red-200 hover:bg-red-50"
+                      title="Reset Section"
+                    >
+                      <Trash2 className="h-4 w-4 text-[#0f172a]/40 transition-colors group-hover:text-red-500/70" />
+                      <span className="absolute -bottom-6 scale-0 text-[8px] font-bold uppercase tracking-widest text-red-500/70 transition-all group-hover:scale-100">Reset</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center gap-4">
+                  <div className="h-[1.5px] flex-1 bg-[#e2e8f0]/50">
+                    <div
+                      className="h-full bg-slate-900 transition-all duration-700 ease-in-out shadow-md shadow-amber-900/10"
+                      style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] font-bold text-[#94a3b8] whitespace-nowrap">{progressInfo.percentage}%</div>
+                </div>
+              </div>
+
+              <div className="flex flex-col xl:min-h-[780px]">
+                <div className="flex-1 px-4 py-4 sm:px-6">{renderStepContent()}</div>
+
+                <div className="sticky bottom-0 mt-auto border-t border-gray-100 bg-white/95 px-4 py-4 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.05)] backdrop-blur sm:px-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <Button
+                      variant="outline"
+                      onClick={previousStep}
+                      disabled={currentStep === 0}
+                      className="w-full border-gray-200 bg-white text-slate-700 hover:bg-slate-50 sm:w-auto"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Previous
+                    </Button>
+
+                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+                      {isLastStep && !canPublish ? (
+                        <p className="text-sm text-slate-500">Complete at least 80% of the essentials before publishing.</p>
+                      ) : null}
+                      <Button
+                        onClick={isLastStep ? handleSubmitInvitation : nextStep}
+                        disabled={isLastStep ? isSubmitting || !canPublish || Boolean(publishedInvitation) : false}
+                        className="w-full min-w-[180px] bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-7 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-white transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-900/20 sm:w-auto"
+                      >
+                        {isLastStep ? (
+                          publishedInvitation ? (
+                            'Published'
+                          ) : isSubmitting ? (
+                            'Publishing...'
+                          ) : (
+                            <>
+                              <Send className="h-4 w-4" /> Publish
+                            </>
+                          )
                         ) : (
                           <>
-                            <Send className="h-4 w-4" /> Publish
+                            Next <ChevronRight className="h-4 w-4" />
                           </>
-                        )
-                      ) : (
-                        <>
-                          Next <ChevronRight className="h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="min-w-0">
-          <div className="xl:sticky xl:top-24">
-            <div className="overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f4ede4_100%)] border border-gray-100 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.08)]">
-              <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 border-b border-gray-100/50 bg-white/50 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl font-medium tracking-tight text-[#0f172a] italic font-serif">Live Preview</span>
-                </div>
+          <div className="min-w-0">
+            <div className="xl:sticky xl:top-24">
+              <div className="overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f4ede4_100%)] border border-gray-100 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.08)]">
+                <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 border-b border-gray-100/50 bg-white/50 backdrop-blur-md">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl font-medium tracking-tight text-[#0f172a] italic font-serif">Live Preview</span>
+                  </div>
 
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={handleReplay}
-                    className="group flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-all hover:text-[#0f172a]"
-                    title="Replay entrance experience"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5 transition-transform group-hover:rotate-[-45deg]" />
-                    <span>Replay</span>
-                  </button>
-
-                  <div className="hidden md:block h-4 w-[1px] bg-gray-200" />
-
-                  <div className="hidden md:flex items-center gap-1 rounded-xl bg-slate-100/80 p-1 backdrop-blur-sm">
+                  <div className="flex items-center gap-4">
                     <button
                       type="button"
-                      onClick={() => setPreviewMode('desktop')}
-                      className={cn(
-                        'flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-300',
-                        previewMode === 'desktop'
-                          ? 'bg-white text-[#0f172a] shadow-sm shadow-black/5'
-                          : 'text-slate-500 hover:text-slate-700'
-                      )}
+                      onClick={handleReplay}
+                      className="group flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-all hover:text-[#0f172a]"
+                      title="Replay entrance experience"
                     >
-                      <Monitor className="h-3.5 w-3.5" />
-                      <span>Desktop</span>
+                      <RotateCcw className="h-3.5 w-3.5 transition-transform group-hover:rotate-[-45deg]" />
+                      <span>Replay</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewMode('mobile')}
-                      className={cn(
-                        'flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-300',
-                        previewMode === 'mobile'
-                          ? 'bg-white text-[#0f172a] shadow-sm shadow-black/5'
-                          : 'text-slate-500 hover:text-slate-700'
-                      )}
-                    >
-                      <Smartphone className="h-3.5 w-3.5" />
-                      <span>Mobile</span>
-                    </button>
+
+                    <div className="hidden md:block h-4 w-[1px] bg-gray-200" />
+
+                    <div className="hidden md:flex items-center gap-1 rounded-xl bg-slate-100/80 p-1 backdrop-blur-sm">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode('desktop')}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-300',
+                          previewMode === 'desktop'
+                            ? 'bg-white text-[#0f172a] shadow-sm shadow-black/5'
+                            : 'text-slate-500 hover:text-slate-700'
+                        )}
+                      >
+                        <Monitor className="h-3.5 w-3.5" />
+                        <span>Desktop</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode('mobile')}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-300',
+                          previewMode === 'mobile'
+                            ? 'bg-white text-[#0f172a] shadow-sm shadow-black/5'
+                            : 'text-slate-500 hover:text-slate-700'
+                        )}
+                      >
+                        <Smartphone className="h-3.5 w-3.5" />
+                        <span>Mobile</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="p-0 md:p-3">
-                <div className="overflow-hidden bg-white rounded-xl">
-                  {/* Scaled Preview Frame Container */}
-                  <div className={cn(
-                    "relative w-full transition-all duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar-preview bg-[#f1f5f9]/50 rounded-xl"
-                  )}>
-                    <div className="flex w-full justify-center py-4 md:py-8">
-                      <div className={cn(
-                        "transition-all duration-700 flex justify-center",
-                        previewMode === 'desktop' ? "w-[414px] md:w-[1440px] scale-[0.85] md:scale-[0.45] lg:scale-[0.5] xl:scale-[0.55] 2xl:scale-[0.8] origin-top" : "w-[375px] scale-[0.88] origin-top mx-auto"
-                      )}>
-                        <PreviewFrame mode={previewMode}>
-                          <iframe
-                            ref={iframeRef}
-                            src="/preview-render"
-                            className="block w-full h-full border-0"
-                            title="Preview"
-                          />
-                        </PreviewFrame>
+                <div className="p-0 md:p-3">
+                  <div className="overflow-hidden bg-white rounded-xl">
+                    {/* Scaled Preview Frame Container */}
+                    <div className={cn(
+                      "relative w-full transition-all duration-700 overflow-y-auto overflow-x-hidden custom-scrollbar-preview bg-[#f1f5f9]/50 rounded-xl"
+                    )}>
+                      <div className="flex w-full justify-center py-4 md:py-8">
+                        <div className={cn(
+                          "transition-all duration-700 flex justify-center",
+                          previewMode === 'desktop' ? "w-[414px] md:w-[1440px] scale-[0.85] md:scale-[0.45] lg:scale-[0.5] xl:scale-[0.55] 2xl:scale-[0.8] origin-top" : "w-[375px] scale-[0.88] origin-top mx-auto"
+                        )}>
+                          <PreviewFrame mode={previewMode}>
+                            <iframe
+                              ref={iframeRef}
+                              src="/preview-render"
+                              className="block w-full h-full border-0"
+                              title="Preview"
+                            />
+                          </PreviewFrame>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1237,7 +1284,6 @@ export function Builder() {
             </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );
