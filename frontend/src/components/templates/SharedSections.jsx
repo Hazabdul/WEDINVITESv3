@@ -67,7 +67,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
     <div className="space-y-4 p-4">
 
       {/* ── Couple Portraits ── */}
-      {(brideImage || groomImage) && (
+      {theme.showPortraits !== false && (brideImage || groomImage) && (
         <CouplePortraits
           brideImage={brideImage}
           groomImage={groomImage}
@@ -78,10 +78,10 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── Countdown ── */}
-      {theme.enableCountdown && !hideCountdown && <Countdown date={event.date} dark={dark} />}
+      {theme.showCountdown !== false && theme.enableCountdown && !hideCountdown && <Countdown date={event.date} dark={dark} />}
 
       {/* ── Event schedule ── */}
-      {(events || []).length > 0 && !hideEvents && (
+      {theme.showSchedule !== false && (events || []).length > 0 && !hideEvents && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Event Schedule</h3>
           <div className="space-y-3">
@@ -127,7 +127,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       </div>
 
       {/* ── Gallery ── */}
-      {theme.enableGallery && media?.gallery?.length > 0 && !hideGallery && (
+      {theme.showGallery !== false && theme.enableGallery && media?.gallery?.length > 0 && !hideGallery && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Gallery</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -145,7 +145,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── Video ── */}
-      {theme.enableVideo && media?.video && !hideVideo && (
+      {theme.showVideo !== false && theme.enableVideo && media?.video && !hideVideo && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Video Message</h3>
           <video data-live-invite-media controls className="w-full rounded-xl">
@@ -155,7 +155,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── RSVP & Contact ── */}
-      {!hideRSVP && (
+      {theme.showRSVP !== false && !hideRSVP && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-1.5 text-base font-bold', textPrimary)}>RSVP & Contact</h3>
           {content.rsvpText && (

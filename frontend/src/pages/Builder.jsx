@@ -10,16 +10,20 @@ import {
   ExternalLink,
   Heart,
   Images,
+  Layout,
   LayoutGrid,
   MapPin,
   Monitor,
   Palette,
+  Play,
+  Loader2,
   Plus,
   Send,
   RotateCcw,
   Smartphone,
   Sparkles,
   Trash2,
+  Type,
   UploadCloud,
   X,
 } from 'lucide-react';
@@ -27,7 +31,7 @@ import { useInvitationState } from '../hooks/useInvitationState';
 import { Button } from '../components/ui/Button';
 import { Select, Toggle } from '../components/ui/FormElements';
 import { cn } from '../utils/cn';
-import { templatesList } from '../data/mockData';
+import { templatesList, initialInvitationData } from '../data/mockData';
 import apiClient from '../utils/api';
 import { normalizeMediaUrl } from '../utils/media';
 
@@ -45,12 +49,12 @@ const STEPS = [
     description: 'Lay out the flow of the celebration with simple time blocks.',
   },
   {
-    title: 'Photos',
-    description: 'Choose the hero image and gallery moments that shape the look of the invitation.',
+    title: 'Media',
+    description: 'Upload your cinematic video story and choose the hero images that shape the look of your invitation.',
   },
   {
-    title: 'Theme',
-    description: 'Pick the visual direction, then refine fonts, colors, and presentation style.',
+    title: 'Visibility Settings',
+    description: 'Control which sections are displayed in your invitation to match your celebration style.',
   },
   {
     title: 'Preview & Publish',
@@ -107,20 +111,10 @@ function PreviewFrame({ mode, children }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const isSmallScreen = windowWidth < 480;
-  const isMobileSize = windowWidth < 1024;
+  const isMobileScreen = windowWidth < 1024;
 
-  // On very small screens, render without the device frame to save space
-  if (isSmallScreen) {
-    return (
-      <div className="w-full bg-white shadow-sm overflow-hidden min-h-[500px]">
-        {children}
-      </div>
-    );
-  }
-
-  // On mobile-ish screens or in mobile mode, we render the mobile phone frame
-  if (mode === 'mobile' || isMobileSize) {
+  // Always show mobile on small screens, or if specifically requested
+  if (mode === 'mobile' || isMobileScreen) {
     return (
       <div className="mx-auto w-[375px] relative">
         <div className="rounded-[40px] border-[12px] border-[#1a1a1a] bg-[#1a1a1a] p-1 shadow-2xl relative z-10">
@@ -137,7 +131,7 @@ function PreviewFrame({ mode, children }) {
     );
   }
 
-  // On desktop screens when in desktop mode, render the laptop frame
+  // Otherwise show laptop frame
   return (
     <div className="w-full">
       <div className="mx-auto w-full relative">
@@ -161,10 +155,9 @@ export function Builder() {
   const [currentStep, setCurrentStep] = useState(0);
   const [previewMode, setPreviewMode] = useState('desktop');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
-  const [mediaUploadError, setMediaUploadError] = useState('');
-  const [publishedInvitation, setPublishedInvitation] = useState(null);
+  const [uploadingField, setUploadingField] = useState(null); // Granular loading state
   const [submitError, setSubmitError] = useState('');
+  const [publishedInvitation, setPublishedInvitation] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showCover, setShowCover] = useState(true);
   const [checkingBackend, setCheckingBackend] = useState(false);
@@ -224,9 +217,10 @@ export function Builder() {
     [data?.theme?.id]
   );
 
-  const coverImage = data?.media?.coverImage || data?.media?.coupleImage || '';
-  const brideImage = data?.media?.brideImage || '';
-  const groomImage = data?.media?.groomImage || '';
+  const coverImage = data?.media?.coverImage || data?.media?.coupleImage || initialInvitationData.media.coverImage;
+  const brideImage = data?.media?.brideImage || initialInvitationData.media.brideImage;
+  const groomImage = data?.media?.groomImage || initialInvitationData.media.groomImage;
+  const videoStoryUrl = data?.media?.videoStory || initialInvitationData.media.video;
   const galleryText = useMemo(() => (data?.media?.gallery || []).join('\n'), [data?.media?.gallery]);
   const galleryCount = data?.media?.gallery?.filter(Boolean).length || 0;
   const handleReplay = () => {
@@ -240,66 +234,93 @@ export function Builder() {
   const nextStep = () => setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
   const previousStep = () => setCurrentStep((step) => Math.max(step - 1, 0));
 
-  const uploadFiles = async (files, label) => {
-    setIsUploadingMedia(true);
-    setMediaUploadError('');
-
-    try {
-      const results = await Promise.all(files.map((file) => apiClient.uploadFile(file)));
-      const urls = results.map((item) => item?.url).filter(Boolean);
-
-      if (urls.length !== files.length) {
-        throw new Error(`${label} upload did not return a valid file URL.`);
-      }
-
-      return urls;
-    } catch (error) {
-      setMediaUploadError(error?.message || `${label} upload failed.`);
-      return [];
-    } finally {
-      setIsUploadingMedia(false);
-    }
-  };
-
   const handleCoverUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const [uploadedUrl] = await uploadFiles([file], 'Banner image');
-    event.target.value = '';
-    if (!uploadedUrl) return;
 
-    updateSection('media', 'coverImage', uploadedUrl);
-    updateSection('media', 'coupleImage', uploadedUrl);
+    setUploadingField('coverImage');
+    try {
+      const response = await apiClient.uploadFile(file, 'cover');
+      if (response.success) {
+        updateSection('media', 'coverImage', response.url);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   const handleSingleImageUpload = async (event, field, label) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const [uploadedUrl] = await uploadFiles([file], label);
-    event.target.value = '';
-    if (!uploadedUrl) return;
 
-    updateSection('media', field, uploadedUrl);
+    setUploadingField(field);
+    try {
+      const response = await apiClient.uploadFile(file, label.toLowerCase().replace(' ', '_'));
+      if (response.success) {
+        updateSection('media', field, response.url);
+      }
+    } catch (error) {
+      console.error(`${label} upload failed:`, error);
+    } finally {
+      setUploadingField(null);
+    }
   };
 
-  const handleGalleryUpload = async (event) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-    const uploadedUrls = await uploadFiles(files, 'Gallery image');
-    event.target.value = '';
-    if (!uploadedUrls.length) return;
+  const handleVideoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    updateSection('media', 'gallery', [...(data.media?.gallery || []), ...uploadedUrls]);
+    setUploadingField('videoStory');
+    try {
+      const response = await apiClient.uploadFile(file, 'video_story');
+      if (response.success) {
+        updateSection('media', 'videoStory', response.url);
+      }
+    } catch (error) {
+      console.error('Video upload failed:', error);
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   const handleVenueImageUpload = async (event, eventId, label) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const [uploadedUrl] = await uploadFiles([file], label);
-    event.target.value = '';
-    if (!uploadedUrl) return;
 
-    updateEvent(eventId, 'image', uploadedUrl);
+    setUploadingField(eventId);
+    try {
+      const response = await apiClient.uploadFile(file, label.toLowerCase().replace(' ', '_'));
+      if (response.success) {
+        updateEvent(eventId, 'image', response.url);
+      }
+    } catch (error) {
+      console.error(`${label} upload failed:`, error);
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const handleGalleryUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingField('gallery');
+    try {
+      const uploadPromises = files.map((file) => apiClient.uploadFile(file, 'gallery'));
+      const results = await Promise.all(uploadPromises);
+      const successfulUrls = results.filter((r) => r.success).map((r) => r.url);
+
+      if (successfulUrls.length > 0) {
+        const currentGallery = data.media?.gallery || [];
+        updateSection('media', 'gallery', [...currentGallery, ...successfulUrls]);
+      }
+    } catch (error) {
+      console.error('Gallery upload failed:', error);
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   const handleGalleryUrlsChange = (value) => {
@@ -607,12 +628,6 @@ export function Builder() {
       case 3:
         return (
           <div className="space-y-4">
-            {mediaUploadError ? (
-              <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                {mediaUploadError}
-              </div>
-            ) : null}
-
             <div className="space-y-6">
               {/* Hero Banner Section */}
               <div className="space-y-2">
@@ -620,8 +635,8 @@ export function Builder() {
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Main Banner</span>
                 </div>
                 <label className={cn(
-                  'group relative flex h-36 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
-                  isUploadingMedia && 'cursor-wait opacity-70'
+                  'group relative flex h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
+                  uploadingField === 'coverImage' && 'cursor-wait opacity-70'
                 )}>
                   {coverImage ? (
                     <>
@@ -637,28 +652,25 @@ export function Builder() {
                     </>
                   ) : (
                     <div className="relative z-10 flex flex-col items-center text-center px-6">
-                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-                        <UploadCloud className="h-5 w-5" />
+                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
+                        {uploadingField === 'coverImage' ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
                       </div>
                       <div className="text-[11px] font-bold tracking-tight text-slate-900">
-                        {isUploadingMedia ? '...' : 'Upload Banner'}
+                        {uploadingField === 'coverImage' ? 'Uploading...' : 'Upload Banner'}
                       </div>
                     </div>
                   )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
+                  <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={Boolean(uploadingField)} />
                 </label>
               </div>
 
-              {/* Couple Portraits Section */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Bride */}
+              {/* Bride & Groom Section */}
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride</span>
-                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride</span>
                   <label className={cn(
                     'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
-                    isUploadingMedia && 'cursor-wait opacity-70'
+                    uploadingField === 'brideImage' && 'cursor-wait opacity-70'
                   )}>
                     {brideImage ? (
                       <>
@@ -674,11 +686,11 @@ export function Builder() {
                       </>
                     ) : (
                       <div className="relative z-10 flex flex-col items-center text-center px-4">
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-                          <UploadCloud className="h-3.5 w-3.5" />
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
+                          {uploadingField === 'brideImage' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
                         </div>
                         <div className="text-[10px] font-bold tracking-tight text-slate-900">
-                          {isUploadingMedia ? '...' : 'Upload Bride'}
+                          {uploadingField === 'brideImage' ? 'Uploading...' : 'Upload Bride'}
                         </div>
                       </div>
                     )}
@@ -687,19 +699,16 @@ export function Builder() {
                       accept="image/*"
                       className="hidden"
                       onChange={(event) => handleSingleImageUpload(event, 'brideImage', 'Bride image')}
-                      disabled={isUploadingMedia}
+                      disabled={Boolean(uploadingField)}
                     />
                   </label>
                 </div>
 
-                {/* Groom */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom</span>
-                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom</span>
                   <label className={cn(
                     'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
-                    isUploadingMedia && 'cursor-wait opacity-70'
+                    uploadingField === 'groomImage' && 'cursor-wait opacity-70'
                   )}>
                     {groomImage ? (
                       <>
@@ -715,11 +724,11 @@ export function Builder() {
                       </>
                     ) : (
                       <div className="relative z-10 flex flex-col items-center text-center px-4">
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
-                          <UploadCloud className="h-3.5 w-3.5" />
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
+                          {uploadingField === 'groomImage' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
                         </div>
                         <div className="text-[10px] font-bold tracking-tight text-slate-900">
-                          {isUploadingMedia ? '...' : 'Upload Groom'}
+                          {uploadingField === 'groomImage' ? 'Uploading...' : 'Upload Groom'}
                         </div>
                       </div>
                     )}
@@ -728,10 +737,55 @@ export function Builder() {
                       accept="image/*"
                       className="hidden"
                       onChange={(event) => handleSingleImageUpload(event, 'groomImage', 'Groom image')}
-                      disabled={isUploadingMedia}
+                      disabled={Boolean(uploadingField)}
                     />
                   </label>
                 </div>
+              </div>
+
+              {/* Video Story Section */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Video Story</span>
+                <label className={cn(
+                  'group relative flex h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
+                  uploadingField === 'videoStory' && 'cursor-wait opacity-70'
+                )}>
+                  {videoStoryUrl ? (
+                    <>
+                      <div className="absolute inset-0 z-0">
+                        <video
+                          src={normalizeMediaUrl(videoStoryUrl)}
+                          className="h-full w-full object-cover"
+                          muted
+                          loop
+                          onMouseOver={(e) => e.target.play()}
+                          onMouseOut={(e) => e.target.pause()}
+                        />
+                        <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
+                      </div>
+                      <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
+                          <UploadCloud className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="relative z-10 flex flex-col items-center text-center px-6">
+                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
+                        {uploadingField === 'videoStory' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-900">Upload Cinematic Video</h4>
+                      <p className="mt-1 text-[10px] text-slate-500">Share your journey with a short story video.</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={handleVideoUpload}
+                    disabled={Boolean(uploadingField)}
+                  />
+                </label>
               </div>
 
               {/* Venue Portfolios Section */}
@@ -762,13 +816,13 @@ export function Builder() {
                         {/* Upload Overlay (on hover) */}
                         <div className="absolute inset-0 rounded-xl flex flex-col items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
                           <label className="inline-flex cursor-pointer p-1.5 rounded-full bg-white/90 shadow-sm hover:bg-white transition-colors">
-                            <UploadCloud className="h-3 w-3 text-slate-600" />
+                            {uploadingField === eventItem.id ? <Loader2 className="h-3 w-3 animate-spin text-slate-600" /> : <UploadCloud className="h-3 w-3 text-slate-600" />}
                             <input
                               type="file"
                               accept="image/*"
                               className="hidden"
                               onChange={(event) => handleVenueImageUpload(event, eventItem.id, `${eventItem.name || 'Venue'} image`)}
-                              disabled={isUploadingMedia}
+                              disabled={Boolean(uploadingField)}
                             />
                           </label>
                         </div>
@@ -836,14 +890,14 @@ export function Builder() {
                   {/* Add More Moments Button */}
                   <label className={cn(
                     'group relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
-                    isUploadingMedia && 'cursor-wait opacity-70'
+                    uploadingField === 'gallery' && 'cursor-wait opacity-70'
                   )}>
                     <div className="flex flex-col items-center text-center">
                       <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm transition-all group-hover:bg-slate-900 group-hover:text-white">
-                        <Plus className="h-4 w-4" />
+                        {uploadingField === 'gallery' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                       </div>
                     </div>
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={isUploadingMedia} />
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={Boolean(uploadingField)} />
                   </label>
                 </div>
               </div>
@@ -853,126 +907,81 @@ export function Builder() {
 
       case 4:
         return (
-          <div className="space-y-4">
-            <div className="grid gap-4">
-              {templatesList.map((template) => {
-                const selected = activeTemplate.id === template.id;
-                return (
-                  <button
-                    type="button"
-                    key={template.id}
-                    onClick={() => setTemplate(template.id)}
-                    className={cn(
-                      'rounded-[12px] border p-5 text-left transition-all',
-                      selected
-                        ? 'border-[#0f172a] bg-slate-50 shadow-sm'
-                        : 'border-[#f1f5f9] bg-white hover:border-[#e2e8f0] hover:bg-slate-50'
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#94a3b8]">{template.badge}</div>
-                        <h3 className="mt-2 text-lg font-semibold text-[#0f172a]">{template.name}</h3>
-                        <p className="mt-1 text-sm leading-6 text-[#64748b]">{template.tagline}</p>
+          <div className="space-y-6">
+            {/* Template Selection Section */}
+            <div className="rounded-[15px] border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Choose Template</span>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {templatesList.map((template) => {
+                  const selected = data.theme?.id === template.id;
+                  return (
+                    <button
+                      key={template.id}
+                      onClick={() => setTemplate(template.id)}
+                      className={cn(
+                        "group relative aspect-[4/5] overflow-hidden rounded-xl border-2 transition-all",
+                        selected ? "border-slate-900 ring-4 ring-slate-900/5" : "border-slate-50 grayscale hover:grayscale-0 hover:border-slate-200"
+                      )}
+                    >
+                      <img src={template.previewImage} alt={template.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div className="absolute inset-x-0 bottom-0 bg-black/50 p-1.5 backdrop-blur-sm">
+                        <p className="text-[8px] font-bold text-white uppercase tracking-wider truncate text-center">{template.name}</p>
                       </div>
-                      <div className={cn('mt-1 h-3 w-3 rounded-full', selected ? 'bg-[#94a3b8]' : 'bg-[#e2e8f0]')} />
-                    </div>
-                  </button>
-                );
-              })}
+                      {selected && (
+                        <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg">
+                          <CheckCircle2 className="h-2.5 w-2.5" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Primary color">
-                <input
-                  type="color"
-                  value={data.theme?.primaryColor || '#b68d40'}
-                  onChange={(event) => updateSection('theme', 'primaryColor', event.target.value)}
-                  className="h-14 w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] p-2"
+            <div className="rounded-[15px] border border-slate-100 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Section Visibility</span>
+              </div>
+              <div className="grid gap-3">
+                <Toggle
+                  label="Show Bride & Groom Portraits"
+                  checked={data.theme?.showPortraits !== false}
+                  onChange={() => updateSection('theme', 'showPortraits', data.theme?.showPortraits === false)}
+                  className="border-slate-100 bg-slate-50/50"
                 />
-              </Field>
-              <Field label="Secondary color">
-                <input
-                  type="color"
-                  value={data.theme?.secondaryColor || '#f7e7ce'}
-                  onChange={(event) => updateSection('theme', 'secondaryColor', event.target.value)}
-                  className="h-14 w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] p-2"
+                <Toggle
+                  label="Show Video Story"
+                  checked={data.theme?.showVideo !== false}
+                  onChange={() => updateSection('theme', 'showVideo', data.theme?.showVideo === false)}
+                  className="border-slate-100 bg-slate-50/50"
                 />
-              </Field>
-              <Field label="Heading text color">
-                <input
-                  type="color"
-                  value={data.theme?.headingColor || data.theme?.primaryColor || '#6f5642'}
-                  onChange={(event) => updateSection('theme', 'headingColor', event.target.value)}
-                  className="h-14 w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] p-2"
+                <Toggle
+                  label="Show Schedule Section"
+                  checked={data.theme?.showSchedule !== false}
+                  onChange={() => updateSection('theme', 'showSchedule', data.theme?.showSchedule === false)}
+                  className="border-slate-100 bg-slate-50/50"
                 />
-              </Field>
-              <Field label="Subheading text color">
-                <input
-                  type="color"
-                  value={data.theme?.subheadingColor || data.theme?.primaryColor || '#876c57'}
-                  onChange={(event) => updateSection('theme', 'subheadingColor', event.target.value)}
-                  className="h-14 w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] p-2"
+                <Toggle
+                  label="Show Gallery Collection"
+                  checked={data.theme?.showGallery !== false}
+                  onChange={() => updateSection('theme', 'showGallery', data.theme?.showGallery === false)}
+                  className="border-slate-100 bg-slate-50/50"
                 />
-              </Field>
-              <Field label="Body text color">
-                <input
-                  type="color"
-                  value={data.theme?.bodyColor || '#705f53'}
-                  onChange={(event) => updateSection('theme', 'bodyColor', event.target.value)}
-                  className="h-14 w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] p-2"
+                <Toggle
+                  label="Show Countdown Timer"
+                  checked={data.theme?.showCountdown !== false}
+                  onChange={() => updateSection('theme', 'showCountdown', data.theme?.showCountdown === false)}
+                  className="border-slate-100 bg-slate-50/50"
                 />
-              </Field>
-              <Field label="Meta / label color">
-                <input
-                  type="color"
-                  value={data.theme?.metaColor || '#9a7d66'}
-                  onChange={(event) => updateSection('theme', 'metaColor', event.target.value)}
-                  className="h-14 w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] p-2"
+                <Toggle
+                  label="Show Banner"
+                  checked={data.theme?.showRSVP !== false}
+                  onChange={() => updateSection('theme', 'showRSVP', data.theme?.showRSVP === false)}
+                  className="border-slate-100 bg-slate-50/50"
                 />
-              </Field>
-
-              <Select
-                label="Heading style"
-                value={data.theme?.font || 'serif'}
-                onChange={(event) => updateSection('theme', 'font', event.target.value)}
-                options={[
-                  { value: 'serif', label: 'Serif elegance' },
-                  { value: 'sans', label: 'Modern sans-serif' },
-                  { value: 'mono', label: 'Editorial mono accent' },
-                ]}
-              />
-              <Select
-                label="Background style"
-                value={data.theme?.backgroundStyle || 'soft-gradient'}
-                onChange={(event) => updateSection('theme', 'backgroundStyle', event.target.value)}
-                options={[
-                  { value: 'soft-gradient', label: 'Soft gradient' },
-                  { value: 'solid', label: 'Solid' },
-                  { value: 'pattern', label: 'Subtle pattern' },
-                ]}
-              />
-            </div>
-
-            <div className="grid gap-3">
-              <Toggle
-                label="Show countdown"
-                checked={Boolean(data.theme?.enableCountdown)}
-                onChange={() => updateSection('theme', 'enableCountdown', !data.theme?.enableCountdown)}
-                className="border-[#e2e8f0] bg-[#ffffff]"
-              />
-              <Toggle
-                label="Show gallery"
-                checked={Boolean(data.theme?.enableGallery)}
-                onChange={() => updateSection('theme', 'enableGallery', !data.theme?.enableGallery)}
-                className="border-[#e2e8f0] bg-[#ffffff]"
-              />
-              <Toggle
-                label="Enable animation"
-                checked={Boolean(data.theme?.enableAnimation)}
-                onChange={() => updateSection('theme', 'enableAnimation', !data.theme?.enableAnimation)}
-                className="border-[#e2e8f0] bg-[#ffffff]"
-              />
+              </div>
             </div>
           </div>
         );
@@ -993,20 +1002,131 @@ export function Builder() {
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-[10px] border border-[#f1f5f9] bg-white p-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#0f172a]"><CalendarDays className="h-4 w-4 text-[#94a3b8]" /> Event</div>
-                <p className="mt-3 text-sm text-[#64748b]">{data.event?.date || 'No date yet'}</p>
-                <p className="mt-1 text-sm text-[#64748b]">{data.event?.time || 'No time yet'}</p>
-                <p className="mt-1 text-sm text-[#64748b]">{data.event?.venue || 'No venue yet'}</p>
+            <div className="grid gap-6 grid-cols-1">
+              {/* Event Details */}
+              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><CalendarDays className="h-4 w-4 text-slate-400" /> Event Details</div>
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Date</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.event?.date || 'Not set'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Time</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.event?.time || 'Not set'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Venue</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.event?.venue || 'Not set'}</div>
+                  </div>
+                  <div className="space-y-1 md:col-span-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Address</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.event?.address || 'Not set'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Maps Link</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.event?.mapLink ? 'Attached' : 'Missing'}</div>
+                  </div>
+                </div>
               </div>
-              <div className="rounded-[10px] border border-[#f1f5f9] bg-white p-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#0f172a]"><Palette className="h-4 w-4 text-[#94a3b8]" /> Theme</div>
-                <p className="mt-3 text-sm text-[#64748b]">{activeTemplate.name}</p>
-                <p className="mt-1 text-sm text-[#64748b]">Primary: {data.theme?.primaryColor}</p>
-                <p className="mt-1 text-sm text-[#64748b]">Secondary: {data.theme?.secondaryColor}</p>
-                <p className="mt-1 text-sm text-[#64748b]">Heading: {data.theme?.headingColor}</p>
-                <p className="mt-1 text-sm text-[#64748b]">Subheading: {data.theme?.subheadingColor}</p>
+
+              {/* Theme & Style */}
+              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Palette className="h-4 w-4 text-slate-400" /> Theme & Style</div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Template</div>
+                    <div className="text-[13px] font-bold text-slate-700">{activeTemplate.name}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Colors</div>
+                    <div className="flex gap-2 mt-1">
+                      <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: data.theme?.primaryColor }} />
+                      <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: data.theme?.secondaryColor }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Family Details */}
+              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Heart className="h-4 w-4 text-slate-400" /> Family Details</div>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-3">
+                    <div className="inline-block px-2 py-0.5 rounded bg-pink-50 text-[9px] font-black uppercase tracking-wider text-pink-600">Bride's Side</div>
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Parents</div>
+                      <div className="text-[13px] font-bold text-slate-700">{data.family?.brideParents || 'Not set'}</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="inline-block px-2 py-0.5 rounded bg-blue-50 text-[9px] font-black uppercase tracking-wider text-blue-600">Groom's Side</div>
+                    <div className="space-y-1">
+                      <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Parents</div>
+                      <div className="text-[13px] font-bold text-slate-700">{data.family?.groomParents || 'Not set'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content & Media */}
+              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Images className="h-4 w-4 text-slate-400" /> Content & Media</div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Gallery</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.media?.gallery?.length || 0} Images</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Video Story</div>
+                    <div className="text-[13px] font-bold text-slate-700">{data.media?.video ? 'Linked' : 'Not added'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Textual Content */}
+              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Type className="h-4 w-4 text-slate-400" /> Additional Content</div>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Intro Message</div>
+                    <div className="text-[13px] font-bold text-slate-700 leading-relaxed">{data.content?.introMessage || 'Empty'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Ceremony Note</div>
+                    <div className="text-[13px] font-bold text-slate-700 leading-relaxed">{data.events?.[0]?.notes || 'Empty'}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">RSVP Text</div>
+                    <div className="text-[13px] font-bold text-slate-700 leading-relaxed">{data.content?.rsvpText || 'Empty'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Visibility Status */}
+              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Layout className="h-4 w-4 text-slate-400" /> Section Visibility</div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    { label: 'Portraits', key: 'showPortraits' },
+                    { label: 'Video', key: 'showVideo' },
+                    { label: 'Schedule', key: 'showSchedule' },
+                    { label: 'Gallery', key: 'showGallery' },
+                    { label: 'Countdown', key: 'showCountdown' },
+                    { label: 'RSVP Banner', key: 'showRSVP' }
+                  ].map(sec => {
+                    const active = data.theme?.[sec.key] !== false;
+                    return (
+                      <div key={sec.key} className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors",
+                        active ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-slate-50 text-slate-400 border border-slate-100 line-through"
+                      )}>
+                        {active ? <CheckCircle2 className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                        {sec.label}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -1034,7 +1154,7 @@ export function Builder() {
               <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{submitError}</div>
             ) : null}
 
-            {publishedInvitation ? (
+            {publishedInvitation && (
               <div className="space-y-5 rounded-[12px] border border-[#a7f3d0] bg-emerald-50 p-5 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#059669]/10 text-[#059669]">
@@ -1063,7 +1183,7 @@ export function Builder() {
                   </Button>
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
         );
 
@@ -1223,9 +1343,9 @@ export function Builder() {
                       <span>Replay</span>
                     </button>
 
-                    <div className="hidden md:block h-4 w-[1px] bg-gray-200" />
+                    <div className="hidden lg:block h-4 w-[1px] bg-gray-200" />
 
-                    <div className="hidden md:flex items-center gap-1 rounded-xl bg-slate-100/80 p-1 backdrop-blur-sm">
+                    <div className="hidden lg:flex items-center gap-1 rounded-xl bg-slate-100/80 p-1 backdrop-blur-sm">
                       <button
                         type="button"
                         onClick={() => setPreviewMode('desktop')}

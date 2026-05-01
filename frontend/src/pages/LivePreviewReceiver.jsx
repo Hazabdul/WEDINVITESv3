@@ -84,10 +84,13 @@ export function LivePreviewReceiver() {
           />
         </div>
 
-        <RSVPSection
-          attendanceResponse={null}
-          onResponse={() => { }}
-        />
+        {theme.showRSVP !== false && (
+          <RSVPSection
+            attendanceResponse={null}
+            onResponse={() => { }}
+            isPreview={true}
+          />
+        )}
       </div>
     </div>
   );
