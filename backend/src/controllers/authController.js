@@ -8,14 +8,27 @@ export const login = async (req, res, next) => {
     await ensureDBReady();
     const { email, password } = loginSchema.parse(req.body);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     if (user && (await comparePassword(password, user.password))) {
-      res.json({
+      if (user.status === 'DISABLED') {
+        return res.status(403).json({ message: 'Account disabled' });
+      }
+
+      user.lastLoginAt = new Date();
+      await user.save();
+
+      const authUser = {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+      };
+
+      res.json({
+        ...authUser,
+        user: authUser,
         token: generateToken(user._id),
       });
     } else {

@@ -54,6 +54,8 @@ npm run start
 
 ## API Documentation
 
+For the admin-panel backend readout, implementation plan, RBAC matrix, and cURL examples, see [ADMIN_BACKEND_PLAN.md](./ADMIN_BACKEND_PLAN.md).
+
 ### Auth
 - `POST /api/auth/login`: `{ email, password }` -> returns `{ token, user }`
 - `GET /api/auth/me`: Returns current user profile (Requires JWT)

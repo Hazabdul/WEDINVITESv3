@@ -156,14 +156,49 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
     ? 'bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]'
     : theme.backgroundStyle === 'solid' ? 'bg-[#f5ede0]' : '';
 
+  const getFontFamily = (font) => {
+    switch (font) {
+      case 'sans': return '"Inter", ui-sans-serif, system-ui, sans-serif';
+      case 'mono': return '"Space Mono", ui-monospace, SFMono-Regular, monospace';
+      case 'serif':
+      default: return '"Playfair Display", "Cormorant Garamond", ui-serif, Georgia, serif';
+    }
+  };
+
   return (
     <div
       ref={rootRef}
-      className={cn("w-full transition-all duration-500", bgClass, className)}
+      className={cn("w-full transition-all duration-500", bgClass, className, "template-renderer-root")}
       style={{
-        fontFamily: theme.font || 'serif',
+        fontFamily: getFontFamily(theme.font),
+        '--tw-primary': theme.primaryColor || '#b68d40',
+        '--tw-secondary': theme.secondaryColor || '#f7e7ce',
+        '--tw-heading': theme.headingColor || theme.primaryColor || '#6f5642',
+        '--tw-subheading': theme.subheadingColor || theme.primaryColor || '#876c57',
+        '--tw-body': theme.bodyColor || '#705f53',
+        '--tw-meta': theme.metaColor || '#9a7d66',
       }}
     >
+      <style>{`
+        .template-renderer-root * {
+          font-family: ${getFontFamily(theme.font)} !important;
+        }
+        .template-renderer-root {
+          color: var(--tw-body) !important;
+        }
+        .template-renderer-root h1, 
+        .template-renderer-root h2, 
+        .template-renderer-root h3, 
+        .template-renderer-root .font-serif {
+          color: var(--tw-heading) !important;
+        }
+        .template-renderer-root .text-primary,
+        .template-renderer-root [class*="text-[#c9a87c]"],
+        .template-renderer-root [class*="text-[#b08f72]"],
+        .template-renderer-root [class*="text-[#b68d40]"] {
+          color: var(--tw-primary) !important;
+        }
+      `}</style>
       <SelectedTemplate data={data} isPreview={isPreview} previewMode={previewMode} />
     </div>
   );

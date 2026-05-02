@@ -4,12 +4,22 @@ const idSchema = z.union([z.string(), z.number()]).optional().transform((value) 
   value === undefined || value === null ? undefined : String(value)
 ));
 
+const packageSchema = z.preprocess((value) => (
+  typeof value === 'string' ? value.toUpperCase() : value
+), z.enum(['BASIC', 'STANDARD', 'PREMIUM']));
+
+const nullableEmailSchema = z.union([z.string().email(), z.literal(''), z.null()]).optional()
+  .transform((value) => (value ? String(value).toLowerCase() : undefined));
+
 export const invitationSchema = z.object({
+  email: nullableEmailSchema,
+  customerEmail: nullableEmailSchema,
   brideName: z.string().optional(),
   groomName: z.string().optional(),
   weddingDate: z.union([z.string(), z.date(), z.null()]).optional(),
-  package: z.enum(['BASIC', 'STANDARD', 'PREMIUM']).optional(),
+  package: packageSchema.optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+  paymentStatus: z.enum(['PENDING', 'PAID', 'FAILED']).optional(),
   
   // JSON Blobs
   couple: z.any().optional(),

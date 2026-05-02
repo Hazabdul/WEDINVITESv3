@@ -2,6 +2,7 @@ import Invitation from '../models/Invitation.js';
 import RSVP from '../models/RSVP.js';
 import { ensureDBReady } from '../config/db.js';
 import { rsvpSchema } from '../validators/invitationValidator.js';
+import { sendRsvpNotification } from '../services/emailService.js';
 
 export const listPublishedInvitations = async (req, res, next) => {
   try {
@@ -41,26 +42,61 @@ export const getPublicInvitation = async (req, res, next) => {
 
     if (!invitation) return res.status(404).json({ message: 'Invitation not found or not published' });
 
+    invitation.viewCount = (invitation.viewCount || 0) + 1;
+    invitation.lastViewedAt = new Date();
+    await invitation.save();
+
     res.json(invitation);
   } catch (error) {
     next(error);
   }
 };
 
+async function createRsvpForInvitation(invitation, payload) {
+  const validatedData = rsvpSchema.parse(payload);
+
+  const rsvp = await RSVP.create({
+    ...validatedData,
+    invitationId: invitation._id
+  });
+
+  const recipient = invitation.email || invitation.customerEmail;
+  if (recipient) {
+    sendRsvpNotification(recipient, invitation, rsvp).catch((emailError) => {
+      console.error('Failed to send RSVP notification:', emailError);
+    });
+  }
+
+  return rsvp;
+}
+
 export const submitRSVP = async (req, res, next) => {
   try {
     await ensureDBReady();
     const { slug } = req.params;
-    const invitation = await Invitation.findOne({ slug });
+    const invitation = await Invitation.findOne({ slug, status: 'PUBLISHED' });
 
-    if (!invitation) return res.status(404).json({ message: 'Invitation not found' });
+    if (!invitation) return res.status(404).json({ message: 'Invitation not found or not published' });
 
-    const validatedData = rsvpSchema.parse(req.body);
+    await createRsvpForInvitation(invitation, req.body);
 
-    const rsvp = await RSVP.create({
-      ...validatedData,
-      invitationId: invitation._id
-    });
+    res.status(201).json({ success: true, message: 'RSVP submitted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const submitRSVPByInvitationId = async (req, res, next) => {
+  try {
+    await ensureDBReady();
+    const { id } = req.params;
+    const invitation = await Invitation.findById(id);
+
+    if (!invitation || invitation.status !== 'PUBLISHED') {
+      return res.status(404).json({ message: 'Invitation not found or not published' });
+    }
+
+    await createRsvpForInvitation(invitation, req.body);
 
     res.status(201).json({ success: true, message: 'RSVP submitted successfully' });
   } catch (error) {

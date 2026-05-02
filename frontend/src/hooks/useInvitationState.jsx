@@ -10,13 +10,20 @@ export function InvitationProvider({ children }) {
   });
 
   const updateSection = (section, field, value) => {
-    setData((prev) => ({
-      ...prev,
-      [section]: {
-        ...(prev[section] || {}),
-        [field]: value
-      }
-    }));
+    setData((prev) => {
+      const previousSection = prev[section] || {};
+      const nextValue = typeof value === 'function'
+        ? value(previousSection[field], previousSection, prev)
+        : value;
+
+      return {
+        ...prev,
+        [section]: {
+          ...previousSection,
+          [field]: nextValue
+        }
+      };
+    });
   };
 
   const updatePosition = (id, config) => {
@@ -69,8 +76,8 @@ export function InvitationProvider({ children }) {
       content: {
         welcomeHeading: "", introMessage: "", invitationText: "", quote: "", familyMessage: "", specialNotes: "", dressCode: "", rsvpText: "", contact1: "", contact2: ""
       },
-      media: { coverImage: "", backgroundImage: "", brideImage: "", groomImage: "", coupleImage: "", gallery: [], video: "", music: "" },
-      theme: initialInvitationData.theme,
+      media: { coverImage: "", backgroundImage: "", brideImage: "", groomImage: "", coupleImage: "", gallery: [], enableVideo: false, video: "", music: "" },
+      theme: { ...initialInvitationData.theme, enableVideo: false },
       package: initialInvitationData.package
     });
   };

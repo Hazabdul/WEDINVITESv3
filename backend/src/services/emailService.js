@@ -10,6 +10,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
 export const sendPaymentConfirmation = async (email, details) => {
   const { coupleNames, packageName, inviteLink } = details;
 
@@ -37,6 +44,25 @@ export const sendPaymentConfirmation = async (email, details) => {
     console.error('Error sending email:', error);
     throw error;
   }
+};
+
+export const sendRsvpNotification = async (email, invitation, rsvp) => {
+  const coupleNames = `${invitation.brideName || invitation.couple?.bride || 'Bride'} & ${invitation.groomName || invitation.couple?.groom || 'Groom'}`;
+  const status = rsvp.attending ? 'Attending' : 'Not attending';
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+      <h2>New RSVP for ${escapeHtml(coupleNames)}</h2>
+      <p><strong>Guest:</strong> ${escapeHtml(rsvp.guestName)}</p>
+      <p><strong>Status:</strong> ${escapeHtml(status)}</p>
+      <p><strong>Guest Count:</strong> ${escapeHtml(rsvp.guestCount)}</p>
+      ${rsvp.email ? `<p><strong>Email:</strong> ${escapeHtml(rsvp.email)}</p>` : ''}
+      ${rsvp.phone ? `<p><strong>Phone:</strong> ${escapeHtml(rsvp.phone)}</p>` : ''}
+      ${rsvp.message ? `<p><strong>Message:</strong> ${escapeHtml(rsvp.message)}</p>` : ''}
+    </div>
+  `;
+
+  return sendGeneralEmail(email, `New RSVP: ${rsvp.guestName}`, html);
 };
 
 export const sendGeneralEmail = async (to, subject, html) => {

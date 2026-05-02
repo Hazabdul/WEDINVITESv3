@@ -20,6 +20,7 @@ router.post('/', createInvitation);
 router.get('/', getInvitations);
 router.get('/:id', getInvitationById);
 router.patch('/:id', updateInvitation);
+router.put('/:id', updateInvitation);
 router.delete('/:id', deleteInvitation);
 
 router.post('/:id/publish', publishInvitation);

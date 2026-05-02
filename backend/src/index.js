@@ -65,6 +65,7 @@ const [
   { default: metaRoutes },
   { default: invitationAiRoutes },
   { default: websiteAiRoutes },
+  { default: adminRoutes },
 ] = await Promise.all([
   import('./routes/authRoutes.js'),
   import('./routes/invitationRoutes.js'),
@@ -74,6 +75,7 @@ const [
   import('./routes/metaRoutes.js'),
   import('./routes/invitationAiRoutes.js'),
   import('./routes/websiteAiRoutes.js'),
+  import('./routes/adminRoutes.js'),
 ]);
 
 app.use('/api/auth', authRoutes);
@@ -84,6 +86,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/', metaRoutes);
 app.use('/api', invitationAiRoutes);
 app.use('/api', websiteAiRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root (helpful landing for the service URL)
 app.get('/', (req, res) => {

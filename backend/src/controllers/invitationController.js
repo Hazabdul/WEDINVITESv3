@@ -23,16 +23,34 @@ const defaultTheme = {
   enableMusic: false,
 };
 
+const slugify = (value) => String(value || '')
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+
 export const createInvitation = async (req, res, next) => {
   try {
     await ensureDBReady();
+    const hasPayload = req.body && Object.keys(req.body).length > 0;
+    const parsed = hasPayload ? invitationSchema.safeParse(req.body) : { success: true, data: {} };
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: parsed.error.issues,
+      });
+    }
+
     const invitation = await Invitation.create({
       status: 'DRAFT',
       package: 'BASIC',
       content: {},
       theme: defaultTheme,
       media: { gallery: [] },
-      positions: {}
+      positions: {},
+      ...parsed.data,
     });
     res.status(201).json(invitation);
   } catch (error) {
@@ -112,11 +130,12 @@ export const publishInvitation = async (req, res, next) => {
       const bride = invitation.brideName || 'wedding';
       const groom = invitation.groomName || 'party';
       const random = crypto.randomBytes(3).toString('hex');
-      slug = `${bride.toLowerCase()}-${groom.toLowerCase()}-${random}`.replace(/\s+/g, '-');
+      slug = `${slugify(bride)}-${slugify(groom)}-${random}`;
     }
 
     invitation.status = 'PUBLISHED';
     invitation.slug = slug;
+    invitation.publishedAt = invitation.publishedAt || new Date();
     await invitation.save();
 
     res.json({ message: 'Published successfully', slug: invitation.slug });
@@ -140,7 +159,7 @@ export const deleteInvitation = async (req, res, next) => {
   try {
     await ensureDBReady();
     const { id } = req.params;
-    await Invitation.findByIdAndUpdate(id, { status: 'ARCHIVED' });
+    await Invitation.findByIdAndUpdate(id, { status: 'ARCHIVED', archivedAt: new Date() });
     res.json({ message: 'Invitation archived' });
   } catch (error) {
     next(error);

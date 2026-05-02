@@ -22,6 +22,7 @@ async function seed() {
       password: adminPassword,
       name: 'Admin User',
       role: 'ADMIN',
+      status: 'ACTIVE',
     });
     console.log('Admin user seeded');
 
@@ -33,6 +34,8 @@ async function seed() {
       slug: 'alice-and-bob',
       package: 'PREMIUM',
       paymentStatus: 'PAID',
+      email: 'alice@example.com',
+      customerEmail: 'alice@example.com',
       couple: {
         bride: { name: 'Alice Smith', bio: 'The bride' },
         groom: { name: 'Bob Jones', bio: 'The groom' },

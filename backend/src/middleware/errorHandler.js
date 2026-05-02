@@ -38,6 +38,18 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  if (err?.code === 11000) {
+    if (isDev) {
+      console.error('Duplicate key error:', err);
+    }
+    return res.status(409).json({
+      success: false,
+      message: 'Duplicate value already exists',
+      errors: err.keyValue || null,
+      stack: isDev ? err.stack : undefined,
+    });
+  }
+
   if (isDev) {
     console.error(err.stack || err);
   } else {

@@ -103,6 +103,7 @@ export const initialInvitationData = {
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=80",
       "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=900&q=80",
     ],
+    enableVideo: true,
     video: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
     music: "https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
   },

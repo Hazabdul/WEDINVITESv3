@@ -2,19 +2,31 @@ import Order from '../models/Order.js';
 import Invitation from '../models/Invitation.js';
 import { ensureDBReady } from '../config/db.js';
 import { sendPaymentConfirmation } from '../services/emailService.js';
+import { orderCreateSchema, verifyPaymentSchema } from '../validators/adminValidator.js';
+
+const slugify = (value) => String(value || '')
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
 
 export const createOrder = async (req, res, next) => {
   try {
     await ensureDBReady();
-    const { invitationId, customerEmail, package: selectedPackage, amount } = req.body;
+    const parsed = orderCreateSchema.parse(req.body);
+    const invitation = await Invitation.findById(parsed.invitationId);
+
+    if (!invitation) return res.status(404).json({ message: 'Invitation not found' });
 
     const order = await Order.create({
-      invitationId,
-      customerEmail,
-      package: selectedPackage,
-      amount,
+      ...parsed,
       status: 'PENDING'
     });
+
+    invitation.paymentStatus = 'PENDING';
+    invitation.package = parsed.package;
+    invitation.customerEmail = parsed.customerEmail;
+    await invitation.save();
 
     res.status(201).json(order);
   } catch (error) {
@@ -38,7 +50,7 @@ export const verifyPayment = async (req, res, next) => {
   try {
     await ensureDBReady();
     const { id } = req.params;
-    const { transactionId } = req.body;
+    const { transactionId } = verifyPaymentSchema.parse(req.body);
 
     const order = await Order.findById(id).populate('invitationId');
 
@@ -47,6 +59,8 @@ export const verifyPayment = async (req, res, next) => {
     // Update order status
     order.status = 'PAID';
     order.transactionId = transactionId;
+    order.verifiedBy = req.user?._id;
+    order.verifiedAt = new Date();
     await order.save();
 
     // Update invitation status and ensure slug exists
@@ -56,13 +70,14 @@ export const verifyPayment = async (req, res, next) => {
       const bride = invitation.brideName || 'wedding';
       const groom = invitation.groomName || 'party';
       const random = Math.random().toString(36).substring(7);
-      slug = `${bride.toLowerCase()}-${groom.toLowerCase()}-${random}`.replace(/\s+/g, '-');
+      slug = `${slugify(bride)}-${slugify(groom)}-${random}`;
     }
 
     invitation.paymentStatus = 'PAID';
     invitation.package = order.package;
     invitation.status = 'PUBLISHED';
     invitation.slug = slug;
+    invitation.publishedAt = invitation.publishedAt || new Date();
     await invitation.save();
 
     // Send email

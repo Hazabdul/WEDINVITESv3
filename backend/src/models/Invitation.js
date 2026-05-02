@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const useFallback = process.env.NODE_ENV === 'development' && (global.USE_IN_MEMORY_DB === true || !process.env.MONGODB_URI?.trim());
 
 const eventSchema = new mongoose.Schema({
+  id: String,
   name: { type: String, required: true },
   date: String,
   time: String,
@@ -12,6 +13,7 @@ const eventSchema = new mongoose.Schema({
 });
 
 const widgetSchema = new mongoose.Schema({
+  id: String,
   type: { type: String, required: true },
   x: { type: Number, required: true },
   y: { type: Number, required: true },
@@ -41,6 +43,16 @@ const invitationSchema = new mongoose.Schema({
     enum: ['PENDING', 'PAID', 'FAILED'],
     default: 'PENDING',
   },
+  email: {
+    type: String,
+    trim: true,
+    lowercase: true,
+  },
+  customerEmail: {
+    type: String,
+    trim: true,
+    lowercase: true,
+  },
   brideName: String,
   groomName: String,
   weddingDate: Date,
@@ -53,9 +65,19 @@ const invitationSchema = new mongoose.Schema({
   positions: mongoose.Schema.Types.Mixed,
   events: [eventSchema],
   widgets: [widgetSchema],
+  viewCount: {
+    type: Number,
+    default: 0,
+  },
+  publishedAt: Date,
+  archivedAt: Date,
+  lastViewedAt: Date,
 }, {
   timestamps: true,
 });
+
+invitationSchema.index({ status: 1, createdAt: -1 });
+invitationSchema.index({ brideName: 'text', groomName: 'text', email: 'text', customerEmail: 'text', slug: 'text' });
 
 let Invitation;
 

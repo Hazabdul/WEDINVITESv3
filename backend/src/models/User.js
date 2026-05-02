@@ -5,6 +5,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
@@ -12,11 +14,19 @@ const userSchema = new mongoose.Schema({
   },
   name: {
     type: String,
+    trim: true,
   },
   role: {
     type: String,
+    enum: ['OWNER', 'ADMIN', 'EDITOR', 'VIEWER'],
     default: 'ADMIN',
   },
+  status: {
+    type: String,
+    enum: ['ACTIVE', 'DISABLED'],
+    default: 'ACTIVE',
+  },
+  lastLoginAt: Date,
 }, {
   timestamps: true,
 });

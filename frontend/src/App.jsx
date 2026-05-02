@@ -15,8 +15,6 @@ const ImageToWebsite = lazy(() => import('./pages/ImageToWebsite'));
 const NAV_ITEMS = [
   { label: 'Home', to: '/' },
   { label: 'Templates', to: '/templates' },
-  { label: 'Analyzer', to: '/invitation-analyzer' },
-  { label: 'Image To Web', to: '/image-to-website' },
   { label: 'Pricing', to: '/pricing' },
 ];
 
