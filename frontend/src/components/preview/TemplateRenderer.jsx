@@ -31,7 +31,7 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
     gsap.registerPlugin(ScrollTrigger);
 
     // In the builder, scrolling happens inside a custom div, not the window.
-    const scrollerSelector = ".custom-scrollbar-preview";
+    const scrollerSelector = "#preview-scroll-container";
     const scrollerElement = document.querySelector(scrollerSelector);
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -166,18 +166,20 @@ export function InvitationView() {
           />
         </div>
 
-        <RSVPSection
-          attendanceResponse={attendanceResponse}
-          onResponse={(res) => {
-            setAttendanceResponse(res);
-            if (res === 'accepted') {
-              setShowCelebrate(true);
-              playCelebrationTone();
-            } else {
-              setShowCelebrate(false);
-            }
-          }}
-        />
+        {theme.showRSVP !== false && (
+          <RSVPSection
+            attendanceResponse={attendanceResponse}
+            onResponse={(res) => {
+              setAttendanceResponse(res);
+              if (res === 'accepted') {
+                setShowCelebrate(true);
+                playCelebrationTone();
+              } else {
+                setShowCelebrate(false);
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

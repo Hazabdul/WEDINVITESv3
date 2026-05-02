@@ -9,6 +9,7 @@ export const templatesList = [
     mood: "High-End Immersive",
     tagline: "Wowed at first glance with vibrant colors, elegant transitions, and a premium editorial feel.",
     features: ["Floating petals", "Heartbeat animations", "Emerald & Gold theme"],
+    previewImage: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80",
   },
   {
     id: "noir",
@@ -20,6 +21,7 @@ export const templatesList = [
     mood: "Modern Editorial",
     tagline: "Bold, brave, and undeniably modern for the trend-setting couple.",
     features: ["High-contrast typography", "Cinematic reveals", "Minimalist aesthetic"],
+    previewImage: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80",
   },
   {
     id: "solstice",
@@ -31,6 +33,7 @@ export const templatesList = [
     mood: "Organic Minimalist",
     tagline: "A breath of fresh air with soft tones and natural, flowing elegance.",
     features: ["Botanical accents", "Organic shapes", "Soft, clean layout"],
+    previewImage: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&q=80",
   },
 ];
 

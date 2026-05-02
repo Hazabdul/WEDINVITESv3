@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Phone } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DesignElement } from '../preview/DesignElement';
+import { CouplePortraits } from '../preview/CouplePortraits';
+import { resolveMediaSource } from '../../utils/media';
 
 /* ─── Live Countdown ──────────────────────────────────────── */
 function Countdown({ date, dark }) {
@@ -46,8 +48,12 @@ function Countdown({ date, dark }) {
 
 /* ─── SharedSections ──────────────────────────────────────── */
 export function SharedSections({ data, dark = false, hideGallery = false, hideVideo = false, hideRSVP = false, hideMap = false, hideEvents = false, hideFamily = false, hideBlessings = false, hideCountdown = false }) {
+<<<<<<< HEAD
   const { event, events, family, content, media, theme } = data;
   const videoEnabled = theme?.enableVideo !== false && media?.enableVideo !== false;
+=======
+  const { couple, event, events, family, content, media, theme } = data;
+>>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
 
   const textPrimary = dark ? 'text-white' : 'text-slate-900';
   const textMuted = dark ? 'text-white/65' : 'text-slate-500';
@@ -57,14 +63,30 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
   /* section shape from user theme, fallback to rounded-2xl */
   const shape = theme?.sectionShape || 'rounded-2xl';
 
+  const brideImage = resolveMediaSource(media?.brideImage) || '';
+  const groomImage = resolveMediaSource(media?.groomImage) || '';
+  const brideName  = couple?.bride  || '';
+  const groomName  = couple?.groom  || '';
+
   return (
     <div className="space-y-4 p-4">
 
+      {/* ── Couple Portraits ── */}
+      {theme.showPortraits !== false && (brideImage || groomImage) && (
+        <CouplePortraits
+          brideImage={brideImage}
+          groomImage={groomImage}
+          brideName={brideName}
+          groomName={groomName}
+          nameColor={dark ? 'rgba(245,237,220,0.9)' : '#5C4A2A'}
+        />
+      )}
+
       {/* ── Countdown ── */}
-      {theme.enableCountdown && !hideCountdown && <Countdown date={event.date} dark={dark} />}
+      {theme.showCountdown !== false && theme.enableCountdown && !hideCountdown && <Countdown date={event.date} dark={dark} />}
 
       {/* ── Event schedule ── */}
-      {(events || []).length > 0 && !hideEvents && (
+      {theme.showSchedule !== false && (events || []).length > 0 && !hideEvents && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Event Schedule</h3>
           <div className="space-y-3">
@@ -110,7 +132,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       </div>
 
       {/* ── Gallery ── */}
-      {theme.enableGallery && media?.gallery?.length > 0 && !hideGallery && (
+      {theme.showGallery !== false && theme.enableGallery && media?.gallery?.length > 0 && !hideGallery && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Gallery</h3>
           <div className="grid grid-cols-2 gap-2">
@@ -128,7 +150,11 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── Video ── */}
+<<<<<<< HEAD
       {videoEnabled && media?.video && !hideVideo && (
+=======
+      {theme.showVideo !== false && theme.enableVideo && media?.video && !hideVideo && (
+>>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Video Message</h3>
           <video data-live-invite-media controls className="w-full rounded-xl">
@@ -138,7 +164,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── RSVP & Contact ── */}
-      {!hideRSVP && (
+      {theme.showRSVP !== false && !hideRSVP && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-1.5 text-base font-bold', textPrimary)}>RSVP & Contact</h3>
           {content.rsvpText && (

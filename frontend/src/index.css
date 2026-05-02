@@ -147,16 +147,16 @@
 }
 @layer utilities {
   .custom-scrollbar-preview::-webkit-scrollbar {
-    width: 5px;
+    display: none;
   }
-  .custom-scrollbar-preview::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar-preview::-webkit-scrollbar-thumb {
-    background: #d9cec1;
-    border-radius: 10px;
-  }
-  .custom-scrollbar-preview::-webkit-scrollbar-thumb:hover {
-    background: #bfa48a;
-  }
+}
+
+/* Hide scrollbars globally but maintain functionality */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }

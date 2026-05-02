@@ -6,6 +6,7 @@ import { Builder } from './pages/Builder';
 import { Templates } from './pages/Templates';
 import { Pricing } from './pages/Pricing';
 import { InvitationView } from './pages/InvitationView';
+import { LivePreviewReceiver } from './pages/LivePreviewReceiver';
 import { InvitationProvider } from './hooks/useInvitationState';
 import { cn } from './utils/cn';
 
@@ -162,7 +163,9 @@ function AppShell() {
   const location = useLocation();
   const isInvitation = location.pathname.startsWith('/invitation/') ||
     location.pathname.startsWith('/invite/') ||
-    location.pathname.startsWith('/v/');
+    location.pathname.startsWith('/v/') ||
+    location.pathname.startsWith('/builder') ||
+    location.pathname.startsWith('/preview-render');
 
   return (
     <div className="min-h-screen bg-silk font-sans antialiased text-slate-900 flex flex-col">
@@ -187,6 +190,7 @@ function AppShell() {
             <Route path="/invitation-analyzer" element={<InvitationAnalyzer />} />
             <Route path="/image-to-website" element={<ImageToWebsite />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/preview-render" element={<LivePreviewReceiver />} />
             <Route path="/invitation/:slug" element={<InvitationView />} />
             <Route path="/invite/:slug" element={<InvitationView />} />
             <Route path="/v/:slug" element={<InvitationView />} />
