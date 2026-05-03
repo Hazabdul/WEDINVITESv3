@@ -154,6 +154,45 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
         </div>
       )}
 
+      {/* ── Event Location & Map ── */}
+      {event.mapLink && theme.showMap !== false && !hideMap && (
+        <div data-live-invite-section className={cn('border p-5', shape, cardBg)}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/5 dark:bg-white/10">
+              <MapPin className={cn("h-4.5 w-4.5", textPrimary)} />
+            </div>
+            <div>
+              <h3 className={cn('text-[15px] font-bold leading-none', textPrimary)}>Event Location</h3>
+              <p className={cn('text-[10px] mt-1 opacity-60 uppercase tracking-widest', textMuted)}>Directions & Venue</p>
+            </div>
+          </div>
+          
+          <div data-live-invite-card className={cn('rounded-2xl border p-5 shadow-sm transition-all hover:shadow-md', innerBg)}>
+            <div className={cn('font-bold text-sm mb-1.5 tracking-tight', textPrimary)}>
+              {event.venue || 'Wedding Venue'}
+            </div>
+            {event.address && (
+              <div className={cn('text-xs mb-5 leading-relaxed opacity-75 font-medium', textMuted)}>
+                {event.address}
+              </div>
+            )}
+            <a 
+              href={event.mapLink} 
+              target="_blank" 
+              rel="noreferrer"
+              className={cn(
+                'group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl px-4 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all active:scale-[0.98]',
+                dark ? 'bg-white text-slate-900 shadow-xl shadow-white/5' : 'bg-slate-900 text-white shadow-xl shadow-slate-900/10'
+              )}
+            >
+              <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+              <MapPin className="h-3.5 w-3.5" />
+              Go to the Map
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* ── RSVP & Contact ── */}
       {theme.showRSVP !== false && !hideRSVP && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
@@ -190,13 +229,6 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
           )}
           {content.specialNotes && (
             <div className={cn('mt-1.5 text-xs leading-relaxed', textMuted)}>{content.specialNotes}</div>
-          )}
-          {event.mapLink && !hideMap && (
-            <a href={event.mapLink} target="_blank" rel="noreferrer"
-              className={cn('mt-4 inline-flex rounded-xl px-4 py-2.5 text-xs font-semibold',
-                dark ? 'bg-white text-slate-900' : 'bg-slate-900 text-white')}>
-              Open in Maps →
-            </a>
           )}
         </div>
       )}

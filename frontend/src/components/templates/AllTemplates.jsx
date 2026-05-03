@@ -683,7 +683,25 @@ export function HighEndImmersiveTemplate({ data }) {
             </p>
           </DesignElement>
 
-
+          {event.mapLink && theme.showMap !== false && (
+            <div className="reveal-up mx-auto mb-16 mt-12 max-w-[400px] px-6">
+              <div className="rounded-[32px] border border-[#c9a87c]/30 bg-[#1a3529]/5 p-8 text-center backdrop-blur-sm">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1a3529] text-[#c9a87c]">
+                  <MapPin className="h-6 w-6" strokeWidth={1.5} />
+                </div>
+                <h3 className="mb-2 font-serif text-2xl italic text-[#1a3529]">{event.venue || 'The Venue'}</h3>
+                {event.address && <p className="mb-6 text-[11px] uppercase tracking-[2px] text-[#1a3529]/60">{event.address}</p>}
+                <a 
+                  href={event.mapLink} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1a3529] px-6 py-4 text-[10px] font-bold uppercase tracking-[3px] text-[#f5ede0] transition-all hover:bg-[#244a39] active:scale-95 shadow-xl shadow-[#1a3529]/20"
+                >
+                  Go to the Map
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -1364,6 +1382,21 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
               <p className="mt-4 text-center text-[13px] leading-6 sm:mt-5 sm:text-sm sm:leading-7" style={{ color: bodyColor }}>{event.address}</p>
             </DesignElement>
           )}
+
+          {event.mapLink && theme.showMap !== false && (
+            <div className="mt-5 text-center">
+              <a 
+                href={event.mapLink} 
+                target="_blank" 
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.22em] transition-all active:scale-95 shadow-lg"
+                style={{ backgroundColor: ceremonyPrimary, color: ceremonySecondary }}
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                Go to the Map
+              </a>
+            </div>
+          )}
         </div>
       </section>
 
@@ -1421,7 +1454,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 /* ─── Noir Editorial / High-End Modern ─────────────────── */
 export function NoirTemplate({ data, isPreview = false }) {
   const rootRef = useRef(null);
-  const { couple = {}, event = {}, content = {} } = data;
+  const { couple = {}, event = {}, content = {}, theme = {} } = data;
 
   useEffect(() => {
     if (!rootRef.current || typeof window === 'undefined' || data.theme?.enableAnimation === false) return undefined;
@@ -1447,6 +1480,11 @@ export function NoirTemplate({ data, isPreview = false }) {
       <div data-noir-reveal className="space-y-4">
         <p className="text-2xl font-serif italic text-white/70">{formatElegantDate(event.date)}</p>
         <p className="text-[12px] font-bold uppercase tracking-[0.4em]">{event.venue}</p>
+        {event.mapLink && theme.showMap !== false && (
+          <a href={event.mapLink} target="_blank" rel="noreferrer" className="mt-6 inline-block border border-white/20 px-8 py-3 text-[10px] uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all">
+            Go to the Map
+          </a>
+        )}
       </div>
       <div data-noir-reveal className="mt-20 h-[300px] w-px bg-gradient-to-b from-white/40 to-transparent" />
     </div>
@@ -1456,7 +1494,7 @@ export function NoirTemplate({ data, isPreview = false }) {
 /* ─── Solstice Minimal / Organic Botanical ─────────────── */
 export function SolsticeTemplate({ data, isPreview = false }) {
   const rootRef = useRef(null);
-  const { couple = {}, event = {} } = data;
+  const { couple = {}, event = {}, theme = {} } = data;
 
   return (
     <div ref={rootRef} className="min-h-screen bg-[#FDFCFB] text-[#1A2B2F] p-10 flex flex-col items-center justify-center text-center font-serif text-sm">
@@ -1477,6 +1515,11 @@ export function SolsticeTemplate({ data, isPreview = false }) {
         <div className="h-px w-20 bg-[#C5A059]/30 mx-auto mb-10" />
         <p className="text-xl font-light tracking-wide">{formatLongDate(event.date)}</p>
         <p className="mt-4 text-[11px] uppercase tracking-[0.3em] opacity-60">{event.venue}</p>
+        {event.mapLink && theme.showMap !== false && (
+          <a href={event.mapLink} target="_blank" rel="noreferrer" className="mt-8 inline-block font-sans text-[10px] uppercase tracking-[0.3em] text-[#C5A059] border-b border-[#C5A059]/30 pb-1 hover:opacity-70 transition-all">
+            Go to the Map
+          </a>
+        )}
       </div>
     </div>
   );

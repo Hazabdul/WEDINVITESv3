@@ -25,6 +25,7 @@ import {
   Trash2,
   Type,
   UploadCloud,
+  Check,
   X,
 } from 'lucide-react';
 import { useInvitationState } from '../hooks/useInvitationState';
@@ -82,7 +83,7 @@ function TextInput({ label, helper, value, onChange, placeholder, type = 'text',
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-[5px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#0f172a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.05)]"
+        className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#D4A76A] focus:bg-white focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]"
       />
     </Field>
   );
@@ -96,7 +97,7 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
         onChange={onChange}
         placeholder={placeholder}
         rows={rows}
-        className="w-full rounded-[5px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] leading-relaxed text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#0f172a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.05)]"
+        className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] leading-relaxed text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#D4A76A] focus:bg-white focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]"
       />
     </Field>
   );
@@ -163,7 +164,7 @@ export function Builder() {
   const [checkingBackend, setCheckingBackend] = useState(false);
   const [backendHealth, setBackendHealth] = useState(null);
   const [backendHealthError, setBackendHealthError] = useState('');
-  const { data, clearData, updateSection, updateEvent, addEvent, setTemplate } = useInvitationState();
+  const { data, clearData, updateSection, updateEvent, addEvent, removeEvent, setTemplate } = useInvitationState();
 
   const iframeRef = React.useRef(null);
 
@@ -433,6 +434,13 @@ export function Builder() {
       case 0:
         return (
           <div className="space-y-4">
+            <TextInput
+              label="Email address"
+              placeholder="Email address"
+              type="email"
+              value={data.event?.email || ''}
+              onChange={(event) => updateSection('event', 'email', event.target.value)}
+            />
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride name"
@@ -524,104 +532,90 @@ export function Builder() {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="rounded-[10px] border border-[#e2e8f0] bg-white p-4 sm:p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-[#0f172a]">Main celebration</h3>
-                  <p className="mt-1 text-xs leading-6 text-[#64748b]">This appears as the anchor event in the invitation.</p>
-                </div>
-                <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#0f172a]">Primary</div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-1">
+              <div>
+                <h3 className="text-xl font-black tracking-tight text-[#0f172a]">Event Schedule</h3>
+                <p className="text-[11px] font-medium text-slate-400">Add moments like Nikah, Reception, or Dinner.</p>
               </div>
-              <div className="mt-5 grid gap-4 grid-cols-2">
-                <TextInput
-                  label="Time"
-                  placeholder="07:30 PM"
-                  value={data.event?.time || ''}
-                  onChange={(event) => updateSection('event', 'time', event.target.value)}
-                />
-                <TextInput
-                  label="Title"
-                  placeholder="Wedding Ceremony"
-                  value={data.events?.[0]?.name || 'Wedding Ceremony'}
-                  onChange={(event) => {
-                    if (data.events?.[0]) {
-                      updateEvent(data.events[0].id, 'name', event.target.value);
-                    }
-                  }}
-                />
-                <TextInput
-                  label="Location"
-                  placeholder="The Grand Pearl Ballroom"
-                  value={data.event?.venue || ''}
-                  onChange={(event) => updateSection('event', 'venue', event.target.value)}
-                  className="col-span-2"
-                />
-                <TextAreaInput
-                  label="Note"
-                  placeholder="Dinner follows after the ceremony."
-                  value={data.events?.[0]?.notes || ''}
-                  onChange={(event) => {
-                    if (data.events?.[0]) {
-                      updateEvent(data.events[0].id, 'notes', event.target.value);
-                    }
-                  }}
-                  rows={3}
-                  className="col-span-2"
-                />
-              </div>
+              <button
+                onClick={addEvent}
+                className="flex items-center justify-center gap-2 rounded-full bg-[#D4A76A] px-5 py-2.5 text-[13px] font-bold text-white transition-all hover:bg-[#B68D40] active:scale-95"
+              >
+                <Plus className="h-4 w-4 stroke-[3]" />
+                Add block
+              </button>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-[#0f172a]">Additional schedule blocks</h3>
-                  <p className="text-xs text-[#64748b]">Add only the moments guests need to plan around.</p>
+            {data.events.length === 0 ? (
+              <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50/50 p-12 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
+                  <CalendarDays className="h-6 w-6" />
                 </div>
-                <Button onClick={addEvent} variant="outline" className="border-[#e2e8f0] bg-white text-slate-700 hover:bg-slate-50">
-                  <Plus className="h-4 w-4" /> Add block
-                </Button>
+                <h4 className="text-sm font-bold text-slate-900">No events added</h4>
+                <p className="mt-1 text-xs text-slate-500">Add at least one event like your Wedding Ceremony.</p>
+                <Button onClick={addEvent} className="mt-6 bg-[#D4A76A] text-white hover:bg-[#B68D40] transition-colors">Add your first event</Button>
               </div>
+            ) : (
+              <div className="space-y-4">
+                {data.events.map((eventItem, index) => (
+                  <div key={eventItem.id} className="group relative rounded-[20px] border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#D4A76A]/10 text-[10px] font-bold text-[#D4A76A]">
+                          {index + 1}
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                          {index === 0 ? 'Primary Event' : 'Additional Event'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeEvent(eventItem.id)}
+                        className="h-8 w-8 flex items-center justify-center rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                        title="Remove event"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
 
-              {(data.events || []).slice(1).length === 0 ? (
-                <div className="rounded-[10px] border border-dashed border-[#e2e8f0] bg-[#f8fafc] p-5 text-sm text-[#64748b]">
-                  No additional blocks yet. Add a reception, dinner, welcome party, or any moment guests should plan around.
-                </div>
-              ) : (
-                (data.events || []).slice(1).map((eventItem) => (
-                  <div key={eventItem.id} className="rounded-[10px] border border-[#f1f5f9] bg-white p-4 sm:p-5 shadow-sm">
-                    <div className="grid gap-4 grid-cols-2">
+                    <div className="grid gap-5 grid-cols-1 sm:grid-cols-2">
                       <TextInput
                         label="Time"
-                        placeholder="05:00 PM"
+                        placeholder="07:30 PM"
                         value={eventItem.time || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'time', event.target.value)}
+                        onChange={(e) => {
+                          updateEvent(eventItem.id, 'time', e.target.value);
+                          if (index === 0) updateSection('event', 'time', e.target.value);
+                        }}
                       />
                       <TextInput
                         label="Title"
-                        placeholder="Nikah"
+                        placeholder={index === 0 ? "Wedding Ceremony" : "Nikah / Reception"}
                         value={eventItem.name || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'name', event.target.value)}
+                        onChange={(e) => updateEvent(eventItem.id, 'name', e.target.value)}
                       />
                       <TextInput
                         label="Location"
-                        placeholder="Grand Palace Hall"
+                        placeholder="The Grand Pearl Ballroom"
                         value={eventItem.venue || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'venue', event.target.value)}
-                        className="col-span-2"
+                        onChange={(e) => {
+                          updateEvent(eventItem.id, 'venue', e.target.value);
+                          if (index === 0) updateSection('event', 'venue', e.target.value);
+                        }}
+                        className="sm:col-span-2"
                       />
                       <TextAreaInput
                         label="Note"
                         placeholder="Please arrive 30 minutes early."
                         value={eventItem.notes || ''}
-                        onChange={(event) => updateEvent(eventItem.id, 'notes', event.target.value)}
-                        rows={3}
-                        className="col-span-2"
+                        onChange={(e) => updateEvent(eventItem.id, 'notes', e.target.value)}
+                        rows={2}
+                        className="sm:col-span-2"
                       />
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -913,7 +907,7 @@ export function Builder() {
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Choose Template</span>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {templatesList.map((template) => {
                   const selected = data.theme?.id === template.id;
                   return (
@@ -921,17 +915,17 @@ export function Builder() {
                       key={template.id}
                       onClick={() => setTemplate(template.id)}
                       className={cn(
-                        "group relative aspect-[4/5] overflow-hidden rounded-xl border-2 transition-all",
-                        selected ? "border-slate-900 ring-4 ring-slate-900/5" : "border-slate-50 grayscale hover:grayscale-0 hover:border-slate-200"
+                        "group relative aspect-[4/5] overflow-hidden rounded-lg border-2 transition-all",
+                        selected ? "border-[#D4A76A] ring-4 ring-[#D4A76A]/10" : "border-slate-50 grayscale hover:grayscale-0 hover:border-slate-200"
                       )}
                     >
                       <img src={template.previewImage} alt={template.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                      <div className="absolute inset-x-0 bottom-0 bg-black/50 p-1.5 backdrop-blur-sm">
-                        <p className="text-[8px] font-bold text-white uppercase tracking-wider truncate text-center">{template.name}</p>
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-8 pb-2 px-2">
+                        <p className="text-[8px] font-black text-white uppercase tracking-[0.15em] truncate text-center drop-shadow-sm">{template.name}</p>
                       </div>
                       {selected && (
-                        <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg">
-                          <CheckCircle2 className="h-2.5 w-2.5" />
+                        <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#D4A76A] text-white shadow-lg">
+                          <Check className="h-3 w-3" strokeWidth={3} />
                         </div>
                       )}
                     </button>
@@ -973,6 +967,12 @@ export function Builder() {
                   label="Show Countdown Timer"
                   checked={data.theme?.showCountdown !== false}
                   onChange={() => updateSection('theme', 'showCountdown', data.theme?.showCountdown === false)}
+                  className="border-slate-100 bg-slate-50/50"
+                />
+                <Toggle
+                  label="Show Map & Location"
+                  checked={data.theme?.showMap !== false}
+                  onChange={() => updateSection('theme', 'showMap', data.theme?.showMap === false)}
                   className="border-slate-100 bg-slate-50/50"
                 />
                 <Toggle
@@ -1030,24 +1030,6 @@ export function Builder() {
                 </div>
               </div>
 
-              {/* Theme & Style */}
-              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Palette className="h-4 w-4 text-slate-400" /> Theme & Style</div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Template</div>
-                    <div className="text-[13px] font-bold text-slate-700">{activeTemplate.name}</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Colors</div>
-                    <div className="flex gap-2 mt-1">
-                      <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: data.theme?.primaryColor }} />
-                      <div className="h-5 w-5 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: data.theme?.secondaryColor }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Family Details */}
               <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Heart className="h-4 w-4 text-slate-400" /> Family Details</div>
@@ -1065,21 +1047,6 @@ export function Builder() {
                       <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Parents</div>
                       <div className="text-[13px] font-bold text-slate-700">{data.family?.groomParents || 'Not set'}</div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Content & Media */}
-              <div className="rounded-[12px] border border-slate-100 bg-white p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-[#0f172a]"><Images className="h-4 w-4 text-slate-400" /> Content & Media</div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Gallery</div>
-                    <div className="text-[13px] font-bold text-slate-700">{data.media?.gallery?.length || 0} Images</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Video Story</div>
-                    <div className="text-[13px] font-bold text-slate-700">{data.media?.video ? 'Linked' : 'Not added'}</div>
                   </div>
                 </div>
               </div>
@@ -1129,26 +1096,6 @@ export function Builder() {
                 </div>
               </div>
             </div>
-
-            {progressInfo.missingFields.length > 0 ? (
-              <div className="rounded-[10px] border border-[#fde68a] bg-[#fffbeb] p-5">
-                <h4 className="text-sm font-semibold text-[#78350f]">Complete these before publishing</h4>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {progressInfo.missingFields.map((item) => (
-                    <span key={item} className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#92400e] ring-1 ring-[#fde68a]">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-[10px] border border-[#a7f3d0] bg-emerald-50 p-5 text-sm text-[#065f46] shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-[#10b981] animate-pulse" />
-                  Core details are complete. The invitation is ready to publish.
-                </div>
-              </div>
-            )}
 
             {submitError ? (
               <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{submitError}</div>

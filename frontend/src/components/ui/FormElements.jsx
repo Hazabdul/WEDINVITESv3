@@ -10,7 +10,7 @@ export function Input({ label, value, onChange, placeholder, type = "text", clas
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-slate-900"
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#D4A76A]"
       />
     </label>
   );
@@ -25,7 +25,7 @@ export function Textarea({ label, value, onChange, placeholder, rows = 4, classN
         onChange={onChange}
         placeholder={placeholder}
         rows={rows}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-slate-900"
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#D4A76A]"
       />
     </label>
   );
@@ -40,7 +40,7 @@ export function Toggle({ label, checked, onChange, className }) {
         onClick={onChange}
         className={cn(
           "relative h-7 w-12 rounded-full transition",
-          checked ? "bg-slate-900" : "bg-slate-300"
+          checked ? "bg-[#D4A76A]" : "bg-slate-300"
         )}
       >
         <span
@@ -62,7 +62,7 @@ export function Select({ label, value, onChange, options, className }) {
         <select
           value={value}
           onChange={onChange}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-slate-900 appearance-none pr-10 cursor-pointer"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#D4A76A] appearance-none pr-10 cursor-pointer"
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
