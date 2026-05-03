@@ -169,12 +169,18 @@ function withAlpha(hex, alpha) {
 }
 
 function buildMediaPackage(media = {}) {
+  // Resolve the uploaded video story field first — it's what the builder writes to
+  const uploadedVideo = resolveMediaSource(media.videoStory) || resolveMediaSource(media.video) || '';
+
   const heroVideo = [
     media.heroVideo,
     media.coverVideo,
     media.backgroundVideo,
     media.videoUrl,
     media.inviteVideo,
+    // videoStory / video is the primary upload target from the builder
+    media.videoStory,
+    media.video,
   ]
     .map(resolveMediaSource)
     .find(Boolean) || '';
@@ -184,6 +190,8 @@ function buildMediaPackage(media = {}) {
     media.reelVideo,
     media.secondaryVideo,
     media.highlightVideo,
+    // fall back to the uploaded video story so it always surfaces somewhere
+    media.videoStory,
   ]
     .map(resolveMediaSource)
     .find(Boolean) || '';
@@ -210,6 +218,7 @@ function buildMediaPackage(media = {}) {
     .find(Boolean) || '';
 
   const video = [
+    media.videoStory,
     media.video,
     media.videoUrl,
     media.storyVideo,
