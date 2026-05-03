@@ -30,7 +30,7 @@ function CinematicTimer({ date, dark = true }) {
   }, [date]);
 
   return (
-    <div className={cn("flex items-center gap-5", dark ? "text-[var(--tw-body-bg, #f5ede0)]" : "text-[var(--tw-secondary)]")}>
+    <div className={cn("flex items-center gap-5", dark ? "text-[#f5ede0]" : "text-[#1a3529]")}>
       {Object.entries(timeLeft).map(([label, value], i) => (
         <React.Fragment key={label}>
           <div className="text-center">
@@ -41,7 +41,7 @@ function CinematicTimer({ date, dark = true }) {
               {label}
             </div>
           </div>
-          {i < 3 && <div className={cn("h-8 w-px", dark ? "bg-white/10" : "bg-[var(--tw-secondary)]/20")} />}
+          {i < 3 && <div className={cn("h-8 w-px", dark ? "bg-white/10" : "bg-[#1a3529]/20")} />}
         </React.Fragment>
       ))}
     </div>
@@ -169,29 +169,24 @@ function withAlpha(hex, alpha) {
 }
 
 function buildMediaPackage(media = {}) {
-  const videoEnabled = media.enableVideo !== false;
-  const heroVideo = videoEnabled
-    ? [
-        media.heroVideo,
-        media.coverVideo,
-        media.backgroundVideo,
-        media.videoUrl,
-        media.inviteVideo,
-      ]
-        .map(resolveMediaSource)
-        .find(Boolean) || ''
-    : '';
+  const heroVideo = [
+    media.heroVideo,
+    media.coverVideo,
+    media.backgroundVideo,
+    media.videoUrl,
+    media.inviteVideo,
+  ]
+    .map(resolveMediaSource)
+    .find(Boolean) || '';
 
-  const secondaryVideo = videoEnabled
-    ? [
-        media.storyVideo,
-        media.reelVideo,
-        media.secondaryVideo,
-        media.highlightVideo,
-      ]
-        .map(resolveMediaSource)
-        .find(Boolean) || ''
-    : '';
+  const secondaryVideo = [
+    media.storyVideo,
+    media.reelVideo,
+    media.secondaryVideo,
+    media.highlightVideo,
+  ]
+    .map(resolveMediaSource)
+    .find(Boolean) || '';
 
   const galleryCandidates = unique([
     resolveMediaSource(media.coverImage),
@@ -214,16 +209,14 @@ function buildMediaPackage(media = {}) {
     .map(resolveMediaSource)
     .find(Boolean) || '';
 
-  const video = videoEnabled
-    ? [
-        media.video,
-        media.videoUrl,
-        media.storyVideo,
-        media.inviteVideo,
-      ]
-        .map(resolveMediaSource)
-        .find(Boolean) || ''
-    : '';
+  const video = [
+    media.video,
+    media.videoUrl,
+    media.storyVideo,
+    media.inviteVideo,
+  ]
+    .map(resolveMediaSource)
+    .find(Boolean) || '';
 
   return {
     heroVideo,
@@ -369,7 +362,7 @@ function StoryVideoCard({ media, dark = false, className = '' }) {
 
 function EditorialNames({ brideId, groomId, bride, groom, brideColor, groomColor, dividerClassName = '' }) {
   return (
-    <h1 className="text-3xl font-semibold leading-tight" >
+    <h1 className="text-3xl font-semibold leading-tight" style={{ fontFamily: 'inherit' }}>
       <DesignElement id={brideId} label="Bride Name" defaultColor={brideColor}>
         <span style={{ color: `var(--tw-primary,${brideColor})`, fontWeight: 700 }}>{bride}</span>
       </DesignElement>
@@ -469,11 +462,11 @@ export function HighEndImmersiveTemplate({ data }) {
   }, []);
 
   return (
-    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-black selection:bg-[var(--tw-primary)] selection:text-white" style={{ color: 'var(--tw-body-bg, #f5ede0)' }}>
+    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-black selection:bg-[#c9a87c] selection:text-white" style={{ color: '#f5ede0' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
-        .forest-vault-template h1, .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: var(--tw-font, 'Cormorant Garamond', serif); }
-        .forest-vault-template { font-family: var(--tw-font, 'Montserrat', sans-serif); }
+        .forest-vault-template h1, .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .forest-vault-template { font-family: 'Montserrat', sans-serif; }
         .vault-frame { 
           border-radius: 999px 999px 80px 80px;
           overflow: hidden;
@@ -502,33 +495,33 @@ export function HighEndImmersiveTemplate({ data }) {
         </div>
 
         <div className="relative z-10 w-full transition-all duration-1000 animate-in fade-in slide-in-from-bottom-10">
-          <p className="mb-4 text-[10px] font-bold uppercase tracking-[8px] text-[var(--tw-primary)]/90">{heroSubtitle}</p>
-          <h1 className="flex items-center justify-center gap-4 text-[clamp(42px,10vw,86px)] font-light leading-none" style={{ color: 'var(--tw-body-bg, #f5ede0)' }}>
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-[8px] text-[#c9a87c]/90">{heroSubtitle}</p>
+          <h1 className="flex items-center justify-center gap-4 text-[clamp(42px,10vw,86px)] font-light leading-none" style={{ color: '#f5ede0' }}>
             <span className="reveal-up inline-block">{brideName}</span>
-            <span className="font-serif italic text-[var(--tw-primary)]/60">&</span>
+            <span className="font-serif italic text-[#c9a87c]/60">&</span>
             <span className="reveal-up inline-block">{groomName}</span>
           </h1>
 
-          <p className="mt-8 text-[11px] font-light tracking-[3px] opacity-50" style={{ color: 'var(--tw-body-bg, #f5ede0)' }}>{eventDate}</p>
+          <p className="mt-8 text-[11px] font-light tracking-[3px] opacity-50" style={{ color: '#f5ede0' }}>{eventDate}</p>
         </div>
 
         {/* Floating Icons */}
         <div className="leaf-float absolute left-[12%] top-[30%] rotate-[-15deg] opacity-20">
-          <Leaf className="h-10 w-10 text-[var(--tw-primary)]" strokeWidth={0.5} />
+          <Leaf className="h-10 w-10 text-[#c9a87c]" strokeWidth={0.5} />
         </div>
         <div className="leaf-float absolute right-[10%] top-[15%] rotate-[140deg] opacity-15">
-          <Leaf className="h-12 w-12 text-[var(--tw-primary)]" strokeWidth={0.5} />
+          <Leaf className="h-12 w-12 text-[#c9a87c]" strokeWidth={0.5} />
         </div>
       </section>
 
       {/* The Vault Arch Content */}
-      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[var(--tw-body-bg, #f5ede0)] px-4 pb-20 pt-24 text-[var(--tw-secondary)] sm:mt-[-80px] sm:pt-32">
+      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32 border-none">
         <div className="mx-auto max-w-[840px]">
           <div className="reveal-up mb-20 text-center">
             <div className="mx-auto mb-6 flex justify-center opacity-40">
-              <Leaf className="h-8 w-8 rotate-12 text-[var(--tw-secondary)]" strokeWidth={1} />
+              <Leaf className="h-8 w-8 rotate-12 text-[#1a3529]" strokeWidth={1} />
             </div>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[var(--tw-primary)]">The Union</p>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]">The Union</p>
             <p className="mx-auto max-w-[650px] font-serif text-[24px] italic leading-relaxed opacity-90 sm:text-[38px] lg:text-[42px]">
               {intro || 'We Invite You to Celebrate Our Wedding'}
             </p>
@@ -727,7 +720,7 @@ export function ClassicTemplate({ data }) {
   const countdown = getCountdownLabel(event.date);
 
   return (
-    <div className="bg-[var(--tw-body-bg, #f4eee7)] text-stone-900">
+    <div className="bg-[#f4eee7] text-stone-900">
       <HeroBackground
         media={media}
         className="min-h-[420px]"
@@ -751,13 +744,13 @@ export function ClassicTemplate({ data }) {
               groomId="classicGroomName"
               bride={couple.bride}
               groom={couple.groom}
-              brideColor="var(--tw-primary)"
-              groomColor="var(--tw-primary)"
+              brideColor="#fffaf0"
+              groomColor="#fffaf0"
               dividerClassName="text-white/55"
             />
 
             {intro && (
-              <DesignElement id="classicIntro" label="Classic Intro" defaultColor="var(--tw-primary)">
+              <DesignElement id="classicIntro" label="Classic Intro" defaultColor="#fffaf0">
                 <p className="mt-3 text-xs leading-relaxed text-white/80 animate-fade-in-up stagger-3">
                   {intro}
                 </p>
@@ -826,18 +819,18 @@ export function FloralTemplate({ data }) {
           </InfoPill>
 
           <div className="mt-4">
-            <h1 className="text-3xl font-semibold leading-tight" >
-              <DesignElement id="floralBrideName" label="Bride Name" defaultColor="var(--tw-primary)">
-                <span style={{ color: 'var(--tw-primary,var(--tw-primary))', fontWeight: 700 }}>{couple.bride}</span>
+            <h1 className="text-3xl font-semibold leading-tight" style={{ fontFamily: 'inherit' }}>
+              <DesignElement id="floralBrideName" label="Bride Name" defaultColor="#881337">
+                <span style={{ color: 'var(--tw-primary,#881337)', fontWeight: 700 }}>{couple.bride}</span>
               </DesignElement>
               <span className="mx-2 inline-block text-xl font-light italic text-rose-400/80">&amp;</span>
-              <DesignElement id="floralGroomName" label="Groom Name" defaultColor="var(--tw-primary)">
-                <span style={{ color: 'var(--tw-primary,var(--tw-primary))', fontWeight: 700 }}>{couple.groom}</span>
+              <DesignElement id="floralGroomName" label="Groom Name" defaultColor="#881337">
+                <span style={{ color: 'var(--tw-primary,#881337)', fontWeight: 700 }}>{couple.groom}</span>
               </DesignElement>
             </h1>
 
             {intro && (
-              <DesignElement id="floralIntro" label="Floral Intro" defaultColor="var(--tw-primary)">
+              <DesignElement id="floralIntro" label="Floral Intro" defaultColor="#881337">
                 <p className="mt-3 text-xs leading-relaxed text-rose-900/75 animate-fade-in-up stagger-2">
                   {intro}
                 </p>
@@ -903,7 +896,7 @@ export function ModernTemplate({ data }) {
 
           <div>
             <div className="text-[10px] uppercase tracking-[0.5em] text-white/50 mb-3">A modern wedding story</div>
-            <h1 className="text-4xl font-black leading-none tracking-tight" >
+            <h1 className="text-4xl font-black leading-none tracking-tight" style={{ fontFamily: 'inherit' }}>
               <DesignElement id="modernBrideName" label="Bride Name" defaultColor="#f8fafc">
                 <span style={{ color: 'var(--tw-primary,#f8fafc)', fontWeight: 800 }}>{couple.bride}</span>
               </DesignElement>
@@ -975,7 +968,7 @@ export function ArabicTemplate({ data }) {
           <div data-live-invite-section className="rounded-t-[70px] rounded-b-[28px] border border-yellow-200/15 bg-black/30 p-5 text-center shadow-[0_24px_70px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
             <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-gradient-to-r from-transparent via-yellow-300/80 to-transparent" />
 
-            <h1 className="text-3xl font-semibold leading-tight" >
+            <h1 className="text-3xl font-semibold leading-tight" style={{ fontFamily: 'inherit' }}>
               <DesignElement id="arabicBrideName" label="Bride Name" defaultColor="#fef3c7">
                 <span style={{ color: 'var(--tw-primary,#fef3c7)', fontWeight: 600 }}>{couple.bride}</span>
               </DesignElement>
@@ -1531,6 +1524,3 @@ export function SolsticeTemplate({ data, isPreview = false }) {
     </div>
   );
 }
-
-
-

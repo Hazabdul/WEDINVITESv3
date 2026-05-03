@@ -134,17 +134,49 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
   );
 }
 
-function PreviewFrame({ children }) {
+function PreviewFrame({ mode, children }) {
+  const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobileScreen = windowWidth < 1024;
+
+  // Always show mobile on small screens, or if specifically requested
+  if (mode === 'mobile' || isMobileScreen) {
+    return (
+      <div className="mx-auto w-[375px] relative">
+        <div className="rounded-[40px] border-[12px] border-[#1a1a1a] bg-[#1a1a1a] p-1 shadow-2xl relative z-10">
+          <div className="overflow-hidden rounded-[28px] bg-white relative">
+            <div className="absolute top-0 inset-x-0 flex items-center justify-center pt-3 z-50 pointer-events-none">
+              <div className="h-6 w-32 rounded-full bg-[#1a1a1a]" />
+            </div>
+            <div className="overflow-y-auto custom-scrollbar-preview rounded-b-[28px] h-[667px]">
+              {children}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise show laptop frame
   return (
-    <div className="mx-auto w-[375px] relative">
-      <div className="rounded-[40px] border-[12px] border-[#1a1a1a] bg-[#1a1a1a] p-1 shadow-2xl relative z-10">
-        <div className="overflow-hidden rounded-[28px] bg-white relative">
-          <div className="absolute top-0 inset-x-0 flex items-center justify-center pt-3 z-50 pointer-events-none">
-            <div className="h-6 w-32 rounded-full bg-[#1a1a1a]" />
+    <div className="w-full">
+      <div className="mx-auto w-full relative">
+        <div className="relative rounded-t-xl border-[8px] border-[#1a1a1a] bg-[#1a1a1a] shadow-2xl overflow-hidden z-10">
+          <div className="flex items-center gap-2 bg-[#1a1a1a] px-4 py-3">
+            <span className="h-3 w-3 rounded-full bg-red-500/80" />
+            <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+            <span className="h-3 w-3 rounded-full bg-green-500/80" />
           </div>
-          <div className="overflow-y-auto custom-scrollbar-preview rounded-b-[28px] h-[667px]">
-            {children}
-          </div>
+          <div className="bg-white aspect-[16/10] overflow-hidden">{children}</div>
+        </div>
+        <div className="relative h-3 w-[106%] -ml-[3%] bg-[#2a2a2a] rounded-b-xl border-t border-white/5 shadow-xl z-0">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-black/40 rounded-b-md" />
         </div>
       </div>
     </div>
@@ -1329,9 +1361,9 @@ export function Builder() {
                       <div className="flex w-full justify-center py-4 md:py-8">
                         <div className={cn(
                           "transition-all duration-700 flex justify-center",
-                          "w-[375px] scale-[0.88] origin-top mx-auto"
+                          previewMode === 'desktop' ? "w-[414px] md:w-[1440px] scale-[0.85] md:scale-[0.45] lg:scale-[0.5] xl:scale-[0.55] 2xl:scale-[0.8] origin-top" : "w-[375px] scale-[0.88] origin-top mx-auto"
                         )}>
-                          <PreviewFrame>
+                          <PreviewFrame mode={previewMode}>
                             <iframe
                               ref={iframeRef}
                               src="/preview-render"
