@@ -522,11 +522,7 @@ export function HighEndImmersiveTemplate({ data }) {
       </section>
 
       {/* The Vault Arch Content */}
-<<<<<<< HEAD
       <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[var(--tw-body-bg, #f5ede0)] px-4 pb-20 pt-24 text-[var(--tw-secondary)] sm:mt-[-80px] sm:pt-32">
-=======
-      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32 border-none">
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
         <div className="mx-auto max-w-[840px]">
           <div className="reveal-up mb-20 text-center">
             <div className="mx-auto mb-6 flex justify-center opacity-40">
@@ -555,25 +551,10 @@ export function HighEndImmersiveTemplate({ data }) {
         <div className="mx-auto max-w-[840px]"> {/* Re-open restricted container */}
 
           {/* Cinematic Signature Section - Enhanced Frame with Standard Height */}
-<<<<<<< HEAD
-          <div className="reveal-up relative mb-16 h-[320px] w-full sm:h-[400px]">
-            {/* Outer Decorative Frame Border */}
-            <div className="absolute inset-[-6px] rounded-[30px] border border-[var(--tw-primary)]/20 sm:inset-[-10px] sm:rounded-[38px]" />
-            
-            <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-2xl sm:rounded-[32px] border border-[var(--tw-primary)]/30">
-              {mediaPack.video ? (
-                <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-60">
-                  <source src={mediaPack.video} type="video/mp4" />
-                </video>
-              ) : mediaPack.heroImage && (
-                <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-50" />
-              )}
-=======
           {theme.showVideo !== false && (
             <div className="reveal-up relative mb-16 h-[320px] w-full sm:h-[400px]">
               {/* Outer Decorative Frame Border */}
               <div className="absolute inset-[-6px] rounded-[30px] border border-[#c9a87c]/20 sm:inset-[-10px] sm:rounded-[38px]" />
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
 
               <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30">
                 {mediaPack.video ? (
@@ -587,22 +568,6 @@ export function HighEndImmersiveTemplate({ data }) {
                 {/* Cinematic Grain/Texture Overlay */}
                 <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
 
-<<<<<<< HEAD
-              {/* Corner Decorative Accents */}
-              <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 border-[var(--tw-primary)]/40 rounded-tl-lg" />
-              <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 border-[var(--tw-primary)]/40 rounded-br-lg" />
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-[var(--tw-body-bg, #f5ede0)]">
-                <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
-                  <div className="relative">
-                    <p className="mb-3 text-[9px] font-bold uppercase tracking-[8px] text-[var(--tw-primary)]/90">The Union Of</p>
-                    <h2 className="mb-2 font-serif text-[clamp(26px,8vw,52px)] font-light italic leading-none tracking-tight drop-shadow-2xl">
-                      {brideName} <span className="not-italic text-[var(--tw-primary)]/60 serif-ampersand px-2">&</span> {groomName}
-                    </h2>
-                    <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[var(--tw-primary)]/50 to-transparent" />
-                  </div>
-                </DesignElement>
-=======
                 {/* Dramatic Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/60" />
 
@@ -622,54 +587,12 @@ export function HighEndImmersiveTemplate({ data }) {
                   </DesignElement>
                 </div>
 
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
               </div>
             </div>
           )}
 
 
           {/* Cinematic Event Schedule - Premium Vertical Timeline */}
-<<<<<<< HEAD
-          <div className="reveal-up mb-32 px-4 sm:px-0">
-            <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[var(--tw-primary)]/40 to-transparent" />
-            <h2 className="mb-16 text-center font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight text-[var(--tw-primary)]">The Schedule</h2>
-
-            <div className="mx-auto max-w-[700px] space-y-24">
-              {(events || []).map((evt, i) => (
-                <div key={i} className={cn("reveal-up flex flex-col gap-8 sm:items-center sm:gap-16", i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse")}>
-                  {/* Arched Portrait for Event */}
-                  <div className="vault-frame relative h-[320px] w-full shrink-0 shadow-2xl sm:h-[420px] sm:w-[300px]">
-                    {mediaPack.gallery[i + 2] ? (
-                      <img src={mediaPack.gallery[i + 2]} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center bg-[var(--tw-secondary)]/5 opacity-20">
-                        <Leaf className="h-12 w-12 text-[var(--tw-primary)]" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--tw-secondary)]/40 via-transparent to-transparent" />
-                  </div>
-
-                  {/* Event Details */}
-                  <div className="flex-1 space-y-6 text-center sm:text-left">
-                    <div>
-                      <p className="mb-2 text-[10px] font-bold uppercase tracking-[5px] text-[var(--tw-primary)]/80">Ceremony {i + 1}</p>
-                      <h3 className="font-serif text-[clamp(24px,4vw,36px)] leading-tight text-[var(--tw-secondary)]">{evt.name}</h3>
-                    </div>
-
-                    <div className="mx-auto h-px w-12 bg-[var(--tw-primary)]/30 sm:mx-0" />
-
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-4 text-sm text-[var(--tw-secondary)]/70 sm:flex-row sm:items-center sm:gap-6">
-                        <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[var(--tw-primary)]/80" /> {evt.date}</span>
-                        <span className="hidden h-4 w-px bg-[var(--tw-secondary)]/10 sm:block" />
-                        <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-[var(--tw-primary)]/80" /> {evt.time}</span>
-                      </div>
-                      <div className="flex items-start gap-2 text-sm text-[var(--tw-secondary)]/70">
-                        <MapPin className="h-4 w-4 shrink-0 text-[var(--tw-primary)]/80 mt-1" />
-                        <div>
-                          <p className="font-serif text-lg leading-tight text-[var(--tw-secondary)]">{evt.venue}</p>
-                          <p className="mt-1 text-[11px] uppercase tracking-[2px] opacity-50">{evt.address}</p>
-=======
           {theme.showSchedule !== false && (
             <div className="reveal-up mb-32 px-4 sm:px-0">
               <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
@@ -711,7 +634,6 @@ export function HighEndImmersiveTemplate({ data }) {
                             <p className="font-serif text-lg leading-tight text-[#1a3529]">{evt.venue}</p>
                             <p className="mt-1 text-[11px] uppercase tracking-[2px] opacity-50">{evt.address}</p>
                           </div>
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
                         </div>
                       </div>
 
@@ -749,15 +671,6 @@ export function HighEndImmersiveTemplate({ data }) {
         </div>
 
         {/* Footer Detail */}
-<<<<<<< HEAD
-        <div className="mt-12 border-t border-[var(--tw-secondary)]/10 pt-16 text-center">
-          <div className="leaf-float mx-auto mb-10 flex justify-center text-[var(--tw-primary)] opacity-60">
-            <Leaf size={40} strokeWidth={1} />
-          </div>
-
-          {theme.enableCountdown && (
-            <div className="reveal-up mb-10 flex justify-center text-[var(--tw-secondary)]">
-=======
         <div className="pt-6 text-center">
           <div className="leaf-float mx-auto mb-10 flex justify-center text-[#c9a87c] opacity-60">
             <Leaf size={40} strokeWidth={1} />
@@ -765,7 +678,6 @@ export function HighEndImmersiveTemplate({ data }) {
 
           {theme.showCountdown !== false && theme.enableCountdown && (
             <div className="reveal-up mb-10 flex justify-center text-[#1a3529]">
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
               <CinematicTimer date={event.date} dark={false} />
             </div>
           )}

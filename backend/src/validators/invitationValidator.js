@@ -52,6 +52,33 @@ export const invitationSchema = z.object({
   })).optional(),
 });
 
+const hasRequiredValue = (value) => value !== undefined && value !== null && String(value).trim() !== '';
+
+export const getInvitationPublishMissingFields = (invitation = {}) => {
+  const couple = invitation.couple || {};
+  const event = invitation.event || {};
+  const family = invitation.family || {};
+  const media = invitation.media || {};
+
+  const requiredFields = [
+    { path: 'couple.bride', label: 'Bride name', value: couple.bride || invitation.brideName },
+    { path: 'couple.groom', label: 'Groom name', value: couple.groom || invitation.groomName },
+    { path: 'family.brideParents', label: "Bride's parents", value: family.brideParents },
+    { path: 'family.groomParents', label: "Groom's parents", value: family.groomParents },
+    { path: 'event.date', label: 'Date', value: event.date || invitation.weddingDate },
+    { path: 'event.venue', label: 'Venue', value: event.venue },
+    { path: 'event.address', label: 'Venue address', value: event.address },
+    { path: 'event.mapLink', label: 'Map link', value: event.mapLink },
+    { path: 'media.coverImage', label: 'Banner photo', value: media.coverImage || media.coupleImage },
+    { path: 'media.brideImage', label: 'Bride photo', value: media.brideImage },
+    { path: 'media.groomImage', label: 'Groom photo', value: media.groomImage },
+  ];
+
+  return requiredFields
+    .filter((field) => !hasRequiredValue(field.value))
+    .map(({ path, label }) => ({ path, label }));
+};
+
 export const rsvpSchema = z.object({
   guestName: z.string().min(1, 'Name is required'),
   email: z.string().email().optional().or(z.literal('')),

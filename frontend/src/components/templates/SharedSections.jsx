@@ -48,12 +48,8 @@ function Countdown({ date, dark }) {
 
 /* ─── SharedSections ──────────────────────────────────────── */
 export function SharedSections({ data, dark = false, hideGallery = false, hideVideo = false, hideRSVP = false, hideMap = false, hideEvents = false, hideFamily = false, hideBlessings = false, hideCountdown = false }) {
-<<<<<<< HEAD
-  const { event, events, family, content, media, theme } = data;
-  const videoEnabled = theme?.enableVideo !== false && media?.enableVideo !== false;
-=======
   const { couple, event, events, family, content, media, theme } = data;
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
+  const videoEnabled = theme?.showVideo !== false && theme?.enableVideo !== false && media?.enableVideo !== false;
 
   const textPrimary = dark ? 'text-white' : 'text-slate-900';
   const textMuted = dark ? 'text-white/65' : 'text-slate-500';
@@ -150,11 +146,7 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── Video ── */}
-<<<<<<< HEAD
       {videoEnabled && media?.video && !hideVideo && (
-=======
-      {theme.showVideo !== false && theme.enableVideo && media?.video && !hideVideo && (
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Video Message</h3>
           <video data-live-invite-media controls className="w-full rounded-xl">

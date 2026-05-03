@@ -5,16 +5,12 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock3,
   Copy,
   ExternalLink,
   Heart,
-  Images,
   Layout,
   LayoutGrid,
-  MapPin,
   Monitor,
-  Palette,
   Play,
   Loader2,
   Plus,
@@ -25,14 +21,14 @@ import {
   Trash2,
   Type,
   UploadCloud,
+  Check,
   X,
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
 } from 'lucide-react';
 import { useInvitationState } from '../hooks/useInvitationState';
 import { Button } from '../components/ui/Button';
-import { Select, Toggle } from '../components/ui/FormElements';
+import { Toggle } from '../components/ui/FormElements';
 import { cn } from '../utils/cn';
-import { templatesList, initialInvitationData } from '../data/mockData';
+import { templatesList } from '../data/mockData';
 import apiClient from '../utils/api';
 import { normalizeMediaUrl } from '../utils/media';
 
@@ -46,13 +42,6 @@ const STEPS = [
     description: 'Add the main celebration details clearly so guests know exactly when and where to arrive.',
   },
   {
-<<<<<<< HEAD
-    title: 'Photos & Video',
-    description: 'Choose the hero image, gallery moments, and optional invitation video.',
-  },
-  {
-=======
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
     title: 'Schedule',
     description: 'Lay out the flow of the celebration with simple time blocks.',
   },
@@ -70,162 +59,77 @@ const STEPS = [
   },
 ];
 
-const GALLERY_IMAGE_LIMIT = 6;
+const REQUIRED_INVITATION_FIELDS = [
+  { step: 0, label: 'Bride name', getValue: (data) => data?.couple?.bride },
+  { step: 0, label: 'Groom name', getValue: (data) => data?.couple?.groom },
+  { step: 0, label: "Bride's parents", getValue: (data) => data?.family?.brideParents },
+  { step: 0, label: "Groom's parents", getValue: (data) => data?.family?.groomParents },
+  { step: 1, label: 'Date', getValue: (data) => data?.event?.date },
+  { step: 1, label: 'Venue', getValue: (data) => data?.event?.venue },
+  { step: 1, label: 'Venue address', getValue: (data) => data?.event?.address },
+  { step: 1, label: 'Map link', getValue: (data) => data?.event?.mapLink },
+  { step: 3, label: 'Banner photo', getValue: (data) => data?.media?.coverImage || data?.media?.coupleImage },
+  { step: 3, label: 'Bride photo', getValue: (data) => data?.media?.brideImage },
+  { step: 3, label: 'Groom photo', getValue: (data) => data?.media?.groomImage },
+];
 
-function Field({ label, helper, className, children, toggleable, isActive, onToggle }) {
+function hasRequiredValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== '';
+}
+
+function getMissingRequiredFields(data, throughStep = Number.POSITIVE_INFINITY) {
+  return REQUIRED_INVITATION_FIELDS
+    .filter((field) => field.step <= throughStep && !hasRequiredValue(field.getValue(data)))
+    .map((field) => field.label);
+}
+
+function formatMissingFields(fields) {
+  if (fields.length <= 3) return fields.join(', ');
+  return `${fields.slice(0, 3).join(', ')} and ${fields.length - 3} more`;
+}
+
+function Field({ label, helper, className, children, required = false }) {
   return (
-<<<<<<< HEAD
-    <label className={cn('block space-y-1', className, toggleable && !isActive && 'opacity-60 grayscale transition-all')}>
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#5f5a55]">{label}</div>
-          {helper ? <p className="mt-1 text-[10px] leading-relaxed text-[#8a8178]">{helper}</p> : null}
-        </div>
-        {toggleable && (
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={onToggle}
-            className="mt-1 h-4 w-4 rounded border-[#e8dfd5] text-[#b68d40] focus:ring-[#bfa48a] cursor-pointer"
-          />
-        )}
-      </div>
-      <div className={cn('transition-all', toggleable && !isActive && 'pointer-events-none')}>
-        {children}
-=======
     <label className={cn('block space-y-1', className)}>
       <div>
-        <div className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">{label}</div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">
+          {label}
+          {required ? <span className="ml-1 text-red-500">*</span> : null}
+        </div>
         {helper ? <p className="mt-1 text-[10px] leading-relaxed text-[#94a3b8]">{helper}</p> : null}
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
       </div>
+      {children}
     </label>
   );
 }
 
-function TextInput({ label, helper, value, onChange, placeholder, type = 'text', className, toggleable, isActive, onToggle }) {
+function TextInput({ label, helper, value, onChange, placeholder, type = 'text', className, required = false }) {
   return (
-    <Field label={label} helper={helper} className={className} toggleable={toggleable} isActive={isActive} onToggle={onToggle}>
+    <Field label={label} helper={helper} className={className} required={required}>
       <input
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full rounded-[5px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#0f172a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.05)]"
+        required={required}
+        className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#D4A76A] focus:bg-white focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]"
       />
     </Field>
   );
 }
 
-function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, className, toggleable, isActive, onToggle }) {
+function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, className, required = false }) {
   return (
-    <Field label={label} helper={helper} className={className} toggleable={toggleable} isActive={isActive} onToggle={onToggle}>
+    <Field label={label} helper={helper} className={className} required={required}>
       <textarea
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         rows={rows}
-        className="w-full rounded-[5px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] leading-relaxed text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#0f172a] focus:bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.05)]"
+        required={required}
+        className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] leading-relaxed text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#D4A76A] focus:bg-white focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]"
       />
     </Field>
-  );
-}
-
-function MediaUploadCard({
-  title,
-  description,
-  eyebrow,
-  previewUrl,
-  count = 0,
-  maxCount,
-  icon = UploadCloud,
-  isUploading,
-  isComplete = false,
-  actionLabel,
-  countLabel,
-  mediaType = 'image',
-  emptyLabel,
-  children,
-}) {
-  const hasMedia = Boolean(previewUrl) || count > 0;
-  const resolvedCountLabel = countLabel || (maxCount ? `${count}/${maxCount} photos` : count === 1 ? '1 photo' : `${count} photos`);
-  const ctaLabel = isUploading ? 'Uploading...' : actionLabel || (hasMedia ? 'Replace' : 'Upload');
-  const emptyMediaLabel = emptyLabel || (mediaType === 'video' ? 'Choose video' : 'Choose image');
-
-  return (
-    <label
-      className={cn(
-        'group relative flex min-h-[270px] cursor-pointer flex-col overflow-hidden rounded-[18px] border border-[#eadfd2] bg-[#fffaf5] p-3 text-left shadow-[0_18px_50px_-34px_rgba(61,46,33,0.5)] transition duration-300 hover:-translate-y-0.5 hover:border-[#c6aa8d] hover:bg-white hover:shadow-[0_24px_60px_-34px_rgba(61,46,33,0.55)]',
-        isUploading && 'cursor-wait opacity-70',
-        isComplete && 'cursor-not-allowed hover:translate-y-0'
-      )}
-      aria-busy={isUploading}
-      aria-disabled={isComplete}
-    >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_20%_0%,rgba(221,199,175,0.42),transparent_38%),radial-gradient(circle_at_88%_16%,rgba(192,167,139,0.28),transparent_32%)]" />
-
-      <div className="relative h-36 overflow-hidden rounded-[14px] border border-white/80 bg-[linear-gradient(135deg,#f5ecdf_0%,#fffaf4_100%)] shadow-inner">
-        {previewUrl && mediaType === 'video' ? (
-          <video
-            src={previewUrl}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            muted
-            playsInline
-            preload="metadata"
-          />
-        ) : previewUrl ? (
-          <img
-            src={previewUrl}
-            alt=""
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-[#a98768]">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#dccfc1] bg-white/80 shadow-sm">
-              {React.createElement(icon, { className: 'h-7 w-7' })}
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9c7b60]">{emptyMediaLabel}</span>
-          </div>
-        )}
-
-        <div className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6c5848] shadow-sm">
-          {eyebrow}
-        </div>
-
-        {hasMedia ? (
-          <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-[#2f2925]/88 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-sm">
-            <CheckCircle2 className="h-3.5 w-3.5 text-[#d9c0a5]" />
-            Added
-          </div>
-        ) : null}
-      </div>
-
-      <div className="relative mt-4 flex flex-1 flex-col">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold text-[#2f2925]">{title}</h3>
-            <p className="mt-1 text-[12px] leading-5 text-[#7d7168]">{description}</p>
-          </div>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#eadfd2] bg-white text-[#a98768] transition group-hover:border-[#c6aa8d] group-hover:text-[#6c5848]">
-            {React.createElement(icon, { className: 'h-5 w-5' })}
-          </div>
-        </div>
-
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-[#eadfd2]/80 pt-4">
-          <span
-            className={cn(
-              'rounded-full bg-[#2f2925] px-3 py-1.5 text-[11px] font-semibold text-white transition group-hover:bg-[#5a493a]',
-              isComplete && 'bg-[#b8a898] group-hover:bg-[#b8a898]'
-            )}
-          >
-            {ctaLabel}
-          </span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9b8a7a]">{resolvedCountLabel}</span>
-        </div>
-      </div>
-
-      {children}
-    </label>
   );
 }
 
@@ -243,21 +147,6 @@ function PreviewFrame({ mode, children }) {
   // Always show mobile on small screens, or if specifically requested
   if (mode === 'mobile' || isMobileScreen) {
     return (
-<<<<<<< HEAD
-      <div 
-        className="mx-auto relative w-full max-w-[360px] sm:max-w-[393px] rounded-[50px] border-[14px] border-black bg-black shadow-2xl flex flex-col"
-        style={{ aspectRatio: '393 / 852' }}
-      >
-        {/* Dynamic Island */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-          <div className="h-[28px] w-[100px] bg-black rounded-full"></div>
-        </div>
-        
-        {/* Screen */}
-        <div className="flex-1 overflow-hidden rounded-[36px] bg-white w-full relative">
-          <div className="absolute inset-0 overflow-y-auto custom-scrollbar-preview">
-            {children}
-=======
       <div className="mx-auto w-[375px] relative">
         <div className="rounded-[40px] border-[12px] border-[#1a1a1a] bg-[#1a1a1a] p-1 shadow-2xl relative z-10">
           <div className="overflow-hidden rounded-[28px] bg-white relative">
@@ -267,7 +156,6 @@ function PreviewFrame({ mode, children }) {
             <div className="overflow-y-auto custom-scrollbar-preview rounded-b-[28px] h-[667px]">
               {children}
             </div>
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
           </div>
         </div>
       </div>
@@ -302,11 +190,10 @@ export function Builder() {
   const [submitError, setSubmitError] = useState('');
   const [publishedInvitation, setPublishedInvitation] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [showCover, setShowCover] = useState(true);
   const [checkingBackend, setCheckingBackend] = useState(false);
   const [backendHealth, setBackendHealth] = useState(null);
   const [backendHealthError, setBackendHealthError] = useState('');
-  const { data, clearData, updateSection, updateEvent, addEvent, setTemplate } = useInvitationState();
+  const { data, clearData, updateSection, updateEvent, addEvent, removeEvent, setTemplate } = useInvitationState();
 
   const iframeRef = React.useRef(null);
 
@@ -332,63 +219,40 @@ export function Builder() {
   const currentStepMeta = STEPS[currentStep];
 
   const progressInfo = useMemo(() => {
-    const requiredFields = [
-      { label: 'Bride name', value: data?.couple?.bride },
-      { label: 'Groom name', value: data?.couple?.groom },
-      { label: 'Tagline', value: data?.couple?.title },
-      { label: 'Intro message', value: data?.content?.introMessage },
-      { label: 'Date', value: data?.event?.date },
-      { label: 'Time', value: data?.event?.time },
-      { label: 'Venue', value: data?.event?.venue },
-      { label: 'Location', value: data?.event?.address },
-      { label: 'Cover photo', value: data?.media?.coverImage || data?.media?.coupleImage },
-      { label: 'Theme', value: data?.theme?.id },
-    ];
+    const requiredFields = REQUIRED_INVITATION_FIELDS.map((field) => ({
+      label: field.label,
+      value: field.getValue(data),
+    }));
 
-    const filled = requiredFields.filter((field) => field.value && String(field.value).trim() !== '').length;
+    const filled = requiredFields.filter((field) => hasRequiredValue(field.value)).length;
 
     return {
       percentage: Math.round((filled / requiredFields.length) * 100),
       missingFields: requiredFields
-        .filter((field) => !field.value || String(field.value).trim() === '')
+        .filter((field) => !hasRequiredValue(field.value))
         .map((field) => field.label),
     };
   }, [data]);
 
-  const activeTemplate = useMemo(
-    () => templatesList.find((template) => template.id === data?.theme?.id) || templatesList[0],
-    [data?.theme?.id]
+  const blockingFields = useMemo(
+    () => getMissingRequiredFields(data, currentStep),
+    [data, currentStep]
   );
 
-<<<<<<< HEAD
   const coverImage = data?.media?.coverImage || data?.media?.coupleImage || '';
   const brideImage = data?.media?.brideImage || '';
   const groomImage = data?.media?.groomImage || '';
-  const videoEnabled = Boolean(data?.media?.enableVideo ?? data?.theme?.enableVideo ?? false);
-  const invitationVideo = data?.media?.video || '';
-  const galleryImages = useMemo(
-    () => (data?.media?.gallery || []).filter(Boolean).slice(0, GALLERY_IMAGE_LIMIT),
-    [data?.media?.gallery]
-  );
-  const galleryCount = galleryImages.length;
-  const gallerySlotsRemaining = Math.max(GALLERY_IMAGE_LIMIT - galleryCount, 0);
-  const mediaAddedCount = [coverImage, brideImage, groomImage].filter(Boolean).length + galleryCount + (videoEnabled && invitationVideo ? 1 : 0);
-  const canPublish = progressInfo.percentage >= 80 && userEmail.includes('@');
-=======
-  const coverImage = data?.media?.coverImage || data?.media?.coupleImage || initialInvitationData.media.coverImage;
-  const brideImage = data?.media?.brideImage || initialInvitationData.media.brideImage;
-  const groomImage = data?.media?.groomImage || initialInvitationData.media.groomImage;
-  const videoStoryUrl = data?.media?.videoStory || initialInvitationData.media.video;
-  const galleryText = useMemo(() => (data?.media?.gallery || []).join('\n'), [data?.media?.gallery]);
-  const galleryCount = data?.media?.gallery?.filter(Boolean).length || 0;
+  const videoStoryUrl = data?.media?.videoStory || data?.media?.video || '';
   const handleReplay = () => {
     if (iframeRef.current) {
       iframeRef.current.contentWindow.location.reload();
     }
   };
 
-  const canPublish = progressInfo.percentage >= 80;
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
+  const canPublish = progressInfo.missingFields.length === 0;
+  const isNextDisabled = isLastStep
+    ? isSubmitting || !canPublish || Boolean(publishedInvitation)
+    : blockingFields.length > 0;
 
   const nextStep = () => setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
   const previousStep = () => setCurrentStep((step) => Math.max(step - 1, 0));
@@ -461,62 +325,7 @@ export function Builder() {
     }
   };
 
-  const handleVideoToggle = (event) => {
-    const enabled = event.target.checked;
-    updateSection('media', 'enableVideo', enabled);
-    updateSection('theme', 'enableVideo', enabled);
-    setMediaUploadError('');
-  };
-
-  const handleVideoUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== 'video/mp4') {
-      setMediaUploadError('Please upload an MP4 video file.');
-      event.target.value = '';
-      return;
-    }
-
-    const [uploadedUrl] = await uploadFiles([file], 'Invitation video');
-    event.target.value = '';
-    if (!uploadedUrl) return;
-
-    updateSection('media', 'enableVideo', true);
-    updateSection('theme', 'enableVideo', true);
-    updateSection('media', 'video', uploadedUrl);
-  };
-
   const handleGalleryUpload = async (event) => {
-<<<<<<< HEAD
-    const selectedFiles = Array.from(event.target.files || []);
-    if (!selectedFiles.length) return;
-
-    const existingGallery = (data?.media?.gallery || []).filter(Boolean);
-    const remainingSlots = Math.max(GALLERY_IMAGE_LIMIT - existingGallery.length, 0);
-
-    if (remainingSlots === 0) {
-      setMediaUploadError(`Gallery is full. You can add up to ${GALLERY_IMAGE_LIMIT} photos.`);
-      event.target.value = '';
-      return;
-    }
-
-    const files = selectedFiles.slice(0, remainingSlots);
-    const limitMessage = selectedFiles.length > remainingSlots
-      ? `Gallery supports ${GALLERY_IMAGE_LIMIT} photos. Added the first ${remainingSlots} selected photo${remainingSlots === 1 ? '' : 's'}.`
-      : '';
-
-    const uploadedUrls = await uploadFiles(files, 'Gallery image');
-    event.target.value = '';
-    if (!uploadedUrls.length) return;
-
-    updateSection('media', 'gallery', (currentGallery = []) => [
-      ...(currentGallery || []).filter(Boolean),
-      ...uploadedUrls,
-    ].slice(0, GALLERY_IMAGE_LIMIT));
-    setSelectedGalleryIndex(existingGallery.length);
-    if (limitMessage) setMediaUploadError(limitMessage);
-=======
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
@@ -535,21 +344,6 @@ export function Builder() {
     } finally {
       setUploadingField(null);
     }
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
-  };
-
-  const handleRemoveGalleryImage = (indexToRemove) => {
-    updateSection('media', 'gallery', (currentGallery = []) => (
-      (currentGallery || [])
-        .filter(Boolean)
-        .filter((_, index) => index !== indexToRemove)
-        .slice(0, GALLERY_IMAGE_LIMIT)
-    ));
-    setSelectedGalleryIndex((currentIndex) => {
-      if (currentIndex === null || currentIndex === indexToRemove) return null;
-      return currentIndex > indexToRemove ? currentIndex - 1 : currentIndex;
-    });
-    setMediaUploadError('');
   };
 
   const handleSubmitInvitation = async () => {
@@ -586,45 +380,24 @@ export function Builder() {
         ...additionalEvents,
       ];
 
-      const includeVideo = Boolean(data.media?.enableVideo ?? data.theme?.enableVideo ?? false);
-
       const invitationData = {
-        email: userEmail,
         brideName: data.couple?.bride || '',
         groomName: data.couple?.groom || '',
         weddingDate: data.event?.date ? new Date(data.event.date) : null,
-        couple: {
-          ...data.couple,
-          title: activeFields.tagline ? data.couple?.title : '',
-        },
-        event: {
-          ...data.event,
-          mapLink: activeFields.mapLink ? data.event?.mapLink : '',
-        },
-        family: {
-          ...data.family,
-          brideParents: activeFields.brideParents ? data.family?.brideParents : '',
-          groomParents: activeFields.groomParents ? data.family?.groomParents : '',
-        },
-        content: {
-          ...data.content,
-          introMessage: activeFields.introMessage ? data.content?.introMessage : '',
-          rsvpText: activeFields.rsvpMessage ? data.content?.rsvpText : '',
-        },
-        theme: {
-          ...(data.theme || { id: 'classic' }),
-          enableVideo: includeVideo,
-        },
+        couple: data.couple || {},
+        event: data.event || {},
+        family: data.family || {},
+        content: data.content || {},
+        theme: data.theme || { id: 'classic' },
         media: {
           ...(data.media || { gallery: [] }),
-          enableVideo: includeVideo,
           coverImage: normalizeMediaUrl(data.media?.coverImage || ''),
           backgroundImage: normalizeMediaUrl(data.media?.backgroundImage || ''),
           brideImage: normalizeMediaUrl(data.media?.brideImage || ''),
           groomImage: normalizeMediaUrl(data.media?.groomImage || ''),
           coupleImage: normalizeMediaUrl(data.media?.coupleImage || ''),
           gallery: (data.media?.gallery || []).map((item) => normalizeMediaUrl(item)).filter(Boolean),
-          video: includeVideo ? normalizeMediaUrl(data.media?.video || '') : '',
+          video: normalizeMediaUrl(data.media?.video || ''),
           music: normalizeMediaUrl(data.media?.music || ''),
         },
         positions: data.positions || {},
@@ -688,12 +461,14 @@ export function Builder() {
                 placeholder="Aaliyah"
                 value={data.couple?.bride || ''}
                 onChange={(event) => updateSection('couple', 'bride', event.target.value)}
+                required
               />
               <TextInput
                 label="Groom name"
                 placeholder="Omar"
                 value={data.couple?.groom || ''}
                 onChange={(event) => updateSection('couple', 'groom', event.target.value)}
+                required
               />
             </div>
 
@@ -702,37 +477,22 @@ export function Builder() {
               placeholder="Together with their families"
               value={data.couple?.title || ''}
               onChange={(event) => updateSection('couple', 'title', event.target.value)}
-              toggleable
-              isActive={activeFields.tagline}
-              onToggle={() => toggleField('tagline')}
             />
 
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride's parents"
-<<<<<<< HEAD
-                helper="Optional. Add father & mother names."
-=======
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
                 placeholder="Mr. & Mrs. Rahman"
                 value={data.family?.brideParents || ''}
                 onChange={(event) => updateSection('family', 'brideParents', event.target.value)}
-                toggleable
-                isActive={activeFields.brideParents}
-                onToggle={() => toggleField('brideParents')}
+                required
               />
               <TextInput
                 label="Groom's parents"
-<<<<<<< HEAD
-                helper="Optional. Add father & mother names."
-=======
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
                 placeholder="Mr. & Mrs. Kareem"
                 value={data.family?.groomParents || ''}
                 onChange={(event) => updateSection('family', 'groomParents', event.target.value)}
-                toggleable
-                isActive={activeFields.groomParents}
-                onToggle={() => toggleField('groomParents')}
+                required
               />
             </div>
 
@@ -742,9 +502,6 @@ export function Builder() {
               value={data.content?.introMessage || ''}
               onChange={(event) => updateSection('content', 'introMessage', event.target.value)}
               rows={5}
-              toggleable
-              isActive={activeFields.introMessage}
-              onToggle={() => toggleField('introMessage')}
             />
           </div>
         );
@@ -758,6 +515,7 @@ export function Builder() {
                 type="date"
                 value={data.event?.date || ''}
                 onChange={(event) => updateSection('event', 'date', event.target.value)}
+                required
               />
               <TextInput
                 label="Time"
@@ -771,6 +529,7 @@ export function Builder() {
                 value={data.event?.venue || ''}
                 onChange={(event) => updateSection('event', 'venue', event.target.value)}
                 className="md:col-span-2"
+                required
               />
               <TextAreaInput
                 label="Location"
@@ -779,6 +538,7 @@ export function Builder() {
                 onChange={(event) => updateSection('event', 'address', event.target.value)}
                 rows={3}
                 className="md:col-span-2"
+                required
               />
               <TextInput
                 label="Map link"
@@ -786,266 +546,13 @@ export function Builder() {
                 value={data.event?.mapLink || ''}
                 onChange={(event) => updateSection('event', 'mapLink', event.target.value)}
                 className="md:col-span-2"
-                toggleable
-                isActive={activeFields.mapLink}
-                onToggle={() => toggleField('mapLink')}
+                required
               />
             </div>
-<<<<<<< HEAD
-
-            <TextAreaInput
-              label="RSVP message"
-              helper="This text appears in the RSVP area of the invitation."
-              placeholder="Please confirm your attendance before December 1st, 2026."
-              value={data.content?.rsvpText || ''}
-              onChange={(event) => updateSection('content', 'rsvpText', event.target.value)}
-              rows={3}
-              toggleable
-              isActive={activeFields.rsvpMessage}
-              onToggle={() => toggleField('rsvpMessage')}
-            />
-=======
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
           </div>
         );
       case 2:
         return (
-<<<<<<< HEAD
-          <div className="space-y-5">
-            {mediaUploadError ? (
-              <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                {mediaUploadError}
-              </div>
-            ) : null}
-
-            <div className="overflow-hidden rounded-[18px] border border-[#eadfd2] bg-[linear-gradient(135deg,#fffdf9_0%,#f7efe5_100%)] p-5 shadow-[0_18px_55px_-40px_rgba(61,46,33,0.45)]">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2f2925] text-white shadow-[0_14px_30px_-18px_rgba(47,41,37,0.7)]">
-                    <Images className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.32em] text-[#b08f72]">Media library</div>
-                    <h3 className="mt-1 text-xl font-semibold text-[#2f2925]">Add the invitation visuals</h3>
-                    <p className="mt-1 text-sm leading-6 text-[#7d7168]">
-                      Upload the hero banner, couple portraits, gallery photos, and an optional MP4 video. Existing media shows as previews so you know what is already set.
-                    </p>
-                  </div>
-                </div>
-                <div className="w-full rounded-[14px] border border-white/80 bg-white/80 px-4 py-3 text-left shadow-sm sm:w-auto sm:min-w-[130px] sm:text-center">
-                  <div className="text-2xl font-semibold text-[#2f2925]">{mediaAddedCount}</div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9b8a7a]">Media set</div>
-                </div>
-              </div>
-            </div>
-
-            <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[#eadfd2] bg-white px-4 py-3 shadow-[0_12px_34px_-30px_rgba(61,46,33,0.45)] transition hover:border-[#c6aa8d]">
-              <input
-                type="checkbox"
-                checked={videoEnabled}
-                onChange={handleVideoToggle}
-                className="mt-1 h-4 w-4 rounded border-[#dccdbb] text-[#2f2925] focus:ring-[#bfa48a]"
-              />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-sm font-semibold text-[#2f2925]">
-                  <Video className="h-4 w-4 text-[#b08f72]" />
-                  Need a video in this invitation
-                </div>
-                <p className="mt-1 text-xs leading-5 text-[#7d7168]">
-                  Check this only when the invitation should include a video section. Leave it unchecked for a photo-only invitation.
-                </p>
-              </div>
-            </label>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <MediaUploadCard
-                title="Upload banner"
-                description="Main image for the top hero section of the invitation."
-                eyebrow="Hero"
-                previewUrl={coverImage}
-                count={coverImage ? 1 : 0}
-                icon={UploadCloud}
-                isUploading={isUploadingMedia}
-              >
-                <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} disabled={isUploadingMedia} />
-              </MediaUploadCard>
-
-              <MediaUploadCard
-                title="Upload bride photo"
-                description="Single portrait used in the bride profile card."
-                eyebrow="Bride"
-                previewUrl={brideImage}
-                count={brideImage ? 1 : 0}
-                icon={Heart}
-                isUploading={isUploadingMedia}
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => handleSingleImageUpload(event, 'brideImage', 'Bride image')}
-                  disabled={isUploadingMedia}
-                />
-              </MediaUploadCard>
-
-              <MediaUploadCard
-                title="Upload groom photo"
-                description="Single portrait used in the groom profile card."
-                eyebrow="Groom"
-                previewUrl={groomImage}
-                count={groomImage ? 1 : 0}
-                icon={Heart}
-                isUploading={isUploadingMedia}
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => handleSingleImageUpload(event, 'groomImage', 'Groom image')}
-                  disabled={isUploadingMedia}
-                />
-              </MediaUploadCard>
-
-              <MediaUploadCard
-                title="Add gallery photos"
-                description={`Select multiple photos at once. You can add up to ${GALLERY_IMAGE_LIMIT} gallery photos.`}
-                eyebrow="Gallery"
-                previewUrl={galleryImages[0] || ''}
-                count={galleryCount}
-                maxCount={GALLERY_IMAGE_LIMIT}
-                icon={Images}
-                isUploading={isUploadingMedia}
-                isComplete={gallerySlotsRemaining === 0}
-                actionLabel={gallerySlotsRemaining === 0 ? 'Limit reached' : galleryCount ? 'Add more' : 'Upload photos'}
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleGalleryUpload}
-                  disabled={isUploadingMedia || gallerySlotsRemaining === 0}
-                />
-              </MediaUploadCard>
-
-              {videoEnabled ? (
-                <MediaUploadCard
-                  title="Upload invitation video"
-                  description="Optional MP4 clip used as the invitation video section."
-                  eyebrow="Video"
-                  previewUrl={invitationVideo}
-                  count={invitationVideo ? 1 : 0}
-                  countLabel={invitationVideo ? '1 video' : 'No video'}
-                  icon={Video}
-                  isUploading={isUploadingMedia}
-                  actionLabel={invitationVideo ? 'Replace video' : 'Upload video'}
-                  mediaType="video"
-                  emptyLabel="Choose video"
-                >
-                  <input
-                    type="file"
-                    accept="video/mp4"
-                    className="hidden"
-                    onChange={handleVideoUpload}
-                    disabled={isUploadingMedia}
-                  />
-                </MediaUploadCard>
-              ) : null}
-            </div>
-
-            {galleryImages.length ? (
-              <div className="rounded-[18px] border border-[#eadfd2] bg-white p-5 shadow-[0_14px_42px_-34px_rgba(61,46,33,0.45)]">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h3 className="text-base font-semibold text-[#2f2925]">Selected gallery photos</h3>
-                    <p className="mt-1 text-xs leading-5 text-[#7d7168]">
-                      Select a photo to review it, or remove any image you do not want in the invitation gallery.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => selectedGalleryIndex !== null && handleRemoveGalleryImage(selectedGalleryIndex)}
-                    disabled={selectedGalleryIndex === null}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[#eadfd2] bg-[#fffaf5] px-4 py-2 text-xs font-semibold text-[#6c5848] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-[#eadfd2] disabled:hover:bg-[#fffaf5] disabled:hover:text-[#6c5848]"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete selected
-                  </button>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {galleryImages.map((imageUrl, index) => {
-                    const selected = selectedGalleryIndex === index;
-
-                    return (
-                      <button
-                        type="button"
-                        key={`${imageUrl}-${index}`}
-                        onClick={() => setSelectedGalleryIndex(selected ? null : index)}
-                        className={cn(
-                          'group relative overflow-hidden rounded-[14px] border bg-[#fbf7f2] p-1 text-left transition',
-                          selected
-                            ? 'border-[#6c5848] shadow-[0_0_0_3px_rgba(108,88,72,0.14)]'
-                            : 'border-[#eadfd2] hover:border-[#c6aa8d]'
-                        )}
-                      >
-                        <img src={imageUrl} alt="" className="h-24 w-full rounded-[10px] object-cover" />
-                        <div className="mt-2 flex items-center justify-between gap-2 px-1 pb-1">
-                          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a6f57]">
-                            Photo {index + 1}
-                          </span>
-                          <span className={cn('h-2.5 w-2.5 rounded-full', selected ? 'bg-[#6c5848]' : 'bg-[#d8c9b8]')} />
-                        </div>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleRemoveGalleryImage(index);
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              handleRemoveGalleryImage(index);
-                            }
-                          }}
-                          className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/92 text-[#6c5848] opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 focus:opacity-100"
-                          aria-label={`Delete gallery photo ${index + 1}`}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </span>
-                      </button>
-                    );
-                  })}
-
-                  {gallerySlotsRemaining > 0 ? (
-                    <label className="flex min-h-[136px] cursor-pointer flex-col items-center justify-center rounded-[14px] border border-dashed border-[#d8c9b8] bg-[#fffaf5] p-4 text-center transition hover:border-[#b08f72] hover:bg-white">
-                      <Plus className="h-5 w-5 text-[#9b7f65]" />
-                      <span className="mt-2 text-xs font-semibold text-[#6c5848]">Add more</span>
-                      <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-[#9b8a7a]">
-                        {gallerySlotsRemaining} left
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={handleGalleryUpload}
-                        disabled={isUploadingMedia}
-                      />
-                    </label>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        );
-
-      case 3:
-        return (
-=======
->>>>>>> 18cd4af871a25116551158a124e81f9596563ea5
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-1">
               <div>
@@ -1141,7 +648,7 @@ export function Builder() {
               {/* Hero Banner Section */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Main Banner</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Main Banner <span className="text-red-500">*</span></span>
                 </div>
                 <label className={cn(
                   'group relative flex h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
@@ -1176,7 +683,7 @@ export function Builder() {
               {/* Bride & Groom Section */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bride <span className="text-red-500">*</span></span>
                   <label className={cn(
                     'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
                     uploadingField === 'brideImage' && 'cursor-wait opacity-70'
@@ -1214,7 +721,7 @@ export function Builder() {
                 </div>
 
                 <div className="space-y-3">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Groom <span className="text-red-500">*</span></span>
                   <label className={cn(
                     'group relative flex h-32 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-slate-900 hover:bg-white',
                     uploadingField === 'groomImage' && 'cursor-wait opacity-70'
@@ -1612,26 +1119,6 @@ export function Builder() {
               </div>
             </div>
 
-            {progressInfo.missingFields.length > 0 ? (
-              <div className="rounded-[10px] border border-[#fde68a] bg-[#fffbeb] p-5">
-                <h4 className="text-sm font-semibold text-[#78350f]">Complete these before publishing</h4>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {progressInfo.missingFields.map((item) => (
-                    <span key={item} className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#92400e] ring-1 ring-[#fde68a]">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-[10px] border border-[#a7f3d0] bg-emerald-50 p-5 text-sm text-[#065f46] shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-[#10b981] animate-pulse" />
-                  Core details are complete. The invitation is ready to publish.
-                </div>
-              </div>
-            )}
-
             {submitError ? (
               <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">{submitError}</div>
             ) : null}
@@ -1775,12 +1262,14 @@ export function Builder() {
                     </Button>
 
                     <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
-                      {isLastStep && !canPublish ? (
-                        <p className="text-sm text-slate-500">Complete at least 80% of the essentials before publishing.</p>
+                      {blockingFields.length > 0 ? (
+                        <p className="max-w-md text-right text-sm text-slate-500">
+                          Complete {formatMissingFields(blockingFields)} to continue.
+                        </p>
                       ) : null}
                       <Button
                         onClick={isLastStep ? handleSubmitInvitation : nextStep}
-                        disabled={isLastStep ? isSubmitting || !canPublish || Boolean(publishedInvitation) : false}
+                        disabled={isNextDisabled}
                         className="w-full min-w-[180px] bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-7 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-white transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-900/20 sm:w-auto"
                       >
                         {isLastStep ? (

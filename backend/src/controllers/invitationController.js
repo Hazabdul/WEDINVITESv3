@@ -1,7 +1,7 @@
 import Invitation from '../models/Invitation.js';
 import RSVP from '../models/RSVP.js';
 import { ensureDBReady } from '../config/db.js';
-import { invitationSchema } from '../validators/invitationValidator.js';
+import { getInvitationPublishMissingFields, invitationSchema } from '../validators/invitationValidator.js';
 import crypto from 'crypto';
 
 const defaultTheme = {
@@ -41,6 +41,18 @@ export const createInvitation = async (req, res, next) => {
         message: 'Validation error',
         errors: parsed.error.issues,
       });
+    }
+
+    if (parsed.data.status === 'PUBLISHED') {
+      const missingFields = getInvitationPublishMissingFields(parsed.data);
+
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Complete required invitation fields before publishing.',
+          missingFields,
+        });
+      }
     }
 
     const invitation = await Invitation.create({
@@ -103,13 +115,31 @@ export const updateInvitation = async (req, res, next) => {
       });
     }
 
+    const existing = await Invitation.findById(id);
+
+    if (!existing) return res.status(404).json({ message: 'Invitation not found' });
+
+    const existingData = typeof existing.toObject === 'function' ? existing.toObject() : existing;
+    const candidate = { ...existingData, ...parsed.data };
+
+    if (candidate.status === 'PUBLISHED') {
+      const missingFields = getInvitationPublishMissingFields(candidate);
+
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Complete required invitation fields before publishing.',
+          missingFields,
+        });
+      }
+    }
+
     const updated = await Invitation.findByIdAndUpdate(
       id,
       { $set: parsed.data },
       { new: true, runValidators: true }
     );
 
-    if (!updated) return res.status(404).json({ message: 'Invitation not found' });
     res.json(updated);
   } catch (error) {
     next(error);
@@ -123,6 +153,18 @@ export const publishInvitation = async (req, res, next) => {
     const invitation = await Invitation.findById(id);
 
     if (!invitation) return res.status(404).json({ message: 'Invitation not found' });
+
+    const missingFields = getInvitationPublishMissingFields(
+      typeof invitation.toObject === 'function' ? invitation.toObject() : invitation
+    );
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Complete required invitation fields before publishing.',
+        missingFields,
+      });
+    }
 
     // Generate slug if not exists
     let slug = invitation.slug;
