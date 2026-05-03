@@ -1379,6 +1379,12 @@ export function Builder() {
             </div>
           </div>
         </div>
+
+        {/* Dynamic Version Footer */}
+        <div className="mt-12 pb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+          {/* eslint-disable-next-line no-undef */}
+          Build Version: {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Local Dev'}
+        </div>
       </div>
     </div>
   );
