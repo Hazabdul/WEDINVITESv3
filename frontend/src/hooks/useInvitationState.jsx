@@ -64,6 +64,13 @@ export function InvitationProvider({ children }) {
     }));
   };
 
+  const removeEvent = (id) => {
+    setData((prev) => ({
+      ...prev,
+      events: prev.events.filter((event) => String(event.id) !== String(id))
+    }));
+  };
+
   const setTemplate = (id) => updateSection('theme', 'id', id);
   const setPackage = (id) => setData(prev => ({ ...prev, package: id }));
 
@@ -85,7 +92,7 @@ export function InvitationProvider({ children }) {
   return (
     <InvitationContext.Provider value={{
       data, updateSection, updatePosition, updateEvent,
-      addEvent, setTemplate, setPackage, clearData,
+      addEvent, removeEvent, setTemplate, setPackage, clearData,
     }}>
       {children}
     </InvitationContext.Provider>
