@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   CalendarDays,
@@ -104,7 +105,7 @@ function Field({ label, helper, className, children, required = false }) {
   );
 }
 
-function TextInput({ label, helper, value, onChange, placeholder, type = 'text', className, required = false }) {
+function TextInput({ label, helper, value, onChange, placeholder, type = 'text', className, required = false, error = false }) {
   return (
     <Field label={label} helper={helper} className={className} required={required}>
       <input
@@ -113,13 +114,18 @@ function TextInput({ label, helper, value, onChange, placeholder, type = 'text',
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#D4A76A] focus:bg-white focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]"
+        className={cn(
+          'w-full rounded-[10px] border bg-[#ffffff] px-3 py-1.5 text-[13px] text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:bg-white',
+          error
+            ? 'border-red-400 focus:border-red-500 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
+            : 'border-[#e2e8f0] focus:border-[#D4A76A] focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]'
+        )}
       />
     </Field>
   );
 }
 
-function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, className, required = false }) {
+function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, className, required = false, error = false }) {
   return (
     <Field label={label} helper={helper} className={className} required={required}>
       <textarea
@@ -128,7 +134,12 @@ function TextAreaInput({ label, helper, value, onChange, placeholder, rows = 4, 
         placeholder={placeholder}
         rows={rows}
         required={required}
-        className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#ffffff] px-3 py-1.5 text-[13px] leading-relaxed text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#D4A76A] focus:bg-white focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]"
+        className={cn(
+          'w-full rounded-[10px] border bg-[#ffffff] px-3 py-1.5 text-[13px] leading-relaxed text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:bg-white',
+          error
+            ? 'border-red-400 focus:border-red-500 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.1)]'
+            : 'border-[#e2e8f0] focus:border-[#D4A76A] focus:shadow-[0_0_0_4px_rgba(212,167,106,0.1)]'
+        )}
       />
     </Field>
   );
@@ -194,6 +205,8 @@ export function Builder() {
   const [checkingBackend, setCheckingBackend] = useState(false);
   const [backendHealth, setBackendHealth] = useState(null);
   const [backendHealthError, setBackendHealthError] = useState('');
+  // Tracks which required field labels had a failed Next click (red border highlight)
+  const [errorFields, setErrorFields] = useState(new Set());
   const { data, clearData, updateSection, updateEvent, addEvent, removeEvent, setTemplate } = useInvitationState();
 
   const iframeRef = React.useRef(null);
@@ -251,12 +264,46 @@ export function Builder() {
   };
 
   const canPublish = progressInfo.missingFields.length === 0;
-  const isNextDisabled = isLastStep
-    ? isSubmitting || !canPublish || Boolean(publishedInvitation)
-    : blockingFields.length > 0;
+  // Only the Publish button (last step) can be disabled — Next is never disabled
+  const isPublishDisabled = isSubmitting || !canPublish || Boolean(publishedInvitation);
 
   const nextStep = () => setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
   const previousStep = () => setCurrentStep((step) => Math.max(step - 1, 0));
+
+  /** Validates current-step required fields, shows toasts, highlights empty fields, then advances. */
+  const handleNext = () => {
+    if (isLastStep) {
+      handleSubmitInvitation();
+      return;
+    }
+
+    const missing = REQUIRED_INVITATION_FIELDS.filter(
+      (field) => field.step === currentStep && !hasRequiredValue(field.getValue(data))
+    );
+
+    if (missing.length > 0) {
+      setErrorFields(new Set(missing.map((f) => f.label)));
+      missing.forEach((field) => {
+        toast.error(`Please fill the field "${field.label}".`, {
+          id: field.label, // deduplicate on rapid clicks
+        });
+      });
+      return;
+    }
+
+    // All good — clear errors and advance
+    setErrorFields(new Set());
+    setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
+  };
+
+  /** Removes the red-border highlight as the user types into a previously-failed field. */
+  const clearError = (label) => {
+    setErrorFields((prev) => {
+      const next = new Set(prev);
+      next.delete(label);
+      return next;
+    });
+  };
 
   const handleCoverUpload = async (event) => {
     const file = event.target.files?.[0];
@@ -458,23 +505,26 @@ export function Builder() {
               placeholder="Email address"
               type="email"
               value={data.event?.email || ''}
-              onChange={(event) => updateSection('event', 'email', event.target.value)}
+              onChange={(e) => { updateSection('event', 'email', e.target.value); clearError('Email address'); }}
               required
+              error={errorFields.has('Email address')}
             />
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput
                 label="Bride name"
                 placeholder="Aaliyah"
                 value={data.couple?.bride || ''}
-                onChange={(event) => updateSection('couple', 'bride', event.target.value)}
+                onChange={(e) => { updateSection('couple', 'bride', e.target.value); clearError('Bride name'); }}
                 required
+                error={errorFields.has('Bride name')}
               />
               <TextInput
                 label="Groom name"
                 placeholder="Omar"
                 value={data.couple?.groom || ''}
-                onChange={(event) => updateSection('couple', 'groom', event.target.value)}
+                onChange={(e) => { updateSection('couple', 'groom', e.target.value); clearError('Groom name'); }}
                 required
+                error={errorFields.has('Groom name')}
               />
             </div>
 
@@ -482,7 +532,7 @@ export function Builder() {
               label="Tagline"
               placeholder="Together with their families"
               value={data.couple?.title || ''}
-              onChange={(event) => updateSection('couple', 'title', event.target.value)}
+              onChange={(e) => updateSection('couple', 'title', e.target.value)}
             />
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -490,15 +540,17 @@ export function Builder() {
                 label="Bride's parents"
                 placeholder="Mr. & Mrs. Rahman"
                 value={data.family?.brideParents || ''}
-                onChange={(event) => updateSection('family', 'brideParents', event.target.value)}
+                onChange={(e) => { updateSection('family', 'brideParents', e.target.value); clearError("Bride's parents"); }}
                 required
+                error={errorFields.has("Bride's parents")}
               />
               <TextInput
                 label="Groom's parents"
                 placeholder="Mr. & Mrs. Kareem"
                 value={data.family?.groomParents || ''}
-                onChange={(event) => updateSection('family', 'groomParents', event.target.value)}
+                onChange={(e) => { updateSection('family', 'groomParents', e.target.value); clearError("Groom's parents"); }}
                 required
+                error={errorFields.has("Groom's parents")}
               />
             </div>
 
@@ -506,7 +558,7 @@ export function Builder() {
               label="Intro message"
               placeholder="With joy in our hearts, we invite you to celebrate our wedding day."
               value={data.content?.introMessage || ''}
-              onChange={(event) => updateSection('content', 'introMessage', event.target.value)}
+              onChange={(e) => updateSection('content', 'introMessage', e.target.value)}
               rows={5}
             />
           </div>
@@ -520,39 +572,43 @@ export function Builder() {
                 label="Date"
                 type="date"
                 value={data.event?.date || ''}
-                onChange={(event) => updateSection('event', 'date', event.target.value)}
+                onChange={(e) => { updateSection('event', 'date', e.target.value); clearError('Date'); }}
                 required
+                error={errorFields.has('Date')}
               />
               <TextInput
                 label="Time"
                 placeholder="07:30 PM"
                 value={data.event?.time || ''}
-                onChange={(event) => updateSection('event', 'time', event.target.value)}
+                onChange={(e) => updateSection('event', 'time', e.target.value)}
               />
               <TextInput
                 label="Venue"
                 placeholder="The Grand Pearl Ballroom"
                 value={data.event?.venue || ''}
-                onChange={(event) => updateSection('event', 'venue', event.target.value)}
+                onChange={(e) => { updateSection('event', 'venue', e.target.value); clearError('Venue'); }}
                 className="md:col-span-2"
                 required
+                error={errorFields.has('Venue')}
               />
               <TextAreaInput
                 label="Location"
                 placeholder="King Fahd Road, Riyadh, Saudi Arabia"
                 value={data.event?.address || ''}
-                onChange={(event) => updateSection('event', 'address', event.target.value)}
+                onChange={(e) => { updateSection('event', 'address', e.target.value); clearError('Venue address'); }}
                 rows={3}
                 className="md:col-span-2"
                 required
+                error={errorFields.has('Venue address')}
               />
               <TextInput
                 label="Map link"
                 placeholder="https://maps.google.com/..."
                 value={data.event?.mapLink || ''}
-                onChange={(event) => updateSection('event', 'mapLink', event.target.value)}
+                onChange={(e) => { updateSection('event', 'mapLink', e.target.value); clearError('Map link'); }}
                 className="md:col-span-2"
                 required
+                error={errorFields.has('Map link')}
               />
             </div>
           </div>
@@ -1268,14 +1324,9 @@ export function Builder() {
                     </Button>
 
                     <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
-                      {blockingFields.length > 0 ? (
-                        <p className="max-w-md text-right text-sm text-slate-500">
-                          Complete {formatMissingFields(blockingFields)} to continue.
-                        </p>
-                      ) : null}
                       <Button
-                        onClick={isLastStep ? handleSubmitInvitation : nextStep}
-                        disabled={isNextDisabled}
+                        onClick={handleNext}
+                        disabled={isLastStep ? isPublishDisabled : false}
                         className="w-full min-w-[180px] bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-7 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-white transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-900/20 sm:w-auto"
                       >
                         {isLastStep ? (

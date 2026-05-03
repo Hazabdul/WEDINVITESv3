@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Globe, Mail, Menu, X } from 'lucide-react';
 import { Home } from './pages/Home';
@@ -279,6 +280,14 @@ function AppShell() {
 function App() {
   return (
     <InvitationProvider>
+      <Toaster
+        position="top-right"
+        richColors
+        toastOptions={{
+          duration: 4000,
+          style: { fontFamily: 'inherit' },
+        }}
+      />
       <AppShell />
     </InvitationProvider>
   );
