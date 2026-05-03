@@ -119,6 +119,13 @@ export const updateInvitation = async (req, res, next) => {
 
     if (!existing) return res.status(404).json({ message: 'Invitation not found' });
 
+    if (existing.status === 'PUBLISHED') {
+      return res.status(403).json({
+        success: false,
+        message: 'Published invitations cannot be edited. A new link must be generated.',
+      });
+    }
+
     const existingData = typeof existing.toObject === 'function' ? existing.toObject() : existing;
     const candidate = { ...existingData, ...parsed.data };
 

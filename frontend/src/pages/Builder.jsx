@@ -60,6 +60,7 @@ const STEPS = [
 ];
 
 const REQUIRED_INVITATION_FIELDS = [
+  { step: 0, label: 'Email address', getValue: (data) => data?.event?.email },
   { step: 0, label: 'Bride name', getValue: (data) => data?.couple?.bride },
   { step: 0, label: 'Groom name', getValue: (data) => data?.couple?.groom },
   { step: 0, label: "Bride's parents", getValue: (data) => data?.family?.brideParents },
@@ -375,12 +376,41 @@ export function Builder() {
           notes: item.notes || '',
         }))
         .filter((item) => item.name);
+    if (!data || isSubmitting || !canPublish) return;
+
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const created = await apiClient.createInvitation({});
+      const primaryEvent = {
+        id: data.events?.[0]?.id || 'primary-event',
+        name: data.events?.[0]?.name?.trim() || 'Wedding Ceremony',
+        date: data.events?.[0]?.date || data.event?.date || '',
+        time: data.events?.[0]?.time || data.event?.time || '',
+        venue: data.events?.[0]?.venue || data.event?.venue || '',
+        address: data.events?.[0]?.address || data.event?.address || '',
+        notes: data.events?.[0]?.notes || '',
+      };
+      const additionalEvents = (data.events || [])
+        .slice(1)
+        .map((item, index) => ({
+          id: item.id || `event-${index + 2}`,
+          name: item.name?.trim() || '',
+          date: item.date || '',
+          time: item.time || '',
+          venue: item.venue || '',
+          address: item.address || '',
+          notes: item.notes || '',
+        }))
+        .filter((item) => item.name);
       const eventsPayload = [
         primaryEvent,
         ...additionalEvents,
       ];
 
       const invitationData = {
+        email: data.event?.email?.toLowerCase().trim() || '',
         brideName: data.couple?.bride || '',
         groomName: data.couple?.groom || '',
         weddingDate: data.event?.date ? new Date(data.event.date) : null,
@@ -454,6 +484,7 @@ export function Builder() {
               type="email"
               value={data.event?.email || ''}
               onChange={(event) => updateSection('event', 'email', event.target.value)}
+              required
             />
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput

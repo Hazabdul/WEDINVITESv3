@@ -61,6 +61,7 @@ export const getInvitationPublishMissingFields = (invitation = {}) => {
   const media = invitation.media || {};
 
   const requiredFields = [
+    { path: 'email', label: 'Email address', value: invitation.email || event.email },
     { path: 'couple.bride', label: 'Bride name', value: couple.bride || invitation.brideName },
     { path: 'couple.groom', label: 'Groom name', value: couple.groom || invitation.groomName },
     { path: 'family.brideParents', label: "Bride's parents", value: family.brideParents },
