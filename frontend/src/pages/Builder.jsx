@@ -376,34 +376,7 @@ export function Builder() {
           notes: item.notes || '',
         }))
         .filter((item) => item.name);
-    if (!data || isSubmitting || !canPublish) return;
 
-    setIsSubmitting(true);
-    setSubmitError('');
-
-    try {
-      const created = await apiClient.createInvitation({});
-      const primaryEvent = {
-        id: data.events?.[0]?.id || 'primary-event',
-        name: data.events?.[0]?.name?.trim() || 'Wedding Ceremony',
-        date: data.events?.[0]?.date || data.event?.date || '',
-        time: data.events?.[0]?.time || data.event?.time || '',
-        venue: data.events?.[0]?.venue || data.event?.venue || '',
-        address: data.events?.[0]?.address || data.event?.address || '',
-        notes: data.events?.[0]?.notes || '',
-      };
-      const additionalEvents = (data.events || [])
-        .slice(1)
-        .map((item, index) => ({
-          id: item.id || `event-${index + 2}`,
-          name: item.name?.trim() || '',
-          date: item.date || '',
-          time: item.time || '',
-          venue: item.venue || '',
-          address: item.address || '',
-          notes: item.notes || '',
-        }))
-        .filter((item) => item.name);
       const eventsPayload = [
         primaryEvent,
         ...additionalEvents,
