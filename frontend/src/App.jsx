@@ -5,7 +5,7 @@ import { Globe, Mail, Menu, X } from 'lucide-react';
 import { Home } from './pages/Home';
 import { Builder } from './pages/Builder';
 import { Templates } from './pages/Templates';
-import { Pricing } from './pages/Pricing';
+
 import { InvitationView } from './pages/InvitationView';
 import { LivePreviewReceiver } from './pages/LivePreviewReceiver';
 import { InvitationProvider } from './hooks/useInvitationState';
@@ -17,7 +17,6 @@ const ImageToWebsite = lazy(() => import('./pages/ImageToWebsite'));
 const NAV_ITEMS = [
   { label: 'Home', to: '/' },
   { label: 'Templates', to: '/templates' },
-  { label: 'Pricing', to: '/pricing' },
 ];
 
 function Navbar() {
@@ -162,7 +161,8 @@ function Navbar() {
 
 function AppShell() {
   const location = useLocation();
-  const isInvitation = location.pathname.startsWith('/invitation/') ||
+  const isTemplatesPage = location.pathname.startsWith('/templates');
+  const isBuilderOrInvite = location.pathname.startsWith('/invitation/') ||
     location.pathname.startsWith('/invite/') ||
     location.pathname.startsWith('/v/') ||
     location.pathname.startsWith('/builder') ||
@@ -170,10 +170,10 @@ function AppShell() {
 
   return (
     <div className="min-h-screen bg-silk font-sans antialiased text-slate-900 flex flex-col">
-      {!isInvitation && <Navbar />}
+      {!isBuilderOrInvite && !isTemplatesPage && <Navbar />}
       <main className={cn(
         "flex-grow",
-        !isInvitation && location.pathname !== '/' && "pt-[104px] sm:pt-[112px] md:pt-[120px]"
+        !isBuilderOrInvite && !isTemplatesPage && location.pathname !== '/' && "pt-[104px] sm:pt-[112px] md:pt-[120px]"
       )}>
         <Suspense
           fallback={
@@ -190,7 +190,7 @@ function AppShell() {
             <Route path="/templates" element={<Templates />} />
             <Route path="/invitation-analyzer" element={<InvitationAnalyzer />} />
             <Route path="/image-to-website" element={<ImageToWebsite />} />
-            <Route path="/pricing" element={<Pricing />} />
+
             <Route path="/preview-render" element={<LivePreviewReceiver />} />
             <Route path="/invitation/:slug" element={<InvitationView />} />
             <Route path="/invite/:slug" element={<InvitationView />} />
@@ -199,7 +199,7 @@ function AppShell() {
         </Suspense>
       </main>
 
-      {!isInvitation && (
+      {!isBuilderOrInvite && (
         <footer className="bg-white pt-24 pb-12 text-[#003d4d]">
           <div className="container mx-auto max-w-7xl px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">

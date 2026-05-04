@@ -37,30 +37,7 @@ export const templatesList = [
   },
 ];
 
-export const packagesList = [
-  {
-    id: "basic",
-    name: "Basic",
-    price: "₹999",
-    priceINR: 999,
-    features: ["1 standard template", "Event details", "Image gallery", "Basic preview"],
-  },
-  {
-    id: "standard",
-    name: "Standard",
-    price: "₹1,999",
-    priceINR: 1999,
-    featured: true,
-    features: ["Everything in Basic", "Countdown timer", "RSVP section", "Music support", "More customization"],
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: "₹3,499",
-    priceINR: 3499,
-    features: ["Everything in Standard", "Premium templates", "Video section", "Advanced styling", "Best visual effects"],
-  },
-];
+
 
 export const initialInvitationData = {
   couple: {
@@ -76,8 +53,8 @@ export const initialInvitationData = {
     mapLink: "https://maps.google.com"
   },
   events: [
-    { id: "1", name: "Nikah", date: "2026-12-18", time: "05:00 PM", venue: "Grand Palace Hall", address: "Riyadh, Saudi Arabia", notes: "Please arrive 30 minutes early." },
-    { id: "2", name: "Reception", date: "2026-12-19", time: "08:00 PM", venue: "Emerald Banquet", address: "Riyadh, Saudi Arabia", notes: "Dinner will be served." }
+    { id: "1", name: "Nikah", date: "2026-12-18", time: "05:00 PM", venue: "Grand Palace Hall", address: "Riyadh, Saudi Arabia", notes: "Please arrive 30 minutes early.", image: "/img2.jpg" },
+    { id: "2", name: "Reception", date: "2026-12-19", time: "08:00 PM", venue: "Emerald Banquet", address: "Riyadh, Saudi Arabia", notes: "Dinner will be served.", image: "/img3.jpg" }
   ],
   family: {
     brideParents: "Mr. & Mrs. Rahman",
@@ -96,18 +73,21 @@ export const initialInvitationData = {
     contact2: "+966 511 111 111"
   },
   media: {
-    coverImage: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
-    backgroundImage: "https://images.unsplash.com/photo-1516557070061-c3d1653fa646?auto=format&fit=crop&w=1400&q=80",
-    brideImage: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
-    groomImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80",
-    coupleImage: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1200&q=80",
+    coverImage: "/banner_image.jpg",
+    backgroundImage: "/banner_image.jpg",
+    brideImage: "/bride.jpg",
+    groomImage: "/groom.jpg",
+    coupleImage: "/banner_image.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=900&q=80",
-      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=900&q=80",
+      "/img1.jpg",
+      "/img2.jpg",
+      "/img3.jpg",
+      "/img4.jpg",
+      "/banner_image.jpg",
+      "/groom.jpg"
     ],
     enableVideo: true,
-    video: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
+    video: "/banner_video.mp4",
     music: "https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
   },
   theme: {

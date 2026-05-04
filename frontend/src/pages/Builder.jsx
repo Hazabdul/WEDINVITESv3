@@ -285,10 +285,21 @@ export function Builder() {
       setErrorFields(new Set(missing.map((f) => f.label)));
       missing.forEach((field) => {
         toast.error(`Please fill the field "${field.label}".`, {
-          id: field.label, // deduplicate on rapid clicks
+          id: field.label,
         });
       });
       return;
+    }
+
+    // Email Validation for Step 0
+    if (currentStep === 0) {
+      const email = data.event?.email || '';
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (email && !emailRegex.test(email)) {
+        setErrorFields(new Set(['Email address']));
+        toast.error("Please enter a valid email address.");
+        return;
+      }
     }
 
     // All good — clear errors and advance
@@ -1299,13 +1310,25 @@ export function Builder() {
                 </div>
 
                 <div className="mt-4 flex items-center gap-4">
-                  <div className="h-[1.5px] flex-1 bg-[#e2e8f0]/50">
+                  <div className="h-1 flex-1 rounded-full bg-slate-100/50 overflow-hidden">
                     <div
-                      className="h-full bg-slate-900 transition-all duration-700 ease-in-out shadow-md shadow-amber-900/10"
+                      className={cn(
+                        "h-full transition-all duration-1000 ease-in-out shadow-sm",
+                        currentStep === 0 ? "bg-red-500" : 
+                        currentStep < STEPS.length - 1 ? "bg-amber-500" : 
+                        "bg-emerald-500"
+                      )}
                       style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
                     />
                   </div>
-                  <div className="text-[10px] font-bold text-[#94a3b8] whitespace-nowrap">{progressInfo.percentage}%</div>
+                  <div className={cn(
+                    "text-[10px] font-black tracking-tighter whitespace-nowrap",
+                    currentStep === 0 ? "text-red-500" : 
+                    currentStep < STEPS.length - 1 ? "text-amber-600" : 
+                    "text-emerald-600"
+                  )}>
+                    {Math.round(((currentStep + 1) / STEPS.length) * 100)}%
+                  </div>
                 </div>
               </div>
 

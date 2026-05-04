@@ -29,6 +29,7 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
     }
 
     gsap.registerPlugin(ScrollTrigger);
+    gsap.config({ force3D: true });
 
     // In the builder, scrolling happens inside a custom div, not the window.
     const scrollerSelector = "#preview-scroll-container";
@@ -55,12 +56,12 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
 
       // Generic reveal-up for editorial elements
       revealItems.forEach((item) => {
-        gsap.fromTo(item, 
+        gsap.fromTo(item,
           { autoAlpha: 0, y: 30 },
-          { 
-            autoAlpha: 1, 
-            y: 0, 
-            duration: 1, 
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 1,
             ease: "expo.out",
             scrollTrigger: {
               trigger: item,
@@ -180,8 +181,14 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
       }}
     >
       <style>{`
-        .template-renderer-root * {
-          font-family: ${getFontFamily(theme.font)} !important;
+        .template-renderer-root {
+          font-family: ${getFontFamily(theme.font)};
+          -webkit-overflow-scrolling: touch;
+          touch-action: pan-y;
+          overscroll-behavior-y: auto;
+        }
+        .template-renderer-root::-webkit-scrollbar {
+          display: none;
         }
         .template-renderer-root {
           color: var(--tw-body) !important;

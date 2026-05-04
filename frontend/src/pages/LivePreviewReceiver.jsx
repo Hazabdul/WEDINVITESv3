@@ -22,8 +22,10 @@ export function LivePreviewReceiver() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
+  const showCover = data?.theme?.id === 'mountain';
+
   useEffect(() => {
-    if (!isOpened) {
+    if (!isOpened && showCover) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -31,7 +33,7 @@ export function LivePreviewReceiver() {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isOpened]);
+  }, [isOpened, showCover]);
 
   // When data changes, if cover is closed, we might want to keep it closed or open it. 
   // For preview, it's better to keep it open if it was already opened.
@@ -63,7 +65,7 @@ export function LivePreviewReceiver() {
 
   return (
     <div className={cn("min-h-screen w-full max-w-[100vw] overflow-x-hidden transition-colors duration-1000", pageBg)}>
-      {!isOpened && (
+      {!isOpened && showCover && (
         <InvitationCover
           bride={brideName}
           groom={groomName}
@@ -73,7 +75,7 @@ export function LivePreviewReceiver() {
 
       <div className={cn(
         "transition-opacity duration-1000",
-        isOpened ? "opacity-100" : "opacity-0"
+        (isOpened || !showCover) ? "opacity-100" : "opacity-0"
       )}>
         <div className="mx-auto w-full">
           <TemplateRenderer
