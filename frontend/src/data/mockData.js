@@ -88,7 +88,7 @@ export const initialInvitationData = {
     ],
     enableVideo: true,
     video: "/banner_video.mp4",
-    music: "https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
+    music: "/music/music1.mp3"
   },
   theme: {
     id: "mountain",

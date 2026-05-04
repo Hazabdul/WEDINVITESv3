@@ -599,7 +599,14 @@ export function HighEndImmersiveTemplate({ data }) {
         {/* Background Media */}
         <div className="absolute inset-0 z-0 hero-media">
           {mediaPack.heroVideo ? (
-            <video autoPlay muted loop playsInline className="h-full w-full object-cover">
+            <video 
+              autoPlay 
+              muted 
+              loop 
+              playsInline 
+              className="h-full w-full object-cover"
+              onCanPlay={(e) => e.target.play()}
+            >
               <source src={mediaPack.heroVideo} type="video/mp4" />
             </video>
           ) : mediaPack.heroImage ? (
@@ -668,7 +675,14 @@ export function HighEndImmersiveTemplate({ data }) {
 
               <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-transparent shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30 video-section-styling">
                 {mediaPack.video ? (
-                  <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-100">
+                  <video 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline 
+                    className="h-full w-full object-cover opacity-100"
+                    onCanPlay={(e) => e.target.play()}
+                  >
                     <source src={mediaPack.video} type="video/mp4" />
                   </video>
                 ) : mediaPack.heroImage && (
