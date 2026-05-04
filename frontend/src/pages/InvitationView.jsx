@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { cn } from '../utils/cn';
 import { InvitationCover } from '../components/preview/InvitationCover';
 import { RSVPSection } from '../components/preview/RSVPSection';
+import { MusicPlayer } from '../components/preview/MusicPlayer';
 
 function playCelebrationTone() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -184,6 +185,11 @@ export function InvitationView() {
           />
         )}
       </div>
+
+      {/* Global Music Player */}
+      {templateData?.media?.music && templateData?.theme?.showMusic !== false && (
+        <MusicPlayer url={templateData.media.music} />
+      )}
     </div>
   );
 }

@@ -1314,18 +1314,18 @@ export function Builder() {
                     <div
                       className={cn(
                         "h-full transition-all duration-1000 ease-in-out shadow-sm",
-                        currentStep === 0 ? "bg-red-500" : 
-                        currentStep < STEPS.length - 1 ? "bg-amber-500" : 
-                        "bg-emerald-500"
+                        currentStep === 0 ? "bg-red-500" :
+                          currentStep < STEPS.length - 1 ? "bg-amber-500" :
+                            "bg-emerald-500"
                       )}
                       style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
                     />
                   </div>
                   <div className={cn(
                     "text-[10px] font-black tracking-tighter whitespace-nowrap",
-                    currentStep === 0 ? "text-red-500" : 
-                    currentStep < STEPS.length - 1 ? "text-amber-600" : 
-                    "text-emerald-600"
+                    currentStep === 0 ? "text-red-500" :
+                      currentStep < STEPS.length - 1 ? "text-amber-600" :
+                        "text-emerald-600"
                   )}>
                     {Math.round(((currentStep + 1) / STEPS.length) * 100)}%
                   </div>

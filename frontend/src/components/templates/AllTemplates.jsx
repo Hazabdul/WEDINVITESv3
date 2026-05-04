@@ -16,12 +16,15 @@ function CinematicTimer({ date, dark = true }) {
     const tick = () => {
       if (!date) return;
       const diff = new Date(date).getTime() - Date.now();
-      if (diff <= 0) return;
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
       setTimeLeft({
         days: Math.floor(diff / 86400000),
         hours: Math.floor((diff % 86400000) / 3600000),
         minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000)) % 60,
+        seconds: Math.floor((diff % 60000) / 1000),
       });
     };
     tick();
@@ -31,11 +34,22 @@ function CinematicTimer({ date, dark = true }) {
 
   return (
     <div className={cn("flex items-center gap-5", dark ? "text-[#f5ede0]" : "text-[#1a3529]")}>
+      <style>{`
+        @keyframes timer-slide-up {
+          from { transform: translateY(10px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .timer-unit-animate {
+          animation: timer-slide-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+      `}</style>
       {Object.entries(timeLeft).map(([label, value], i) => (
         <React.Fragment key={label}>
           <div className="text-center">
-            <div className="font-serif text-3xl font-light tracking-tighter sm:text-4xl">
-              {String(value).padStart(2, '0')}
+            <div className="relative h-9 sm:h-12 overflow-hidden">
+              <div key={value} className="timer-unit-animate font-serif text-3xl font-light tracking-tighter sm:text-4xl">
+                {String(value).padStart(2, '0')}
+              </div>
             </div>
             <div className="text-[8px] font-bold uppercase tracking-[4px] opacity-40">
               {label}
@@ -658,19 +672,22 @@ export function HighEndImmersiveTemplate({ data }) {
                     <source src={mediaPack.video} type="video/mp4" />
                   </video>
                 ) : mediaPack.heroImage && (
-                  <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-90" />
+                  <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
                 )}
+
+                {/* Subtle dark overlay for text contrast */}
+                <div className="absolute inset-0 bg-black/25" />
 
 
                 {/* Corner Decorative Accents */}
                 <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 border-[#c9a87c]/40 rounded-tl-lg" />
                 <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 border-[#c9a87c]/40 rounded-br-lg" />
 
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0] ">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0] ">
                   <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
                     <div className="relative">
-                      <p className="video-tagline mb-3 text-[9px] font-bold uppercase tracking-[8px]">The Union Of</p>
-                      <h2 className="mb-2 text-[clamp(26px,8vw,52px)] leading-none tracking-tight drop-shadow-2xl">
+                      <p className="video-tagline mb-3 text-[8px] font-bold uppercase tracking-[8px]">The Union Of</p>
+                      <h2 className="mb-2 text-[clamp(22px,7vw,42px)] leading-none tracking-tight drop-shadow-2xl">
                         {brideName} <span className="ampersand not-italic px-2">&</span> {groomName}
                       </h2>
                       <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#fff]/50 to-transparent" />
@@ -687,7 +704,7 @@ export function HighEndImmersiveTemplate({ data }) {
           {theme.showSchedule !== false && (
             <div className="reveal-up mb-32 px-4 sm:px-0">
               <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
-              <h2 className="mb-16 text-center font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight text-[#c9a87c]">The Schedule</h2>
+              <h2 className="mb-16 text-center font-serif text-[clamp(24px,4vw,36px)] italic tracking-tight text-[#c9a87c]">The Schedule</h2>
 
               <div className="mx-auto max-w-[700px] space-y-24">
                 {(events || []).map((evt, i) => (
@@ -787,7 +804,7 @@ export function HighEndImmersiveTemplate({ data }) {
           {event.mapLink && theme.showMap !== false && (
             <div className="reveal-up mx-auto mb-16 mt-12 max-w-[400px] px-6">
               <div className="rounded-[32px] border border-[#c9a87c]/30 bg-[#1a3529]/5 p-8 text-center backdrop-blur-sm">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1a3529] text-[#c9a87c]">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1a3529] text-white">
                   <MapPin className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <h3 className="mb-2 font-serif text-2xl italic text-[#1a3529]">{event.venue || 'The Venue'}</h3>
