@@ -33,6 +33,7 @@ const featureHighlights = [
   }
 ];
 
+<<<<<<< HEAD
 const processSteps = [
   {
     title: "Choose Template",
@@ -63,6 +64,9 @@ const processSteps = [
 
 function TemplateCard({ template, onSelect }) {
   // Mapping specific high-end images to the themes
+=======
+export function TemplateCard({ template, onSelect }) {
+>>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
   const themeImages = {
     mountain: "/template1.webp",
     noir: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=75",
@@ -70,30 +74,34 @@ function TemplateCard({ template, onSelect }) {
   };
 
   return (
-    <div className="group h-full flex flex-col relative isolate overflow-hidden rounded-[32px] border border-gray-100 bg-white shadow-[0_30px_70px_-20px_rgba(0,0,0,0.08)] transition-all duration-500">
-      {/* Laptop Mockup Presentation */}
-      <div className="relative pt-8 px-6 flex-shrink-0">
-        <div className="relative mx-auto">
+    <div 
+      onClick={() => onSelect(template.id)}
+      className="group flex flex-col h-full relative isolate overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-xl mx-auto max-w-[320px] w-full cursor-pointer"
+    >
+      {/* Refined Laptop Mockup */}
+      <div className="relative pt-6 px-4 flex-shrink-0">
+        <div className="relative mx-auto max-w-[280px]">
           {/* Laptop Screen */}
-          <div className="relative rounded-t-2xl border-[8px] border-[#1a1a1a] bg-[#1a1a1a] shadow-2xl overflow-hidden aspect-[16/10]">
-            {/* Screen Highlight */}
-            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
+          <div className="relative rounded-t-xl border-[5px] border-[#1a1a1a] bg-[#1a1a1a] shadow-xl overflow-hidden aspect-[16/10]">
             <img
               src={themeImages[template.id] || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75"}
               alt={template.name}
+<<<<<<< HEAD
               loading="lazy"
               decoding="async"
               sizes="(min-width: 1024px) 330px, (min-width: 768px) 45vw, 90vw"
               className="h-full w-full object-cover"
+=======
+              className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+>>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
             />
           </div>
-          {/* Precision Base */}
-          <div className="relative h-2.5 w-[106%] -ml-[3%] bg-[#2a2a2a] rounded-b-xl border-t border-white/5 shadow-xl">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-black/40 rounded-b-md" />
-          </div>
+          {/* Minimal Base */}
+          <div className="relative h-1.5 w-[104%] -ml-[2%] bg-[#222222] rounded-b-lg border-t border-white/5" />
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Editorial Content Section */}
       <div className="relative flex-grow flex flex-col items-center px-8 pb-10 pt-6 text-center overflow-hidden">
         {/* Subtle Architectural Overlay */}
@@ -106,19 +114,24 @@ function TemplateCard({ template, onSelect }) {
         />
 
         <h3 className="relative font-serif text-[26px] italic leading-tight text-slate-900 tracking-tight">
+=======
+      {/* Compact Content Section */}
+      <div className="relative flex-grow flex flex-col items-center px-6 pb-6 pt-4 text-center">
+        <h3 className="font-serif text-[18px] italic leading-tight text-slate-900 tracking-tight">
+>>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
           {template.name}
         </h3>
 
-        <p className="relative mt-3 text-[13px] leading-relaxed text-slate-500/80 max-w-[240px] flex-grow">
+        <p className="mt-2 text-[11px] leading-relaxed text-slate-500/60 max-w-[200px] flex-grow">
           {template.description}
         </p>
 
-        <div className="relative mt-8">
+        <div className="mt-5 w-full">
           <button
             onClick={() => onSelect(template.id)}
-            className="rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-7 py-2.5 text-[11px] font-black uppercase tracking-[0.3em] text-white transition-all hover:scale-[1.05] active:scale-95"
+            className="w-full rounded-full bg-[#111111] py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-black active:scale-[0.97]"
           >
-            USE THIS
+            INR 0.00
           </button>
         </div>
       </div>
@@ -342,7 +355,7 @@ export function Home() {
           {/* Templates Grid */}
           <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 templates-grid">
             {templatesList.map((tmplt) => (
-              <div key={tmplt.id} className="template-card-stagger">
+              <div key={tmplt.id} className="template-card-stagger h-full">
                 <TemplateCard
                   template={tmplt}
                   onSelect={handleUseTemplate}

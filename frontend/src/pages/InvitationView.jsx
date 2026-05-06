@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { cn } from '../utils/cn';
 import { InvitationCover } from '../components/preview/InvitationCover';
 import { RSVPSection } from '../components/preview/RSVPSection';
+import { MusicPlayer } from '../components/preview/MusicPlayer';
 
 function playCelebrationTone() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -42,9 +43,11 @@ export function InvitationView() {
   const [showCelebrate, setShowCelebrate] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
 
+  const showCover = invitation?.theme?.id === 'mountain';
+
   useEffect(() => {
     // Lock scroll if cover is active
-    if (!isOpened) {
+    if (!isOpened && showCover) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -52,7 +55,7 @@ export function InvitationView() {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isOpened]);
+  }, [isOpened, showCover]);
 
   useEffect(() => {
     const fetchInvitation = async () => {
@@ -134,17 +137,18 @@ export function InvitationView() {
 
   return (
     <div className={cn("min-h-screen transition-colors duration-1000", pageBg)}>
-      {!isOpened && (
+      {!isOpened && showCover && (
         <InvitationCover
           bride={brideName}
           groom={groomName}
+          data={templateData}
           onOpen={() => setIsOpened(true)}
         />
       )}
 
       <div className={cn(
         "transition-opacity duration-1000",
-        isOpened ? "opacity-100" : "opacity-0"
+        (isOpened || !showCover) ? "opacity-100" : "opacity-0"
       )}>
         <div className="mx-auto w-full">
           <TemplateRenderer
@@ -170,6 +174,11 @@ export function InvitationView() {
           />
         )}
       </div>
+
+      {/* Global Music Player */}
+      {templateData?.media?.music && templateData?.theme?.showMusic !== false && (
+        <MusicPlayer url={templateData.media.music} />
+      )}
     </div>
   );
 }

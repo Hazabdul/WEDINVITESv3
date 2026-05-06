@@ -28,25 +28,25 @@ export function InvitationCover({ bride, groom, onOpen }) {
 
       {/* Content Area */}
       <div className="invitation-cover-emerald relative z-10 flex w-full flex-1 flex-col items-center justify-center px-8 text-center text-[#f5ede0]">
-        <div className="mb-6 text-[10px] font-bold uppercase tracking-[8px] text-[#c9a87c]/90">
+        <div className="mb-6 text-[9px] font-bold uppercase tracking-[8px] text-[#c9a87c]/90">
           You are invited to the wedding of
         </div>
 
-        <h1 className="flex items-center justify-center gap-4 text-[clamp(42px,10vw,86px)] font-light leading-none">
+        <h1 className="flex items-center justify-center gap-4 text-[clamp(32px,8vw,72px)] font-light leading-none">
           <span className="inline-block">{bride}</span>
           <span className="font-serif italic text-[#c9a87c]/60">&</span>
           <span className="inline-block">{groom}</span>
         </h1>
 
         <div className="mt-8 flex flex-col items-center gap-6">
-          <p className="mt-4 text-[11px] font-light tracking-[3px] opacity-50">
+          <p className="mt-4 text-[10px] font-light tracking-[3px] opacity-50">
             December 18, 2026
           </p>
         </div>
 
         <button
           onClick={handleOpen}
-          className="group relative mt-16 flex min-w-[300px] items-center justify-center overflow-hidden rounded-full bg-[#c9a87c] px-10 py-5 text-[12px] font-black uppercase tracking-[0.4em] text-[#1a3529] shadow-2xl transition-all hover:bg-[#d8bd9c] hover:scale-[1.05] active:scale-[0.98]"
+          className="group relative mt-16 flex min-w-[280px] items-center justify-center overflow-hidden rounded-full bg-[#c9a87c] px-10 py-4.5 text-[11px] font-black uppercase tracking-[0.4em] text-[#1a3529] shadow-2xl transition-all hover:bg-[#d8bd9c] hover:scale-[1.05] active:scale-[0.98]"
         >
           <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
           Open Invitation

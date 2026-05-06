@@ -16,15 +16,12 @@ function CinematicTimer({ date, dark = true }) {
     const tick = () => {
       if (!date) return;
       const diff = new Date(date).getTime() - Date.now();
-      if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
+      if (diff <= 0) return;
       setTimeLeft({
         days: Math.floor(diff / 86400000),
         hours: Math.floor((diff % 86400000) / 3600000),
         minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
+        seconds: Math.floor((diff % 60000)) % 60,
       });
     };
     tick();
@@ -34,22 +31,11 @@ function CinematicTimer({ date, dark = true }) {
 
   return (
     <div className={cn("flex items-center gap-5", dark ? "text-[#f5ede0]" : "text-[#1a3529]")}>
-      <style>{`
-        @keyframes timer-slide-up {
-          from { transform: translateY(10px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .timer-unit-animate {
-          animation: timer-slide-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-      `}</style>
       {Object.entries(timeLeft).map(([label, value], i) => (
         <React.Fragment key={label}>
           <div className="text-center">
-            <div className="relative h-9 sm:h-12 overflow-hidden">
-              <div key={value} className="timer-unit-animate font-serif text-3xl font-light tracking-tighter sm:text-4xl">
-                {String(value).padStart(2, '0')}
-              </div>
+            <div className="font-serif text-3xl font-light tracking-tighter sm:text-4xl">
+              {String(value).padStart(2, '0')}
             </div>
             <div className="text-[8px] font-bold uppercase tracking-[4px] opacity-40">
               {label}
@@ -155,13 +141,6 @@ function isVideoUrl(src = '') {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(src);
 }
 
-function getVideoMimeType(src = '') {
-  if (/\.webm(\?.*)?$/i.test(src)) return 'video/webm';
-  if (/\.(mp4|m4v)(\?.*)?$/i.test(src)) return 'video/mp4';
-  if (/\.ogg(\?.*)?$/i.test(src)) return 'video/ogg';
-  return undefined;
-}
-
 function unique(list) {
   return [...new Set(list.filter(Boolean))];
 }
@@ -190,10 +169,9 @@ function withAlpha(hex, alpha) {
 }
 
 function buildMediaPackage(media = {}) {
-<<<<<<< HEAD
   // Resolve the uploaded video story field first — it's what the builder writes to
-=======
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
+  const uploadedVideo = resolveMediaSource(media.videoStory) || resolveMediaSource(media.video) || '';
+
   const heroVideo = [
     media.heroVideo,
     media.coverVideo,
@@ -209,6 +187,8 @@ function buildMediaPackage(media = {}) {
     media.reelVideo,
     media.secondaryVideo,
     media.highlightVideo,
+    // fall back to the uploaded video story so it always surfaces somewhere
+    media.videoStory,
   ]
     .map(resolveMediaSource)
     .find(Boolean) || '';
@@ -235,6 +215,7 @@ function buildMediaPackage(media = {}) {
     .find(Boolean) || '';
 
   const video = [
+    media.videoStory,
     media.video,
     media.videoUrl,
     media.storyVideo,
@@ -263,8 +244,8 @@ function InfoPill({ children, className = '' }) {
 
 function HeroBackground({ media, className = '', overlayClass = '', children }) {
   const mediaPack = buildMediaPackage(media);
-  const showVideo = Boolean(mediaPack.heroVideo);
-  const showImage = !showVideo && Boolean(mediaPack.heroImage);
+  const showImage = Boolean(mediaPack.heroImage);
+  const showVideo = !showImage && Boolean(mediaPack.heroVideo);
 
   return (
     <div data-live-invite-section className={`relative overflow-hidden ${className}`}>
@@ -276,10 +257,9 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
           muted
           loop
           playsInline
-          preload="metadata"
           poster={mediaPack.poster || undefined}
         >
-          <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
+          <source src={mediaPack.heroVideo} />
         </video>
       )}
 
@@ -288,9 +268,6 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
           data-live-invite-media
           src={mediaPack.heroImage}
           alt="wedding cover"
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover animate-reveal"
         />
       )}
@@ -349,7 +326,7 @@ function PhotoRibbon({ media, className = '', frameClassName = '' }) {
           data-live-invite-card
           className={`overflow-hidden rounded-[24px] border border-white/10 bg-white/10 shadow-[0_14px_30px_rgba(15,23,42,0.12)] ${frameClassName}`}
         >
-          <img data-live-invite-media src={src} alt={`gallery ${index + 1}`} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
+          <img data-live-invite-media src={src} alt={`gallery ${index + 1}`} className="h-28 w-full object-cover" />
         </div>
       ))}
     </div>
@@ -383,7 +360,7 @@ function StoryVideoCard({ media, dark = false, className = '' }) {
         poster={mediaPack.poster || undefined}
         className="h-56 w-full rounded-[22px] object-cover"
       >
-        <source src={mediaPack.secondaryVideo} type={getVideoMimeType(mediaPack.secondaryVideo)} />
+        <source src={mediaPack.secondaryVideo} />
       </video>
     </div>
   );
@@ -407,7 +384,8 @@ function EditorialNames({ brideId, groomId, bride, groom, brideColor, groomColor
 /* ─── Mountain / Forest Vault Immersive ────────────────── */
 export function HighEndImmersiveTemplate({ data }) {
   const rootRef = useRef(null);
-  const { couple = {}, content = {}, event = {}, events = [], media = {}, theme = {} } = data;
+  const mainContentRef = useRef(null);
+  const { couple = {}, content = {}, event = {}, events = [], family = {}, media = {}, theme = {} } = data;
 
   const mediaPack = buildMediaPackage(media);
   const intro = pickIntro(content);
@@ -416,18 +394,22 @@ export function HighEndImmersiveTemplate({ data }) {
   const groomName = couple.groom || 'Groom Name';
   const heroSubtitle = couple.title || 'You are invited to the wedding of';
   const eventDate = event.date ? formatLongDate(event.date) : 'Month DD, YYYY';
+  const eventTime = event.time || '11:00 AM – 11:30 AM';
+  const eventVenue = event.venue || 'Venue Name';
+  const eventCity = event.address ? event.address.split(',').pop().trim() : 'City, State';
+
+  const goldLeaf = '/premium-leaf-v2.png';
+  const greenLeaf = '/premium-leaf-v2.png';
+
   useEffect(() => {
     if (!rootRef.current || typeof window === 'undefined') return undefined;
     gsap.registerPlugin(ScrollTrigger);
     const container = rootRef.current.closest('.custom-scrollbar-preview') ||
       rootRef.current.closest('.overflow-y-auto') ||
-      document.querySelector('#preview-scroll-container') ||
       window;
 
     const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
-
-      // Common: Leaf Float
+      // Float Animation for leaves
       gsap.to('.leaf-float', {
         y: -15,
         rotation: 12,
@@ -438,74 +420,38 @@ export function HighEndImmersiveTemplate({ data }) {
         ease: 'sine.inOut'
       });
 
-      mm.add("(min-width: 768px)", () => {
-        // Desktop Animations
-        gsap.fromTo('#vault-arch',
-          { y: 120 },
-          {
-            y: 0,
-            ease: "none",
-            scrollTrigger: {
-              trigger: '#vault-arch',
-              scroller: container,
-              start: "top bottom",
-              end: "top center",
-              scrub: true,
-              invalidateOnRefresh: true
-            }
-          }
-        );
-
-        gsap.to('.hero-media', {
-          y: 100,
-          scale: 1.1,
+      // Arch Reveal Parallax - THE WHITE ELEMENT
+      gsap.fromTo('#vault-arch',
+        { y: 120, autoAlpha: 0.8 },
+        {
+          y: 0,
+          autoAlpha: 1,
           ease: "none",
           scrollTrigger: {
-            trigger: '.hero-media',
+            trigger: '#vault-arch',
             scroller: container,
-            start: "top top",
-            end: "bottom top",
-            scrub: true,
-            invalidateOnRefresh: true
+            start: "top bottom",
+            end: "top center",
+            scrub: 1.2
           }
-        });
+        }
+      );
+
+      // Hero Media Parallax
+      gsap.to('.hero-media', {
+        y: 100,
+        scale: 1.1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: '.hero-media',
+          scroller: container,
+          start: "top top",
+          end: "bottom top",
+          scrub: true
+        }
       });
 
-      mm.add("(max-width: 767px)", () => {
-        // Mobile Animations - Simplified and smoother
-        gsap.fromTo('#vault-arch',
-          { y: 60 },
-          {
-            y: 0,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: '#vault-arch',
-              scroller: container,
-              start: "top 85%",
-              end: "top center",
-              scrub: 1,
-              invalidateOnRefresh: true,
-              once: true
-            }
-          }
-        );
-
-        gsap.to('.hero-media', {
-          y: 40,
-          scale: 1.05,
-          ease: "none",
-          scrollTrigger: {
-            trigger: '.hero-media',
-            scroller: container,
-            start: "top top",
-            end: "bottom top",
-            scrub: 1,
-            invalidateOnRefresh: true
-          }
-        });
-      });
-
-      // Snappy Reveal (Generic)
+      // Snappy Reveal
       gsap.from('.reveal-up', {
         opacity: 0,
         y: 40,
@@ -518,80 +464,16 @@ export function HighEndImmersiveTemplate({ data }) {
         }
       });
     }, rootRef);
-
-    // Refresh ScrollTrigger after a short delay to ensure layout is settled
-    const refreshTimeout = setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 100);
-
-    return () => {
-      ctx.revert();
-      clearTimeout(refreshTimeout);
-    };
+    return () => ctx.revert();
   }, []);
 
   return (
     <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-black selection:bg-[#c9a87c] selection:text-white" style={{ color: '#f5ede0' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+        .forest-vault-template h1 { font-family: 'Playfair Display', serif; }
+        .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: 'Cormorant Garamond', serif; }
         .forest-vault-template { font-family: 'Montserrat', sans-serif; }
-        .forest-vault-template h1, .forest-vault-template h2, .forest-vault-template h3, .forest-vault-template .font-serif { font-family: 'Playfair Display', serif; }
-        
-        .hero-section-styling .hero-title {
-          font-family: 'Cormorant Garamond', serif !important;
-          color: #ffffff !important;
-          font-weight: 500 !important;
-          text-shadow: 
-            0 2px 10px rgba(0, 0, 0, 0.9),
-            0 0 20px rgba(0, 0, 0, 0.4) !important;
-          letter-spacing: 1px;
-          -webkit-font-smoothing: antialiased;
-        }
-
-        .video-section-styling h2 {
-          font-family: 'Cormorant Garamond', serif !important;
-          color: #ffffff !important;
-          font-weight: 500 !important;
-          font-style: italic !important;
-          text-shadow: 
-            0 4px 15px rgba(0, 0, 0, 0.8),
-            0 0 10px rgba(0, 0, 0, 0.3) !important;
-          letter-spacing: 1px;
-          -webkit-font-smoothing: antialiased;
-        }
-
-        .hero-section-styling .hero-title .ampersand {
-          font-family: 'Cormorant Garamond', serif !important;
-          opacity: 0.8;
-          margin: 0 1.25rem;
-          font-style: italic;
-          font-size: 0.85em;
-          position: relative;
-          top: -0.05em;
-        }
-
-        .hero-section-styling .hero-tagline {
-          font-family: 'Montserrat', sans-serif !important;
-          color: rgba(255, 255, 255, 0.75) !important;
-          text-shadow: 0 6px 25px rgba(0, 0, 0, 0.8) !important;
-          letter-spacing: 3px !important;
-          font-weight: 500;
-        }
-
-        .hero-section-styling .hero-date {
-          font-family: 'Montserrat', sans-serif !important;
-          color: rgba(255, 255, 255, 0.85) !important;
-          text-shadow: 0 6px 25px rgba(0, 0, 0, 0.8) !important;
-          letter-spacing: 3px !important;
-          margin-top: 2rem;
-        }
-
-        .video-section-styling .video-tagline {
-          font-family: 'Montserrat', sans-serif !important;
-          color: #F1D999 !important;
-          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7) !important;
-        }
-
         .vault-frame { 
           border-radius: 999px 999px 80px 80px;
           overflow: hidden;
@@ -602,62 +484,52 @@ export function HighEndImmersiveTemplate({ data }) {
       `}</style>
 
       {/* Hero with Cinematic Video */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center hero-section-styling">
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center">
         {/* Background Media */}
         <div className="absolute inset-0 z-0 hero-media">
-          {mediaPack.heroVideo ? (
-<<<<<<< HEAD
-            <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover">
-              <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
-=======
-            <video 
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
-              className="h-full w-full object-cover"
-              onCanPlay={(e) => e.target.play()}
-            >
+          {mediaPack.heroImage ? (
+            <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
+          ) : mediaPack.heroVideo ? (
+            <video autoPlay muted loop playsInline className="h-full w-full object-cover">
               <source src={mediaPack.heroVideo} type="video/mp4" />
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
             </video>
-          ) : mediaPack.heroImage ? (
-            <img src={mediaPack.heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" className="h-full w-full object-cover" />
           ) : (
             <div className="h-full w-full bg-black" />
           )}
-          {/* Bottom Edge Blend */}
-          <div className="absolute inset-x-0 bottom-0 h-[20vh] bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+
+          {/* Minimal overlay for text protection while keeping image clear */}
+          <div className="absolute inset-0 bg-black/5" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/20 to-transparent" />
         </div>
 
-        <div className="relative z-10 w-full transition-all duration-1000 animate-in fade-in slide-in-from-bottom-10 flex flex-col items-center text-center">
-          <p className="hero-tagline mb-6 text-[10px] uppercase tracking-[8px]">{heroSubtitle}</p>
-          <h1 className="hero-title flex items-center justify-center text-[clamp(32px,7vw,64px)] leading-none">
-            <span className="reveal-up">{brideName}</span>
-            <span className="ampersand">&</span>
-            <span className="reveal-up">{groomName}</span>
+        <div className="relative z-10 w-full transition-all duration-1000 animate-in fade-in slide-in-from-bottom-10 px-4">
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[8px] text-[#fde68a] drop-shadow-lg">{heroSubtitle}</p>
+          <h1 className="flex items-center justify-center gap-4 text-[clamp(42px,10vw,86px)] font-bold leading-none drop-shadow-2xl" style={{ color: '#fde68a' }}>
+            <span className="reveal-up inline-block">{brideName}</span>
+            <span className="font-serif italic text-[#fde68a]/60">&</span>
+            <span className="reveal-up inline-block">{groomName}</span>
           </h1>
 
-          <p className="hero-date text-[11px] font-light tracking-[3px]">{eventDate}</p>
+          <p className="mt-8 text-[11px] font-light tracking-[3px] drop-shadow-lg" style={{ color: '#f5ede0' }}>{eventDate}</p>
         </div>
 
         {/* Floating Icons */}
         <div className="leaf-float absolute left-[12%] top-[30%] rotate-[-15deg] opacity-20">
-          <Leaf className="h-10 w-10 text-[#c9a87c]" strokeWidth={0.5} />
+          <Leaf className="h-10 w-10 text-[#fde68a]" strokeWidth={0.5} />
         </div>
         <div className="leaf-float absolute right-[10%] top-[15%] rotate-[140deg] opacity-15">
-          <Leaf className="h-12 w-12 text-[#c9a87c]" strokeWidth={0.5} />
+          <Leaf className="h-12 w-12 text-[#fde68a]" strokeWidth={0.5} />
         </div>
       </section>
 
       {/* The Vault Arch Content */}
-      <section id="vault-arch" className="arch-container relative mt-[-60px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-100px] sm:pt-32 border-none">
+      <section id="vault-arch" className="arch-container relative mt-[-40px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-80px] sm:pt-32 border-none">
         <div className="mx-auto max-w-[840px]">
           <div className="reveal-up mb-20 text-center">
             <div className="mx-auto mb-6 flex justify-center opacity-40">
               <Leaf className="h-8 w-8 rotate-12 text-[#1a3529]" strokeWidth={1} />
             </div>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]">The Union</p>
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[#fde68a]">The Union</p>
             <p className="mx-auto max-w-[650px] font-serif text-[24px] italic leading-relaxed opacity-90 sm:text-[38px] lg:text-[42px]">
               {intro || 'We Invite You to Celebrate Our Wedding'}
             </p>
@@ -683,48 +555,35 @@ export function HighEndImmersiveTemplate({ data }) {
           {theme.showVideo !== false && (
             <div className="reveal-up relative mb-16 h-[320px] w-full sm:h-[400px]">
               {/* Outer Decorative Frame Border */}
-              <div className="absolute inset-[-6px] rounded-[30px] border border-[#c9a87c]/20 sm:inset-[-10px] sm:rounded-[38px]" />
+              <div className="absolute inset-[-6px] rounded-[30px] border border-[#fde68a]/20 sm:inset-[-10px] sm:rounded-[38px]" />
 
-              <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-transparent shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30 video-section-styling">
+              <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-2xl sm:rounded-[32px] border border-[#fde68a]/30">
                 {mediaPack.video ? (
-<<<<<<< HEAD
-                  <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover opacity-60">
-                    <source src={mediaPack.video} type={getVideoMimeType(mediaPack.video)} />
-                  </video>
-                ) : mediaPack.heroImage && (
-                  <img src={mediaPack.heroImage} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover opacity-50" />
-=======
-                  <video 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline 
-                    className="h-full w-full object-cover opacity-100"
-                    onCanPlay={(e) => e.target.play()}
-                  >
+                  <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-60">
                     <source src={mediaPack.video} type="video/mp4" />
                   </video>
                 ) : mediaPack.heroImage && (
-                  <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
+                  <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-50" />
                 )}
 
-                {/* Subtle dark overlay for text contrast */}
-                <div className="absolute inset-0 bg-black/25" />
+                {/* Cinematic Grain/Texture Overlay */}
+                <div className="absolute inset-0 opacity-[0.12] mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
 
+                {/* Dramatic Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/60" />
 
                 {/* Corner Decorative Accents */}
-                <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 border-[#c9a87c]/40 rounded-tl-lg" />
-                <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 border-[#c9a87c]/40 rounded-br-lg" />
+                <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 border-[#fde68a]/40 rounded-tl-lg" />
+                <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 border-[#fde68a]/40 rounded-br-lg" />
 
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0] ">
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0]">
                   <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
                     <div className="relative">
-                      <p className="video-tagline mb-3 text-[8px] font-bold uppercase tracking-[8px]">The Union Of</p>
-                      <h2 className="mb-2 text-[clamp(22px,7vw,42px)] leading-none tracking-tight drop-shadow-2xl">
-                        {brideName} <span className="ampersand not-italic px-2">&</span> {groomName}
+                      <p className="mb-3 text-[9px] font-bold uppercase tracking-[8px] text-[#fde68a]/90">The Union Of</p>
+                      <h2 className="mb-2 font-serif text-[clamp(26px,8vw,52px)] font-light italic leading-none tracking-tight drop-shadow-2xl">
+                        {brideName} <span className="not-italic text-[#fde68a]/60 serif-ampersand px-2">&</span> {groomName}
                       </h2>
-                      <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#fff]/50 to-transparent" />
+                      <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-[#fde68a]/50 to-transparent" />
                     </div>
                   </DesignElement>
                 </div>
@@ -737,27 +596,19 @@ export function HighEndImmersiveTemplate({ data }) {
           {/* Cinematic Event Schedule - Premium Vertical Timeline */}
           {theme.showSchedule !== false && (
             <div className="reveal-up mb-32 px-4 sm:px-0">
-              <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
-              <h2 className="mb-16 text-center font-serif text-[clamp(24px,4vw,36px)] italic tracking-tight text-[#c9a87c]">The Schedule</h2>
+              <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[#fde68a]/40 to-transparent" />
+              <h2 className="mb-16 text-center font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight text-[#fde68a]">The Schedule</h2>
 
               <div className="mx-auto max-w-[700px] space-y-24">
                 {(events || []).map((evt, i) => (
                   <div key={i} className={cn("reveal-up flex flex-col gap-8 sm:items-center sm:gap-16", i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse")}>
                     {/* Arched Portrait for Event */}
                     <div className="vault-frame relative h-[320px] w-full shrink-0 sm:h-[420px] sm:w-[300px]">
-<<<<<<< HEAD
                       {mediaPack.gallery[i + 2] ? (
-                        <img src={mediaPack.gallery[i + 2]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-=======
-                      {(i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : evt.image) ? (
-                        <img
-                          src={i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : evt.image}
-                          className="h-full w-full object-cover"
-                        />
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
+                        <img src={mediaPack.gallery[i + 2]} className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full items-center justify-center bg-[#1a3529]/5 opacity-20">
-                          <Leaf className="h-12 w-12 text-[#c9a87c]" />
+                          <Leaf className="h-12 w-12 text-[#fde68a]" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1a3529]/40 via-transparent to-transparent" />
@@ -766,20 +617,20 @@ export function HighEndImmersiveTemplate({ data }) {
                     {/* Event Details */}
                     <div className="flex-1 space-y-6 text-center sm:text-left">
                       <div>
-                        <p className="mb-2 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]/80">Ceremony {i + 1}</p>
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-[5px] text-[#fde68a]/80">Ceremony {i + 1}</p>
                         <h3 className="font-serif text-[clamp(24px,4vw,36px)] leading-tight text-[#1a3529]">{evt.name}</h3>
                       </div>
 
-                      <div className="mx-auto h-px w-12 bg-[#c9a87c]/30 sm:mx-0" />
+                      <div className="mx-auto h-px w-12 bg-[#fde68a]/30 sm:mx-0" />
 
                       <div className="space-y-4">
                         <div className="flex flex-col gap-4 text-sm text-[#1a3529]/70 sm:flex-row sm:items-center sm:gap-6">
-                          <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#c9a87c]/80" /> {evt.date}</span>
+                          <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#fde68a]/80" /> {evt.date}</span>
                           <span className="hidden h-4 w-px bg-[#1a3529]/10 sm:block" />
-                          <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-[#c9a87c]/80" /> {evt.time}</span>
+                          <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-[#fde68a]/80" /> {evt.time}</span>
                         </div>
                         <div className="flex items-start gap-2 text-sm text-[#1a3529]/70">
-                          <MapPin className="h-4 w-4 shrink-0 text-[#c9a87c]/80 mt-1" />
+                          <MapPin className="h-4 w-4 shrink-0 text-[#fde68a]/80 mt-1" />
                           <div>
                             <p className="font-serif text-lg leading-tight text-[#1a3529]">{evt.venue}</p>
                             <p className="mt-1 text-[11px] uppercase tracking-[2px] opacity-50">{evt.address}</p>
@@ -802,14 +653,12 @@ export function HighEndImmersiveTemplate({ data }) {
               <h2 className="reveal-up mb-12 font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight opacity-90">Our Journey</h2>
 
               <div className="grid grid-cols-2 gap-3 pb-12 lg:pb-24 sm:grid-cols-3 sm:gap-4">
-                {[0, 1, 2, 3, 4, 5].map((idx) => (
+                {[0, 2, 3, 4, 5, 6].map((idx) => (
                   <div key={idx} className="reveal-up vault-frame overflow-hidden bg-stone-200/30 h-[240px] sm:h-[400px]">
                     {mediaPack.gallery[idx] ? (
                       <img
                         src={mediaPack.gallery[idx]}
                         className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
-                        loading="lazy"
-                        decoding="async"
                         alt={`Moment ${idx}`}
                       />
                     ) : (
@@ -824,7 +673,7 @@ export function HighEndImmersiveTemplate({ data }) {
 
         {/* Footer Detail */}
         <div className="pt-6 text-center">
-          <div className="leaf-float mx-auto mb-10 flex justify-center text-[#c9a87c] opacity-60">
+          <div className="leaf-float mx-auto mb-10 flex justify-center text-[#fde68a] opacity-60">
             <Leaf size={40} strokeWidth={1} />
           </div>
 
@@ -844,8 +693,8 @@ export function HighEndImmersiveTemplate({ data }) {
 
           {event.mapLink && theme.showMap !== false && (
             <div className="reveal-up mx-auto mb-16 mt-12 max-w-[400px] px-6">
-              <div className="rounded-[32px] border border-[#c9a87c]/30 bg-[#1a3529]/5 p-8 text-center backdrop-blur-sm">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1a3529] text-white">
+              <div className="rounded-[32px] border border-[#fde68a]/30 bg-[#1a3529]/5 p-8 text-center backdrop-blur-sm">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1a3529] text-[#fde68a]">
                   <MapPin className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <h3 className="mb-2 font-serif text-2xl italic text-[#1a3529]">{event.venue || 'The Venue'}</h3>
@@ -957,12 +806,12 @@ export function FloralTemplate({ data }) {
 
         {/* Hero media full-width */}
         <div data-live-invite-section className="relative overflow-hidden rounded-b-[34px] mx-4 mt-4 shadow-[0_24px_55px_rgba(136,19,55,0.14)]">
-          {mediaPack.heroVideo ? (
-            <video data-live-invite-media className="h-56 w-full object-cover" autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined}>
-              <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
+          {mediaPack.heroImage ? (
+            <img data-live-invite-media src={mediaPack.heroImage} alt="botanical hero" className="h-56 w-full object-cover" />
+          ) : mediaPack.heroVideo ? (
+            <video data-live-invite-media className="h-56 w-full object-cover" autoPlay muted loop playsInline poster={mediaPack.poster || undefined}>
+              <source src={mediaPack.heroVideo} />
             </video>
-          ) : mediaPack.heroImage ? (
-            <img data-live-invite-media src={mediaPack.heroImage} alt="botanical hero" loading="eager" decoding="async" fetchPriority="high" className="h-56 w-full object-cover" />
           ) : (
             <div className="h-56 w-full bg-[linear-gradient(180deg,#fbcfe8_0%,#f9a8d4_100%)]" />
           )}
@@ -1011,7 +860,7 @@ export function FloralTemplate({ data }) {
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mediaPack.gallery.slice(1, 3).map((src, i) => (
                 <div key={`fg-${i}`} data-live-invite-card className="overflow-hidden rounded-[20px] border border-white/60">
-                  <img data-live-invite-media src={src} alt={`g${i}`} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
+                  <img data-live-invite-media src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -1180,7 +1029,7 @@ export function TraditionalTemplate({ data }) {
         {/* Hero image */}
         <div data-live-invite-section className="relative overflow-hidden rounded-b-[28px] mx-4 mt-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
           {mediaPack.heroImage ? (
-            <img data-live-invite-media src={mediaPack.heroImage} alt="heritage hero" loading="eager" decoding="async" fetchPriority="high" className="h-52 w-full object-cover" />
+            <img data-live-invite-media src={mediaPack.heroImage} alt="heritage hero" className="h-52 w-full object-cover" />
           ) : (
             <div className="h-52 w-full bg-[linear-gradient(180deg,#7f1d1d_0%,#451a03_100%)]" />
           )}
@@ -1231,7 +1080,7 @@ export function TraditionalTemplate({ data }) {
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mediaPack.gallery.slice(1, 3).map((src, i) => (
                 <div key={`tg-${i}`} data-live-invite-card className="overflow-hidden rounded-[20px] border border-yellow-200/10">
-                  <img data-live-invite-media src={src} alt={`g${i}`} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
+                  <img data-live-invite-media src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -1449,7 +1298,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 
           {mediaPack.heroImage && (
             <div className="mt-5 overflow-hidden rounded-[18px] border sm:mt-6 sm:rounded-[28px]" style={{ borderColor: withAlpha(ceremonyPrimary, 0.12) }}>
-              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" loading="eager" decoding="async" fetchPriority="high" className="h-44 w-full object-cover will-change-transform sm:h-64" />
+              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" className="h-44 w-full object-cover will-change-transform sm:h-64" />
             </div>
           )}
         </div>
@@ -1493,7 +1342,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
               >
                 <div className="overflow-hidden rounded-[16px] border sm:rounded-[24px]" style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: secondaryPanel }}>
                   {person.image ? (
-                    <img src={person.image} alt={person.name} loading="lazy" decoding="async" className="h-36 w-full object-cover sm:h-44" />
+                    <img src={person.image} alt={person.name} className="h-36 w-full object-cover sm:h-44" />
                   ) : (
                     <div className="flex h-36 items-center justify-center text-sm uppercase tracking-[0.22em] sm:h-44 sm:tracking-[0.35em]" style={{ color: metaColor }}>
                       {person.label}
@@ -1578,8 +1427,6 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
                     <img
                       src={src}
                       alt={`gallery ${index + 1}`}
-                      loading="lazy"
-                      decoding="async"
                       className={index === 0 ? 'h-44 w-full object-cover sm:h-52' : 'h-36 w-full object-cover sm:h-32'}
                     />
                   </div>
@@ -1613,9 +1460,9 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 
 
 /* ─── Noir Editorial / High-End Modern ─────────────────── */
-export function NoirTemplate({ data }) {
+export function NoirTemplate({ data, isPreview = false }) {
   const rootRef = useRef(null);
-  const { couple = {}, event = {}, theme = {} } = data;
+  const { couple = {}, event = {}, content = {}, theme = {} } = data;
 
   useEffect(() => {
     if (!rootRef.current || typeof window === 'undefined' || data.theme?.enableAnimation === false) return undefined;
@@ -1653,7 +1500,7 @@ export function NoirTemplate({ data }) {
 }
 
 /* ─── Solstice Minimal / Organic Botanical ─────────────── */
-export function SolsticeTemplate({ data }) {
+export function SolsticeTemplate({ data, isPreview = false }) {
   const rootRef = useRef(null);
   const { couple = {}, event = {}, theme = {} } = data;
 
@@ -1685,6 +1532,3 @@ export function SolsticeTemplate({ data }) {
     </div>
   );
 }
-
-
-
