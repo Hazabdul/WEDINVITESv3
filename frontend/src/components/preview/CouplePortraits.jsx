@@ -249,7 +249,7 @@ export function CouplePortraits({
           <div className="portrait-frame bride">
             <div className="image-vault">
               <div className="vault-clip">
-                <img src={brideImage} alt={brideName} />
+                <img src={brideImage} alt={brideName} loading="lazy" decoding="async" />
                 <BackgroundStem className="decorative-leaf-l" />
               </div>
               {/* Flower elements at bottom of image */}
@@ -277,7 +277,7 @@ export function CouplePortraits({
           <div className="portrait-frame groom">
             <div className="image-vault">
               <div className="vault-clip">
-                <img src={groomImage} alt={groomName} />
+                <img src={groomImage} alt={groomName} loading="lazy" decoding="async" />
                 <BackgroundStem className="decorative-leaf-r" />
               </div>
               {/* Flower elements at bottom of image */}

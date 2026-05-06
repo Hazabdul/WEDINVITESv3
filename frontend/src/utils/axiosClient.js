@@ -73,9 +73,10 @@ class APIClient {
   }
 
   // Upload endpoints
-  static async uploadFile(file) {
+  static async uploadFile(file, context = 'media') {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('context', context);
     return axiosInstance.post('/api/uploads', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

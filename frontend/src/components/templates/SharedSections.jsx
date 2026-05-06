@@ -63,6 +63,13 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
   const groomImage = resolveMediaSource(media?.groomImage) || '';
   const brideName  = couple?.bride  || '';
   const groomName  = couple?.groom  || '';
+  const videoSource = resolveMediaSource(media?.video) || resolveMediaSource(media?.videoStory) || '';
+  const videoPoster = resolveMediaSource(media?.videoPoster) ||
+    resolveMediaSource(media?.posterImage) ||
+    resolveMediaSource(media?.coverImage) ||
+    resolveMediaSource(media?.coupleImage) ||
+    resolveMediaSource(media?.gallery?.[0]) ||
+    '';
 
   return (
     <div className="space-y-4 p-4">
@@ -136,8 +143,10 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
               <img
                 key={idx}
                 data-live-invite-media
-                src={img}
+                src={resolveMediaSource(img)}
                 alt={`gallery-${idx}`}
+                loading="lazy"
+                decoding="async"
                 className="h-32 w-full rounded-xl object-cover"
               />
             ))}
@@ -146,11 +155,11 @@ export function SharedSections({ data, dark = false, hideGallery = false, hideVi
       )}
 
       {/* ── Video ── */}
-      {videoEnabled && media?.video && !hideVideo && (
+      {videoEnabled && videoSource && !hideVideo && (
         <div data-live-invite-section className={cn('border p-4', shape, cardBg)}>
           <h3 className={cn('mb-3 text-base font-bold', textPrimary)}>Video Message</h3>
-          <video data-live-invite-media controls className="w-full rounded-xl">
-            <source src={media.video} type="video/mp4" />
+          <video data-live-invite-media controls playsInline preload="metadata" poster={videoPoster || undefined} className="w-full rounded-xl">
+            <source src={videoSource} type={/\.webm(\?.*)?$/i.test(videoSource) ? 'video/webm' : 'video/mp4'} />
           </video>
         </div>
       )}

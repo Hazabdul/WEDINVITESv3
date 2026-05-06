@@ -33,12 +33,40 @@ const featureHighlights = [
   }
 ];
 
+const processSteps = [
+  {
+    title: "Choose Template",
+    description: "Pick from beautifully designed invitation templates curated for luxury and simplicity.",
+    image: "https://images.unsplash.com/photo-1549416878-b9ca35c2d495?auto=format&fit=crop&w=1200&q=75"
+  },
+  {
+    title: "Customize Design",
+    description: "Personalize every detail including high-end typography, colors, and interactive elements.",
+    image: "https://images.unsplash.com/photo-1510076857177-7470076d4098?auto=format&fit=crop&w=1200&q=75"
+  },
+  {
+    title: "Add Event Details",
+    description: "Input venues, timings, and custom maps to keep your guests perfectly informed.",
+    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=75"
+  },
+  {
+    title: "Share Invitation Link",
+    description: "Generate a premium digital link ready for instant sharing on WhatsApp or Social Media.",
+    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=75"
+  },
+  {
+    title: "Manage Responses",
+    description: "Track RSVPs and heartfelt guest messages in real-time within your private dashboard.",
+    image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=75"
+  }
+];
+
 function TemplateCard({ template, onSelect }) {
   // Mapping specific high-end images to the themes
   const themeImages = {
-    mountain: "/template1.jpg",
-    noir: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
-    solstice: "https://images.unsplash.com/photo-1510076857177-7470076d4098?auto=format&fit=crop&w=800&q=80",
+    mountain: "/template1.webp",
+    noir: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=75",
+    solstice: "https://images.unsplash.com/photo-1510076857177-7470076d4098?auto=format&fit=crop&w=800&q=75",
   };
 
   return (
@@ -51,8 +79,11 @@ function TemplateCard({ template, onSelect }) {
             {/* Screen Highlight */}
             <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none z-10" />
             <img
-              src={themeImages[template.id] || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"}
+              src={themeImages[template.id] || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75"}
               alt={template.name}
+              loading="lazy"
+              decoding="async"
+              sizes="(min-width: 1024px) 330px, (min-width: 768px) 45vw, 90vw"
               className="h-full w-full object-cover"
             />
           </div>
@@ -69,6 +100,8 @@ function TemplateCard({ template, onSelect }) {
         <img
           src="/bg1.avif"
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute -right-[15%] top-1/2 -translate-y-1/2 h-full w-auto object-contain opacity-5 pointer-events-none mix-blend-multiply select-none"
         />
 
@@ -95,43 +128,16 @@ function TemplateCard({ template, onSelect }) {
 
 export function Home() {
   const navigate = useNavigate();
-  const { data, setTemplate } = useInvitationState();
+  const { setTemplate } = useInvitationState();
   const [activeStep, setActiveStep] = React.useState(0);
-
-  const steps = [
-    {
-      title: "Choose Template",
-      description: "Pick from beautifully designed invitation templates curated for luxury and simplicity.",
-      image: "https://images.unsplash.com/photo-1549416878-b9ca35c2d495?auto=format&fit=crop&w=1200&q=80"
-    },
-    {
-      title: "Customize Design",
-      description: "Personalize every detail including high-end typography, colors, and interactive elements.",
-      image: "https://images.unsplash.com/photo-1510076857177-7470076d4098?auto=format&fit=crop&w=1200&q=80"
-    },
-    {
-      title: "Add Event Details",
-      description: "Input venues, timings, and custom maps to keep your guests perfectly informed.",
-      image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80"
-    },
-    {
-      title: "Share Invitation Link",
-      description: "Generate a premium digital link ready for instant sharing on WhatsApp or Social Media.",
-      image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80"
-    },
-    {
-      title: "Manage Responses",
-      description: "Track RSVPs and heartfelt guest messages in real-time within your private dashboard.",
-      image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80"
-    }
-  ];
+  const steps = processSteps;
 
   React.useEffect(() => {
     const timer = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % steps.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [steps.length]);
 
   // GSAP Scroll Animations
   React.useEffect(() => {
@@ -256,11 +262,18 @@ export function Home() {
       >
         {/* Background Image Overlay Container - Raw Full Visibility */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-          <img
-            src="/hero_bg.png"
-            alt="Wedding Background"
-            className="h-full w-full object-cover grayscale-0 opacity-100"
-          />
+          <picture className="block h-full w-full">
+            <source srcSet="/hero_bg.avif" type="image/avif" />
+            <source srcSet="/hero_bg.webp" type="image/webp" />
+            <img
+              src="/hero_bg.jpg"
+              alt="Wedding Background"
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              className="h-full w-full object-cover grayscale-0 opacity-100"
+            />
+          </picture>
         </div>
 
         <div className="container relative z-10 mx-auto max-w-5xl px-6">
@@ -370,6 +383,9 @@ export function Home() {
                   key={activeStep}
                   src={steps[activeStep].image}
                   alt={steps[activeStep].title}
+                  loading="lazy"
+                  decoding="async"
+                  sizes="(min-width: 1024px) 560px, 100vw"
                   className="h-full w-full object-cover transition-all duration-1000 animate-fadeIn"
                 />
                 <div className="absolute inset-0 bg-black/5" />
@@ -474,6 +490,8 @@ export function Home() {
             <img
               src="/bg1.avif"
               alt=""
+              loading="lazy"
+              decoding="async"
               className="absolute -right-[25%] top-1/2 -translate-y-1/2 h-[180%] w-auto object-contain object-right opacity-10 pointer-events-none mix-blend-lighten select-none"
             />
 

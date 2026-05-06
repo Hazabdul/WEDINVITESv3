@@ -447,7 +447,7 @@ export function InvitationAnalyzer() {
                   <div className="overflow-hidden rounded-[28px] border border-[#efe2d4] bg-[#f8f1e8]">
                     <div className="aspect-[4/5]">
                       {selectedFilePreview ? (
-                        <img src={selectedFilePreview} alt="Uploaded invitation preview" className="h-full w-full object-cover" />
+                        <img src={selectedFilePreview} alt="Uploaded invitation preview" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full items-center justify-center px-6 text-center text-sm text-[#8b7a68]">
                           Uploaded invitation preview will appear here.

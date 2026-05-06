@@ -161,9 +161,10 @@ class APIClient {
   }
 
   // Upload endpoints
-  async uploadFile(file) {
+  async uploadFile(file, context = 'media') {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('context', context);
 
     const response = await fetch(`${this.baseURL}/api/uploads`, {
       method: 'POST',

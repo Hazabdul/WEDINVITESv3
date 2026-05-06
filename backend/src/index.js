@@ -52,8 +52,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static uploads from the same directory used by Multer storage
-app.use('/uploads', express.static(uploadsDir));
+// Serve static uploads from the same directory used by Multer storage.
+// Filenames are unique, so they are safe for aggressive CDN/browser caching.
+app.use('/uploads', express.static(uploadsDir, {
+  immutable: true,
+  maxAge: '365d',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  },
+}));
 
 // Routes
 const [

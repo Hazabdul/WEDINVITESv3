@@ -115,17 +115,6 @@ export function InvitationView() {
   const groomName = invitation.groomName || invitation.couple?.groom || '';
   const theme = invitation.theme || { id: 'ceremony' };
 
-  const handleAccept = () => {
-    setAttendanceResponse('accepted');
-    setShowCelebrate(true);
-    playCelebrationTone();
-  };
-
-  const handleDecline = () => {
-    setAttendanceResponse('declined');
-    setShowCelebrate(false);
-  };
-
   const templateData = {
     couple: invitation.couple || {
       bride: brideName,

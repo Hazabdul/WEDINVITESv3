@@ -230,7 +230,7 @@ export function ExampleUploadComponent() {
       {uploadedFile && (
         <div className="p-2 bg-green-50 rounded">
           <p className="text-sm font-medium">Upload successful!</p>
-          <img src={uploadedFile.url} alt="Uploaded" className="mt-2 w-full rounded" />
+          <img src={uploadedFile.url} alt="Uploaded" loading="lazy" decoding="async" className="mt-2 w-full rounded" />
         </div>
       )}
     </div>

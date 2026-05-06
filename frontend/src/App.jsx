@@ -59,8 +59,9 @@ function Navbar() {
             <div className="flex items-center justify-between gap-6">
               <Link to="/" className="min-w-0 shrink-0">
                 <img
-                  src="/logo.png"
+                  src="/logo.webp"
                   alt="Wedding Invites Logo"
+                  decoding="async"
                   className="h-8 w-auto transition-all duration-[700ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
                 />
               </Link>
@@ -108,7 +109,7 @@ function Navbar() {
             {/* Close Header */}
             <div className="flex h-24 items-center justify-between px-6">
               <Link to="/" onClick={() => setMobileOpen(false)}>
-                <img src="/logo.png" alt="Logo" className="h-8 w-auto" />
+                <img src="/logo.webp" alt="Logo" decoding="async" className="h-8 w-auto" />
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -121,7 +122,7 @@ function Navbar() {
             {/* Menu Content */}
             <div className="flex flex-1 flex-col items-center justify-center px-6">
               <nav aria-label="Mobile navigation" className="flex flex-col items-center gap-6 text-center">
-                {NAV_ITEMS.map((item, index) => (
+                {NAV_ITEMS.map((item) => (
                   <Link
                     key={item.to}
                     to={item.to}
@@ -205,7 +206,7 @@ function AppShell() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
               {/* Branding & Social Column */}
               <div className="lg:col-span-4 flex flex-col items-start gap-8">
-                <img src="/logo_black.png" alt="Weddinginvites Logo" className="h-10 w-auto" />
+                <img src="/logo_black.webp" alt="Weddinginvites Logo" loading="lazy" decoding="async" className="h-10 w-auto" />
 
                 <div className="flex items-center gap-6 mt-6">
                   <div className="text-[#E4405F] hover:scale-110 transition-all duration-300 cursor-pointer flex items-center justify-center">

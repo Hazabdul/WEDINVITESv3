@@ -227,7 +227,7 @@ export function Pricing() {
 
               <div className="flex flex-col items-center gap-3">
                 <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-md">
-                  <img src={qrUrl(upiLink)} alt="UPI QR" className="h-[240px] w-[240px]" />
+                  <img src={qrUrl(upiLink)} alt="UPI QR" loading="lazy" decoding="async" className="h-[240px] w-[240px]" />
                 </div>
                 <p className="text-center text-sm text-slate-500">Scan this QR code with any UPI app.</p>
               </div>

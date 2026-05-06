@@ -141,6 +141,13 @@ function isVideoUrl(src = '') {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(src);
 }
 
+function getVideoMimeType(src = '') {
+  if (/\.webm(\?.*)?$/i.test(src)) return 'video/webm';
+  if (/\.(mp4|m4v)(\?.*)?$/i.test(src)) return 'video/mp4';
+  if (/\.ogg(\?.*)?$/i.test(src)) return 'video/ogg';
+  return undefined;
+}
+
 function unique(list) {
   return [...new Set(list.filter(Boolean))];
 }
@@ -170,8 +177,6 @@ function withAlpha(hex, alpha) {
 
 function buildMediaPackage(media = {}) {
   // Resolve the uploaded video story field first — it's what the builder writes to
-  const uploadedVideo = resolveMediaSource(media.videoStory) || resolveMediaSource(media.video) || '';
-
   const heroVideo = [
     media.heroVideo,
     media.coverVideo,
@@ -260,9 +265,10 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
           muted
           loop
           playsInline
+          preload="metadata"
           poster={mediaPack.poster || undefined}
         >
-          <source src={mediaPack.heroVideo} />
+          <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
         </video>
       )}
 
@@ -271,6 +277,9 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
           data-live-invite-media
           src={mediaPack.heroImage}
           alt="wedding cover"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover animate-reveal"
         />
       )}
@@ -329,7 +338,7 @@ function PhotoRibbon({ media, className = '', frameClassName = '' }) {
           data-live-invite-card
           className={`overflow-hidden rounded-[24px] border border-white/10 bg-white/10 shadow-[0_14px_30px_rgba(15,23,42,0.12)] ${frameClassName}`}
         >
-          <img data-live-invite-media src={src} alt={`gallery ${index + 1}`} className="h-28 w-full object-cover" />
+          <img data-live-invite-media src={src} alt={`gallery ${index + 1}`} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
         </div>
       ))}
     </div>
@@ -363,7 +372,7 @@ function StoryVideoCard({ media, dark = false, className = '' }) {
         poster={mediaPack.poster || undefined}
         className="h-56 w-full rounded-[22px] object-cover"
       >
-        <source src={mediaPack.secondaryVideo} />
+        <source src={mediaPack.secondaryVideo} type={getVideoMimeType(mediaPack.secondaryVideo)} />
       </video>
     </div>
   );
@@ -387,8 +396,7 @@ function EditorialNames({ brideId, groomId, bride, groom, brideColor, groomColor
 /* ─── Mountain / Forest Vault Immersive ────────────────── */
 export function HighEndImmersiveTemplate({ data }) {
   const rootRef = useRef(null);
-  const mainContentRef = useRef(null);
-  const { couple = {}, content = {}, event = {}, events = [], family = {}, media = {}, theme = {} } = data;
+  const { couple = {}, content = {}, event = {}, events = [], media = {}, theme = {} } = data;
 
   const mediaPack = buildMediaPackage(media);
   const intro = pickIntro(content);
@@ -397,13 +405,6 @@ export function HighEndImmersiveTemplate({ data }) {
   const groomName = couple.groom || 'Groom Name';
   const heroSubtitle = couple.title || 'You are invited to the wedding of';
   const eventDate = event.date ? formatLongDate(event.date) : 'Month DD, YYYY';
-  const eventTime = event.time || '11:00 AM – 11:30 AM';
-  const eventVenue = event.venue || 'Venue Name';
-  const eventCity = event.address ? event.address.split(',').pop().trim() : 'City, State';
-
-  const goldLeaf = '/premium-leaf-v2.png';
-  const greenLeaf = '/premium-leaf-v2.png';
-
   useEffect(() => {
     if (!rootRef.current || typeof window === 'undefined') return undefined;
     gsap.registerPlugin(ScrollTrigger);
@@ -490,11 +491,11 @@ export function HighEndImmersiveTemplate({ data }) {
         {/* Background Media */}
         <div className="absolute inset-0 z-0 hero-media">
           {mediaPack.heroVideo ? (
-            <video autoPlay muted loop playsInline className="h-full w-full object-cover">
-              <source src={mediaPack.heroVideo} type="video/mp4" />
+            <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover">
+              <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
             </video>
           ) : mediaPack.heroImage ? (
-            <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
+            <img src={mediaPack.heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" className="h-full w-full object-cover" />
           ) : (
             <div className="h-full w-full bg-black" />
           )}
@@ -560,11 +561,11 @@ export function HighEndImmersiveTemplate({ data }) {
 
               <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-stone-900 shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30">
                 {mediaPack.video ? (
-                  <video autoPlay muted loop playsInline className="h-full w-full object-cover opacity-60">
-                    <source src={mediaPack.video} type="video/mp4" />
+                  <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover opacity-60">
+                    <source src={mediaPack.video} type={getVideoMimeType(mediaPack.video)} />
                   </video>
                 ) : mediaPack.heroImage && (
-                  <img src={mediaPack.heroImage} className="h-full w-full object-cover opacity-50" />
+                  <img src={mediaPack.heroImage} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover opacity-50" />
                 )}
 
                 {/* Cinematic Grain/Texture Overlay */}
@@ -606,7 +607,7 @@ export function HighEndImmersiveTemplate({ data }) {
                     {/* Arched Portrait for Event */}
                     <div className="vault-frame relative h-[320px] w-full shrink-0 sm:h-[420px] sm:w-[300px]">
                       {mediaPack.gallery[i + 2] ? (
-                        <img src={mediaPack.gallery[i + 2]} className="h-full w-full object-cover" />
+                        <img src={mediaPack.gallery[i + 2]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full items-center justify-center bg-[#1a3529]/5 opacity-20">
                           <Leaf className="h-12 w-12 text-[#c9a87c]" />
@@ -660,6 +661,8 @@ export function HighEndImmersiveTemplate({ data }) {
                       <img
                         src={mediaPack.gallery[idx]}
                         className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
+                        loading="lazy"
+                        decoding="async"
                         alt={`Moment ${idx}`}
                       />
                     ) : (
@@ -808,11 +811,11 @@ export function FloralTemplate({ data }) {
         {/* Hero media full-width */}
         <div data-live-invite-section className="relative overflow-hidden rounded-b-[34px] mx-4 mt-4 shadow-[0_24px_55px_rgba(136,19,55,0.14)]">
           {mediaPack.heroVideo ? (
-            <video data-live-invite-media className="h-56 w-full object-cover" autoPlay muted loop playsInline poster={mediaPack.poster || undefined}>
-              <source src={mediaPack.heroVideo} />
+            <video data-live-invite-media className="h-56 w-full object-cover" autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined}>
+              <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
             </video>
           ) : mediaPack.heroImage ? (
-            <img data-live-invite-media src={mediaPack.heroImage} alt="botanical hero" className="h-56 w-full object-cover" />
+            <img data-live-invite-media src={mediaPack.heroImage} alt="botanical hero" loading="eager" decoding="async" fetchPriority="high" className="h-56 w-full object-cover" />
           ) : (
             <div className="h-56 w-full bg-[linear-gradient(180deg,#fbcfe8_0%,#f9a8d4_100%)]" />
           )}
@@ -861,7 +864,7 @@ export function FloralTemplate({ data }) {
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mediaPack.gallery.slice(1, 3).map((src, i) => (
                 <div key={`fg-${i}`} data-live-invite-card className="overflow-hidden rounded-[20px] border border-white/60">
-                  <img data-live-invite-media src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
+                  <img data-live-invite-media src={src} alt={`g${i}`} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -1030,7 +1033,7 @@ export function TraditionalTemplate({ data }) {
         {/* Hero image */}
         <div data-live-invite-section className="relative overflow-hidden rounded-b-[28px] mx-4 mt-4 shadow-[0_24px_60px_rgba(0,0,0,0.28)]">
           {mediaPack.heroImage ? (
-            <img data-live-invite-media src={mediaPack.heroImage} alt="heritage hero" className="h-52 w-full object-cover" />
+            <img data-live-invite-media src={mediaPack.heroImage} alt="heritage hero" loading="eager" decoding="async" fetchPriority="high" className="h-52 w-full object-cover" />
           ) : (
             <div className="h-52 w-full bg-[linear-gradient(180deg,#7f1d1d_0%,#451a03_100%)]" />
           )}
@@ -1081,7 +1084,7 @@ export function TraditionalTemplate({ data }) {
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mediaPack.gallery.slice(1, 3).map((src, i) => (
                 <div key={`tg-${i}`} data-live-invite-card className="overflow-hidden rounded-[20px] border border-yellow-200/10">
-                  <img data-live-invite-media src={src} alt={`g${i}`} className="h-28 w-full object-cover" />
+                  <img data-live-invite-media src={src} alt={`g${i}`} loading="lazy" decoding="async" className="h-28 w-full object-cover" />
                 </div>
               ))}
             </div>
@@ -1299,7 +1302,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 
           {mediaPack.heroImage && (
             <div className="mt-5 overflow-hidden rounded-[18px] border sm:mt-6 sm:rounded-[28px]" style={{ borderColor: withAlpha(ceremonyPrimary, 0.12) }}>
-              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" className="h-44 w-full object-cover will-change-transform sm:h-64" />
+              <img data-ceremony-media src={mediaPack.heroImage} alt="cover" loading="eager" decoding="async" fetchPriority="high" className="h-44 w-full object-cover will-change-transform sm:h-64" />
             </div>
           )}
         </div>
@@ -1343,7 +1346,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
               >
                 <div className="overflow-hidden rounded-[16px] border sm:rounded-[24px]" style={{ borderColor: withAlpha(ceremonyPrimary, 0.12), backgroundColor: secondaryPanel }}>
                   {person.image ? (
-                    <img src={person.image} alt={person.name} className="h-36 w-full object-cover sm:h-44" />
+                    <img src={person.image} alt={person.name} loading="lazy" decoding="async" className="h-36 w-full object-cover sm:h-44" />
                   ) : (
                     <div className="flex h-36 items-center justify-center text-sm uppercase tracking-[0.22em] sm:h-44 sm:tracking-[0.35em]" style={{ color: metaColor }}>
                       {person.label}
@@ -1428,6 +1431,8 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
                     <img
                       src={src}
                       alt={`gallery ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className={index === 0 ? 'h-44 w-full object-cover sm:h-52' : 'h-36 w-full object-cover sm:h-32'}
                     />
                   </div>
@@ -1461,9 +1466,9 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 
 
 /* ─── Noir Editorial / High-End Modern ─────────────────── */
-export function NoirTemplate({ data, isPreview = false }) {
+export function NoirTemplate({ data }) {
   const rootRef = useRef(null);
-  const { couple = {}, event = {}, content = {}, theme = {} } = data;
+  const { couple = {}, event = {}, theme = {} } = data;
 
   useEffect(() => {
     if (!rootRef.current || typeof window === 'undefined' || data.theme?.enableAnimation === false) return undefined;
@@ -1501,7 +1506,7 @@ export function NoirTemplate({ data, isPreview = false }) {
 }
 
 /* ─── Solstice Minimal / Organic Botanical ─────────────── */
-export function SolsticeTemplate({ data, isPreview = false }) {
+export function SolsticeTemplate({ data }) {
   const rootRef = useRef(null);
   const { couple = {}, event = {}, theme = {} } = data;
 

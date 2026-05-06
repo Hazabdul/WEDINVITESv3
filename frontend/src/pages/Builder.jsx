@@ -75,19 +75,79 @@ const REQUIRED_INVITATION_FIELDS = [
   { step: 3, label: 'Groom photo', getValue: (data) => data?.media?.groomImage },
 ];
 
+const VIDEO_UPLOAD_LIMITS = {
+  maxLandscapeWidth: 1920,
+  maxLandscapeHeight: 1080,
+  maxPortraitWidth: 1080,
+  maxPortraitHeight: 1920,
+  maxBitrate720: 2.25,
+  maxBitrate1080: 4.5,
+};
+
+function readVideoMetadata(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+
+    const cleanup = () => {
+      URL.revokeObjectURL(url);
+      video.removeAttribute('src');
+      video.load();
+    };
+
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      const metadata = {
+        width: video.videoWidth,
+        height: video.videoHeight,
+        duration: video.duration,
+      };
+      cleanup();
+      resolve(metadata);
+    };
+    video.onerror = () => {
+      cleanup();
+      reject(new Error('Could not read video metadata.'));
+    };
+    video.src = url;
+  });
+}
+
+async function validateVideoUpload(file) {
+  const metadata = await readVideoMetadata(file);
+  const { width, height, duration } = metadata;
+  const isPortrait = height > width;
+  const fitsResolution = isPortrait
+    ? width <= VIDEO_UPLOAD_LIMITS.maxPortraitWidth && height <= VIDEO_UPLOAD_LIMITS.maxPortraitHeight
+    : width <= VIDEO_UPLOAD_LIMITS.maxLandscapeWidth && height <= VIDEO_UPLOAD_LIMITS.maxLandscapeHeight;
+
+  if (!fitsResolution) {
+    return {
+      valid: false,
+      message: 'Please upload a 1080p-or-smaller MP4/WebM video.',
+    };
+  }
+
+  if (Number.isFinite(duration) && duration > 0) {
+    const bitrateMbps = (file.size * 8) / duration / 1_000_000;
+    const shortEdge = Math.min(width, height);
+    const maxBitrate = shortEdge <= 720
+      ? VIDEO_UPLOAD_LIMITS.maxBitrate720
+      : VIDEO_UPLOAD_LIMITS.maxBitrate1080;
+
+    if (bitrateMbps > maxBitrate) {
+      return {
+        valid: false,
+        message: `Please compress this video to about ${shortEdge <= 720 ? '1-2' : '2-4'} Mbps before uploading.`,
+      };
+    }
+  }
+
+  return { valid: true };
+}
+
 function hasRequiredValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== '';
-}
-
-function getMissingRequiredFields(data, throughStep = Number.POSITIVE_INFINITY) {
-  return REQUIRED_INVITATION_FIELDS
-    .filter((field) => field.step <= throughStep && !hasRequiredValue(field.getValue(data)))
-    .map((field) => field.label);
-}
-
-function formatMissingFields(fields) {
-  if (fields.length <= 3) return fields.join(', ');
-  return `${fields.slice(0, 3).join(', ')} and ${fields.length - 3} more`;
 }
 
 function Field({ label, helper, className, children, required = false }) {
@@ -248,15 +308,11 @@ export function Builder() {
     };
   }, [data]);
 
-  const blockingFields = useMemo(
-    () => getMissingRequiredFields(data, currentStep),
-    [data, currentStep]
-  );
-
   const coverImage = data?.media?.coverImage || data?.media?.coupleImage || '';
   const brideImage = data?.media?.brideImage || '';
   const groomImage = data?.media?.groomImage || '';
   const videoStoryUrl = data?.media?.videoStory || data?.media?.video || '';
+  const videoPoster = data?.media?.videoPoster || coverImage || '';
   const handleReplay = () => {
     if (iframeRef.current) {
       iframeRef.current.contentWindow.location.reload();
@@ -267,7 +323,6 @@ export function Builder() {
   // Only the Publish button (last step) can be disabled — Next is never disabled
   const isPublishDisabled = isSubmitting || !canPublish || Boolean(publishedInvitation);
 
-  const nextStep = () => setCurrentStep((step) => Math.min(step + 1, STEPS.length - 1));
   const previousStep = () => setCurrentStep((step) => Math.max(step - 1, 0));
 
   /** Validates current-step required fields, shows toasts, highlights empty fields, then advances. */
@@ -343,12 +398,28 @@ export function Builder() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    try {
+      const validation = await validateVideoUpload(file);
+      if (!validation.valid) {
+        toast.error(validation.message);
+        event.target.value = '';
+        return;
+      }
+    } catch (error) {
+      toast.error(error?.message || 'Could not validate this video file.');
+      event.target.value = '';
+      return;
+    }
+
     setUploadingField('videoStory');
     try {
       const response = await apiClient.uploadFile(file, 'video_story');
       if (response.success) {
         updateSection('media', 'videoStory', response.url);
         updateSection('media', 'video', response.url);
+        if (response.posterUrl) {
+          updateSection('media', 'videoPoster', response.posterUrl);
+        }
       }
     } catch (error) {
       console.error('Video upload failed:', error);
@@ -447,6 +518,7 @@ export function Builder() {
           brideImage: normalizeMediaUrl(data.media?.brideImage || ''),
           groomImage: normalizeMediaUrl(data.media?.groomImage || ''),
           coupleImage: normalizeMediaUrl(data.media?.coupleImage || ''),
+          videoPoster: normalizeMediaUrl(data.media?.videoPoster || ''),
           gallery: (data.media?.gallery || []).map((item) => normalizeMediaUrl(item)).filter(Boolean),
           video: normalizeMediaUrl(data.media?.video || data.media?.videoStory || ''),
           videoStory: normalizeMediaUrl(data.media?.videoStory || data.media?.video || ''),
@@ -719,7 +791,7 @@ export function Builder() {
                   {coverImage ? (
                     <>
                       <div className="absolute inset-0 z-0">
-                        <img src={normalizeMediaUrl(coverImage)} alt="Banner Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <img src={normalizeMediaUrl(coverImage)} alt="Banner Preview" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                       </div>
                       <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
@@ -753,7 +825,7 @@ export function Builder() {
                     {brideImage ? (
                       <>
                         <div className="absolute inset-0 z-0">
-                          <img src={normalizeMediaUrl(brideImage)} alt="Bride Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <img src={normalizeMediaUrl(brideImage)} alt="Bride Preview" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                         </div>
                         <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
@@ -791,7 +863,7 @@ export function Builder() {
                     {groomImage ? (
                       <>
                         <div className="absolute inset-0 z-0">
-                          <img src={normalizeMediaUrl(groomImage)} alt="Groom Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <img src={normalizeMediaUrl(groomImage)} alt="Groom Preview" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                         </div>
                         <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
@@ -836,6 +908,9 @@ export function Builder() {
                           className="h-full w-full object-cover"
                           muted
                           loop
+                          playsInline
+                          preload="metadata"
+                          poster={videoPoster ? normalizeMediaUrl(videoPoster) : undefined}
                           onMouseOver={(e) => e.target.play()}
                           onMouseOut={(e) => e.target.pause()}
                         />
@@ -858,7 +933,7 @@ export function Builder() {
                   )}
                   <input
                     type="file"
-                    accept="video/*"
+                    accept="video/mp4,video/webm"
                     className="hidden"
                     onChange={handleVideoUpload}
                     disabled={Boolean(uploadingField)}
@@ -888,6 +963,8 @@ export function Builder() {
                         <img
                           src={normalizeMediaUrl(displayImage)}
                           alt="Venue"
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
 
@@ -948,6 +1025,8 @@ export function Builder() {
                       <img
                         src={normalizeMediaUrl(url)}
                         alt={`Gallery ${i}`}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <button
@@ -1003,7 +1082,7 @@ export function Builder() {
                         selected ? "border-[#D4A76A] ring-4 ring-[#D4A76A]/10" : "border-slate-50 grayscale hover:grayscale-0 hover:border-slate-200"
                       )}
                     >
-                      <img src={template.previewImage} alt={template.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <img src={template.previewImage} alt={template.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-8 pb-2 px-2">
                         <p className="text-[8px] font-black text-white uppercase tracking-[0.15em] truncate text-center drop-shadow-sm">{template.name}</p>
                       </div>
@@ -1232,7 +1311,7 @@ export function Builder() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="shrink-0 transition-transform active:scale-95">
-              <img src="/logo_black.png" alt="Logo" className="h-7 w-auto" />
+              <img src="/logo_black.webp" alt="Logo" decoding="async" className="h-7 w-auto" />
             </Link>
 
             <div className="h-4 w-[1.5px] bg-gray-100" />
