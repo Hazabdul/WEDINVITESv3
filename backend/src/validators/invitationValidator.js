@@ -20,7 +20,7 @@ export const invitationSchema = z.object({
   package: packageSchema.optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
   paymentStatus: z.enum(['PENDING', 'PAID', 'FAILED']).optional(),
-  
+
   // JSON Blobs
   couple: z.any().optional(),
   event: z.any().optional(),
@@ -29,7 +29,7 @@ export const invitationSchema = z.object({
   media: z.any().optional(),
   theme: z.any().optional(),
   positions: z.any().optional(),
-  
+
   // Relations (mostly handled in services but can be passed)
   events: z.array(z.object({
     id: idSchema,
@@ -40,7 +40,7 @@ export const invitationSchema = z.object({
     address: z.string().optional(),
     notes: z.string().optional(),
   })).optional(),
-  
+
   widgets: z.array(z.object({
     id: idSchema,
     type: z.string(),

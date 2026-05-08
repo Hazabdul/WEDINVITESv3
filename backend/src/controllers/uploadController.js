@@ -43,11 +43,15 @@ const storage = multer.diskStorage({
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'audio/mpeg'];
+  const allowedTypes = [
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
+    'video/mp4', 'video/quicktime', 'video/webm', 'video/ogg',
+    'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg', 'audio/x-m4a', 'audio/mp4'
+  ];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    const error = new Error('Invalid file type. Images, MP4 videos and MP3 audio are allowed.');
+    const error = new Error('Invalid file type. Supported formats: JPEG, PNG, WEBP, GIF, SVG, MP4, MOV, WEBM videos and MP3, WAV, M4A audios.');
     error.status = 415;
     cb(error, false);
   }
