@@ -60,6 +60,7 @@ function Navbar() {
                 <img
                   src="/logo.png"
                   alt="Wedding Invites Logo"
+                  fetchPriority="high"
                   className="h-8 w-auto transition-all duration-[700ms] ease-[cubic-bezier(0.23,1,0.32,1)]"
                 />
               </Link>

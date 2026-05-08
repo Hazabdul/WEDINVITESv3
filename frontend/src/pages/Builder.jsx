@@ -24,6 +24,7 @@ import {
   UploadCloud,
   Check,
   X,
+  IndianRupee,
 } from 'lucide-react';
 import { useInvitationState } from '../hooks/useInvitationState';
 import { Button } from '../components/ui/Button';
@@ -316,18 +317,75 @@ export function Builder() {
     });
   };
 
+  const compressImageFile = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                resolve(file);
+                return;
+              }
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   const handleCoverUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setUploadingField('coverImage');
     try {
-      const response = await apiClient.uploadFile(file, 'cover');
+      const compressed = await compressImageFile(file);
+      const response = await apiClient.uploadFile(compressed, 'cover');
       if (response.success) {
         updateSection('media', 'coverImage', response.url);
       }
     } catch (error) {
       console.error('Upload failed:', error);
+      toast.error(error.message || 'Upload failed. Please try again.');
     } finally {
       setUploadingField(null);
     }
@@ -339,12 +397,14 @@ export function Builder() {
 
     setUploadingField(field);
     try {
-      const response = await apiClient.uploadFile(file, label.toLowerCase().replace(' ', '_'));
+      const compressed = await compressImageFile(file);
+      const response = await apiClient.uploadFile(compressed, label.toLowerCase().replace(' ', '_'));
       if (response.success) {
         updateSection('media', field, response.url);
       }
     } catch (error) {
       console.error(`${label} upload failed:`, error);
+      toast.error(error.message || `${label} upload failed. Please try again.`);
     } finally {
       setUploadingField(null);
     }
@@ -353,6 +413,11 @@ export function Builder() {
   const handleVideoUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Video is too large! Please compress your wedding video to under 20MB before uploading to ensure fast mobile playback.', { duration: 6000 });
+      return;
+    }
 
     setUploadingField('videoStory');
     try {
@@ -363,6 +428,7 @@ export function Builder() {
       }
     } catch (error) {
       console.error('Video upload failed:', error);
+      toast.error(error.message || 'Video upload failed. Please try again.');
     } finally {
       setUploadingField(null);
     }
@@ -374,12 +440,18 @@ export function Builder() {
 
     setUploadingField(eventId);
     try {
-      const response = await apiClient.uploadFile(file, label.toLowerCase().replace(' ', '_'));
+      const compressed = await compressImageFile(file);
+      const response = await apiClient.uploadFile(compressed, label.toLowerCase().replace(' ', '_'));
       if (response.success) {
         updateEvent(eventId, 'image', response.url);
+        updateSection('media', 'eventImages', (prevEventImages = {}) => ({
+          ...prevEventImages,
+          [eventId]: response.url
+        }));
       }
     } catch (error) {
       console.error(`${label} upload failed:`, error);
+      toast.error(error.message || `${label} upload failed. Please try again.`);
     } finally {
       setUploadingField(null);
     }
@@ -391,7 +463,9 @@ export function Builder() {
 
     setUploadingField('gallery');
     try {
-      const uploadPromises = files.map((file) => apiClient.uploadFile(file, 'gallery'));
+      const compressedFilesPromises = files.map((file) => compressImageFile(file));
+      const compressedFiles = await Promise.all(compressedFilesPromises);
+      const uploadPromises = compressedFiles.map((file) => apiClient.uploadFile(file, 'gallery'));
       const results = await Promise.all(uploadPromises);
       const successfulUrls = results.filter((r) => r.success).map((r) => r.url);
 
@@ -401,6 +475,7 @@ export function Builder() {
       }
     } catch (error) {
       console.error('Gallery upload failed:', error);
+      toast.error(error.message || 'Gallery upload failed. Please try again.');
     } finally {
       setUploadingField(null);
     }
@@ -462,6 +537,7 @@ export function Builder() {
           video: normalizeMediaUrl(data.media?.video || data.media?.videoStory || ''),
           videoStory: normalizeMediaUrl(data.media?.videoStory || data.media?.video || ''),
           music: normalizeMediaUrl(data.media?.music || ''),
+          eventImages: data.media?.eventImages || {},
         },
         positions: data.positions || {},
         events: eventsPayload,
@@ -733,9 +809,9 @@ export function Builder() {
                         <img src={normalizeMediaUrl(coverImage)} alt="Banner Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                       </div>
-                      <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className={cn("relative z-10 flex items-center justify-center transition-all duration-300", uploadingField === 'coverImage' ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                          <UploadCloud className="h-5 w-5" />
+                          {uploadingField === 'coverImage' ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
                         </div>
                       </div>
                     </>
@@ -767,9 +843,9 @@ export function Builder() {
                           <img src={normalizeMediaUrl(brideImage)} alt="Bride Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                         </div>
-                        <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                        <div className={cn("relative z-10 flex items-center justify-center transition-all duration-300", uploadingField === 'brideImage' ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                            <UploadCloud className="h-4 w-4" />
+                            {uploadingField === 'brideImage' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
                           </div>
                         </div>
                       </>
@@ -805,9 +881,9 @@ export function Builder() {
                           <img src={normalizeMediaUrl(groomImage)} alt="Groom Preview" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                         </div>
-                        <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                        <div className={cn("relative z-10 flex items-center justify-center transition-all duration-300", uploadingField === 'groomImage' ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                            <UploadCloud className="h-4 w-4" />
+                            {uploadingField === 'groomImage' ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
                           </div>
                         </div>
                       </>
@@ -852,9 +928,9 @@ export function Builder() {
                         />
                         <div className="absolute inset-0 rounded-2xl bg-black/40 backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100" />
                       </div>
-                      <div className="relative z-10 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className={cn("relative z-10 flex items-center justify-center transition-all duration-300", uploadingField === 'videoStory' ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-                          <UploadCloud className="h-5 w-5" />
+                          {uploadingField === 'videoStory' ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
                         </div>
                       </div>
                     </>
@@ -903,7 +979,7 @@ export function Builder() {
                         />
 
                         {/* Upload Overlay (on hover) */}
-                        <div className="absolute inset-0 rounded-xl flex flex-col items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                        <div className={cn("absolute inset-0 rounded-xl flex flex-col items-center justify-center bg-black/20 transition-opacity", uploadingField === eventItem.id ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <label className="inline-flex cursor-pointer p-1.5 rounded-full bg-white/90 shadow-sm hover:bg-white transition-colors">
                             {uploadingField === eventItem.id ? <Loader2 className="h-3 w-3 animate-spin text-slate-600" /> : <UploadCloud className="h-3 w-3 text-slate-600" />}
                             <input
@@ -916,15 +992,6 @@ export function Builder() {
                           </label>
                         </div>
 
-                        {/* Remove Button (only if custom image is uploaded) */}
-                        {isActualVenueImage && (
-                          <button
-                            onClick={() => updateEvent(eventItem.id, 'image', '')}
-                            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-md transition-all hover:bg-red-500 group-hover:opacity-100"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        )}
                       </div>
                     );
                   })}
@@ -1359,7 +1426,7 @@ export function Builder() {
                             'Publishing...'
                           ) : (
                             <>
-                              <Send className="h-4 w-4" /> Publish
+                              <IndianRupee className="h-4 w-4" /> 0.00
                             </>
                           )
                         ) : (

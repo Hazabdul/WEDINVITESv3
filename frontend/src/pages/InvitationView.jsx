@@ -139,7 +139,10 @@ export function InvitationView() {
     family: invitation.family || {},
     content: invitation.content || {},
     theme,
-    events: invitation.events || [],
+    events: (invitation.events || []).map((evt) => ({
+      ...evt,
+      image: evt.image || invitation.media?.eventImages?.[evt.id] || '',
+    })),
     media: invitation.media || { gallery: [] },
     positions: invitation.positions || {},
   };

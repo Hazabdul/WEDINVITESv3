@@ -198,6 +198,8 @@ function buildMediaPackage(media = {}) {
     media.reelVideo,
     media.secondaryVideo,
     media.highlightVideo,
+    media.videoStory,
+    media.video,
   ]
     .map(resolveMediaSource)
     .find(Boolean) || '';
@@ -224,6 +226,7 @@ function buildMediaPackage(media = {}) {
     .find(Boolean) || '';
 
   const video = [
+    media.videoStory,
     media.video,
     media.videoUrl,
     media.storyVideo,
@@ -259,6 +262,8 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
     <div data-live-invite-section className={`relative overflow-hidden ${className}`}>
       {showVideo && (
         <video
+          src={mediaPack.heroVideo}
+          key={mediaPack.heroVideo}
           data-live-invite-media
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay
@@ -266,9 +271,7 @@ function HeroBackground({ media, className = '', overlayClass = '', children }) 
           loop
           playsInline
           poster={mediaPack.poster || undefined}
-        >
-          <source src={mediaPack.heroVideo} />
-        </video>
+        />
       )}
 
       {showImage && (
@@ -361,15 +364,15 @@ function StoryVideoCard({ media, dark = false, className = '' }) {
         </div>
       </div>
       <video
+        src={mediaPack.secondaryVideo}
+        key={mediaPack.secondaryVideo}
         data-live-invite-media
         controls
         playsInline
         preload="metadata"
         poster={mediaPack.poster || undefined}
         className="h-56 w-full rounded-[22px] object-cover"
-      >
-        <source src={mediaPack.secondaryVideo} />
-      </video>
+      />
     </div>
   );
 }
@@ -600,15 +603,15 @@ export function HighEndImmersiveTemplate({ data }) {
         <div className="absolute inset-0 z-0 hero-media">
           {mediaPack.heroVideo ? (
             <video 
+              src={mediaPack.heroVideo}
+              key={mediaPack.heroVideo}
               autoPlay 
               muted 
               loop 
               playsInline 
               className="h-full w-full object-cover"
               onCanPlay={(e) => e.target.play()}
-            >
-              <source src={mediaPack.heroVideo} type="video/mp4" />
-            </video>
+            />
           ) : mediaPack.heroImage ? (
             <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
           ) : (
@@ -676,15 +679,15 @@ export function HighEndImmersiveTemplate({ data }) {
               <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-transparent shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30 video-section-styling">
                 {mediaPack.video ? (
                   <video 
+                    src={mediaPack.video}
+                    key={mediaPack.video}
                     autoPlay 
                     muted 
                     loop 
                     playsInline 
                     className="h-full w-full object-cover opacity-100"
                     onCanPlay={(e) => e.target.play()}
-                  >
-                    <source src={mediaPack.video} type="video/mp4" />
-                  </video>
+                  />
                 ) : mediaPack.heroImage && (
                   <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
                 )}
@@ -723,11 +726,10 @@ export function HighEndImmersiveTemplate({ data }) {
               <div className="mx-auto max-w-[700px] space-y-24">
                 {(events || []).map((evt, i) => (
                   <div key={i} className={cn("reveal-up flex flex-col gap-8 sm:items-center sm:gap-16", i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse")}>
-                    {/* Arched Portrait for Event */}
                     <div className="vault-frame relative h-[320px] w-full shrink-0 sm:h-[420px] sm:w-[300px]">
-                      {(i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : evt.image) ? (
+                      {(resolveMediaSource(evt.image) || (i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : "")) ? (
                         <img
-                          src={i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : evt.image}
+                          src={resolveMediaSource(evt.image) || (i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : "")}
                           className="h-full w-full object-cover"
                         />
                       ) : (

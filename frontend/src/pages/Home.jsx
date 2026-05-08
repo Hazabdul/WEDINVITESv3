@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Heart, Share2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Heart, Share2, ArrowRight, CheckCircle2, IndianRupee } from 'lucide-react';
 import { useInvitationState } from '../hooks/useInvitationState';
 import { templatesList } from '../data/mockData';
 import { TemplateRenderer } from '../components/preview/TemplateRenderer';
@@ -74,9 +74,9 @@ export function TemplateCard({ template, onSelect }) {
         <div className="mt-5 w-full">
           <button
             onClick={() => onSelect(template.id)}
-            className="w-full rounded-full bg-[#111111] py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-black active:scale-[0.97]"
+            className="w-full rounded-full bg-[#111111] py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-black active:scale-[0.97] flex items-center justify-center gap-1"
           >
-            INR 0.00
+            <IndianRupee className="h-3.5 w-3.5" /> 0.00
           </button>
         </div>
       </div>
