@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { CeremonyTemplate, ClassicTemplate, FloralTemplate, ModernTemplate, TraditionalTemplate, HighEndImmersiveTemplate, NoirTemplate, SolsticeTemplate } from '../templates/AllTemplates';
+import { CeremonyTemplate, ClassicTemplate, FloralTemplate, ModernTemplate, TraditionalTemplate, HighEndImmersiveTemplate, SkyLanternsTemplate } from '../templates/AllTemplates';
 import { RSVPSection } from './RSVPSection';
 import { cn } from '../../utils/cn';
 
@@ -12,8 +12,7 @@ const templates = {
   modern: ModernTemplate,
   traditional: TraditionalTemplate,
   mountain: HighEndImmersiveTemplate,
-  noir: NoirTemplate,
-  solstice: SolsticeTemplate,
+  skylanterns: SkyLanternsTemplate,
 };
 
 export function TemplateRenderer({ type, data, className = "", isPreview = true, previewMode = 'desktop' }) {

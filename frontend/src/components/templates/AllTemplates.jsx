@@ -216,6 +216,13 @@ function buildMediaPackage(media = {}) {
     ...normalizeList(media.storyGallery).map(resolveMediaSource),
   ]).filter((src) => src && !isVideoUrl(src));
 
+  const explicitGallery = unique([
+    ...normalizeList(media.gallery).map(resolveMediaSource),
+    ...normalizeList(media.galleryImages).map(resolveMediaSource),
+    ...normalizeList(media.photos).map(resolveMediaSource),
+    ...normalizeList(media.storyGallery).map(resolveMediaSource),
+  ]).filter((src) => src && !isVideoUrl(src));
+
   const heroImage = galleryCandidates[0] || '';
   const poster = [
     media.videoPoster,
@@ -241,7 +248,7 @@ function buildMediaPackage(media = {}) {
     video,
     heroImage,
     poster,
-    gallery: galleryCandidates.slice(0, 12),
+    gallery: (explicitGallery.length > 0 ? explicitGallery : galleryCandidates).slice(0, 48),
   };
 }
 
@@ -602,13 +609,13 @@ export function HighEndImmersiveTemplate({ data }) {
         {/* Background Media */}
         <div className="absolute inset-0 z-0 hero-media">
           {mediaPack.heroVideo ? (
-            <video 
+            <video
               src={mediaPack.heroVideo}
               key={mediaPack.heroVideo}
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
+              autoPlay
+              muted
+              loop
+              playsInline
               className="h-full w-full object-cover"
               onCanPlay={(e) => e.target.play()}
             />
@@ -678,13 +685,13 @@ export function HighEndImmersiveTemplate({ data }) {
 
               <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-transparent shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30 video-section-styling">
                 {mediaPack.video ? (
-                  <video 
+                  <video
                     src={mediaPack.video}
                     key={mediaPack.video}
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline 
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
                     className="h-full w-full object-cover opacity-100"
                     onCanPlay={(e) => e.target.play()}
                   />
@@ -774,22 +781,18 @@ export function HighEndImmersiveTemplate({ data }) {
             </div>
           )}
 
-          {theme.showGallery !== false && (
+          {theme.showGallery !== false && mediaPack.gallery.length > 0 && (
             <div className="text-center">
               <h2 className="reveal-up mb-12 font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight opacity-90">Our Journey</h2>
 
               <div className="grid grid-cols-2 gap-3 pb-12 lg:pb-24 sm:grid-cols-3 sm:gap-4">
-                {[0, 1, 2, 3, 4, 5].map((idx) => (
+                {mediaPack.gallery.map((src, idx) => (
                   <div key={idx} className="reveal-up vault-frame overflow-hidden bg-stone-200/30 h-[240px] sm:h-[400px]">
-                    {mediaPack.gallery[idx] ? (
-                      <img
-                        src={mediaPack.gallery[idx]}
-                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
-                        alt={`Moment ${idx}`}
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-[10px] font-bold uppercase tracking-[3px] opacity-20">MOMENT</div>
-                    )}
+                    <img
+                      src={src}
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
+                      alt={`Moment ${idx}`}
+                    />
                   </div>
                 ))}
               </div>
@@ -1582,82 +1585,5 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 }
 
 
-/* ─── Mountain / Paper-cut Immersive ────────────────────── */
 
-
-/* ─── Noir Editorial / High-End Modern ─────────────────── */
-export function NoirTemplate({ data, isPreview = false }) {
-  const rootRef = useRef(null);
-  const { couple = {}, event = {}, content = {}, theme = {} } = data;
-
-  useEffect(() => {
-    if (!rootRef.current || typeof window === 'undefined' || data.theme?.enableAnimation === false) return undefined;
-    gsap.registerPlugin(ScrollTrigger);
-    const ctx = gsap.context(() => {
-      gsap.fromTo('[data-noir-reveal]',
-        { autoAlpha: 0, x: -30 },
-        { autoAlpha: 1, x: 0, stagger: 0.2, duration: 1, ease: 'power4.out', scrollTrigger: { trigger: rootRef.current, start: 'top 80%', once: true } }
-      );
-    }, rootRef);
-    return () => ctx.revert();
-  }, [data.theme.enableAnimation]);
-
-  return (
-    <div ref={rootRef} className="min-h-screen bg-black text-white px-8 py-24 flex flex-col items-center justify-center text-center font-sans tracking-tighter">
-      <div data-noir-reveal className="mb-8 h-px w-32 bg-white/20" />
-      <div data-noir-reveal className="text-[10px] font-black uppercase tracking-[0.8em] text-white/50 mb-12">Premier Event 2026</div>
-      <h1 data-noir-reveal className="text-[clamp(4rem,15vw,10rem)] font-black leading-[0.85] uppercase mb-12">
-        {couple.bride} <br />
-        <span className="text-white/20 italic font-serif">&amp;</span> <br />
-        {couple.groom}
-      </h1>
-      <div data-noir-reveal className="space-y-4">
-        <p className="text-2xl font-serif italic text-white/70">{formatElegantDate(event.date)}</p>
-        <p className="text-[12px] font-bold uppercase tracking-[0.4em]">{event.venue}</p>
-        {event.mapLink && theme.showMap !== false && (
-          <a href={event.mapLink} target="_blank" rel="noreferrer" className="mt-6 inline-block border border-white/20 px-8 py-3 text-[10px] uppercase tracking-[0.4em] hover:bg-white hover:text-black transition-all">
-            Go to the Map
-          </a>
-        )}
-      </div>
-      <div data-noir-reveal className="mt-20 h-[300px] w-px bg-gradient-to-b from-white/40 to-transparent" />
-    </div>
-  );
-}
-
-/* ─── Solstice Minimal / Organic Botanical ─────────────── */
-export function SolsticeTemplate({ data, isPreview = false }) {
-  const rootRef = useRef(null);
-  const { couple = {}, event = {}, theme = {} } = data;
-
-  return (
-    <div ref={rootRef} className="min-h-screen bg-[#FDFCFB] text-[#1A2B2F] p-10 flex flex-col items-center justify-center text-center font-serif text-sm">
-      <div className="absolute top-10 left-10 opacity-10">
-        <Leaf className="h-32 w-32 rotate-45" strokeWidth={0.5} />
-      </div>
-      <div className="absolute bottom-10 right-10 opacity-10">
-        <Leaf className="h-32 w-32 -rotate-12" strokeWidth={0.5} />
-      </div>
-
-      <div className="relative z-10">
-        <div className="mb-6 text-[10px] font-bold uppercase tracking-[0.4em] text-[#C5A059]">You are invited</div>
-        <h1 className="text-[clamp(3rem,10vw,6rem)] font-normal italic leading-tight mb-8">
-          {couple.bride} <br />
-          <span className="text-2xl not-italic font-sans font-light opacity-30">to be wed with</span> <br />
-          {couple.groom}
-        </h1>
-        <div className="h-px w-20 bg-[#C5A059]/30 mx-auto mb-10" />
-        <p className="text-xl font-light tracking-wide">{formatLongDate(event.date)}</p>
-        <p className="mt-4 text-[11px] uppercase tracking-[0.3em] opacity-60">{event.venue}</p>
-        {event.mapLink && theme.showMap !== false && (
-          <a href={event.mapLink} target="_blank" rel="noreferrer" className="mt-8 inline-block font-sans text-[10px] uppercase tracking-[0.3em] text-[#C5A059] border-b border-[#C5A059]/30 pb-1 hover:opacity-70 transition-all">
-            Go to the Map
-          </a>
-        )}
-      </div>
-    </div>
-  );
-}
-
-
-
+export { SkyLanternsTemplate } from './SkyLanternsTemplate';

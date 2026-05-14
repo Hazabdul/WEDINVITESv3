@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, createContext, useContext } from 'react';
-import { initialInvitationData } from '../data/mockData';
+import { initialInvitationData, templatesList } from '../data/mockData';
 
 const InvitationContext = createContext();
 
@@ -71,7 +71,17 @@ export function InvitationProvider({ children }) {
     }));
   };
 
-  const setTemplate = (id) => updateSection('theme', 'id', id);
+  const setTemplate = (id) => {
+    const selectedTemplate = templatesList.find(t => t.id === id);
+    setData((prev) => ({
+      ...prev,
+      theme: {
+        ...prev.theme,
+        ...(selectedTemplate?.defaultTheme || {}),
+        id
+      }
+    }));
+  };
   const setPackage = (id) => setData(prev => ({ ...prev, package: id }));
 
   const clearData = () => {

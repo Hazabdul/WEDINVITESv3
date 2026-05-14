@@ -36,12 +36,11 @@ const featureHighlights = [
 export function TemplateCard({ template, onSelect }) {
   const themeImages = {
     mountain: "/template1.jpg",
-    noir: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
-    solstice: "https://images.unsplash.com/photo-1510076857177-7470076d4098?auto=format&fit=crop&w=800&q=80",
+    skylanterns: "/template2/bg.avif",
   };
 
   return (
-    <div 
+    <div
       onClick={() => onSelect(template.id)}
       className="group flex flex-col h-full relative isolate overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-xl mx-auto max-w-[320px] w-full cursor-pointer"
     >

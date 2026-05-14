@@ -61,7 +61,7 @@ export function LivePreviewReceiver() {
     positions: data.positions || {},
   };
 
-  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : theme.id === 'noir' ? 'bg-black' : 'bg-slate-50';
+  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : 'bg-slate-50';
 
   return (
     <div className={cn("min-h-screen w-full max-w-[100vw] overflow-x-hidden transition-colors duration-1000", pageBg)}>
@@ -91,6 +91,7 @@ export function LivePreviewReceiver() {
             attendanceResponse={null}
             onResponse={() => { }}
             isPreview={true}
+            themeId={theme.id || theme.templateId || 'ceremony'}
           />
         )}
       </div>

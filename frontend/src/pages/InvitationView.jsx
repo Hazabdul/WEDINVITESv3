@@ -147,7 +147,7 @@ export function InvitationView() {
     positions: invitation.positions || {},
   };
 
-  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : theme.id === 'noir' ? 'bg-black' : 'bg-slate-50';
+  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : 'bg-slate-50';
 
   return (
     <div className={cn("min-h-screen transition-colors duration-1000", pageBg)}>
@@ -185,6 +185,7 @@ export function InvitationView() {
                 setShowCelebrate(false);
               }
             }}
+            themeId={theme.id || theme.templateId || 'ceremony'}
           />
         )}
       </div>
