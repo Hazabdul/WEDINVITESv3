@@ -223,6 +223,13 @@ function buildMediaPackage(media = {}) {
     ...normalizeList(media.storyGallery).map(resolveMediaSource),
   ]).filter((src) => src && !isVideoUrl(src));
 
+  const explicitGallery = unique([
+    ...normalizeList(media.gallery).map(resolveMediaSource),
+    ...normalizeList(media.galleryImages).map(resolveMediaSource),
+    ...normalizeList(media.photos).map(resolveMediaSource),
+    ...normalizeList(media.storyGallery).map(resolveMediaSource),
+  ]).filter((src) => src && !isVideoUrl(src));
+
   const heroImage = galleryCandidates[0] || '';
   const poster = [
     media.videoPoster,
@@ -247,7 +254,7 @@ function buildMediaPackage(media = {}) {
     video,
     heroImage,
     poster,
-    gallery: galleryCandidates.slice(0, 12),
+    gallery: (explicitGallery.length > 0 ? explicitGallery : galleryCandidates).slice(0, 48),
   };
 }
 
@@ -768,12 +775,12 @@ export function HighEndImmersiveTemplate({ data }) {
             </div>
           )}
 
-          {theme.showGallery !== false && (
+          {theme.showGallery !== false && mediaPack.gallery.length > 0 && (
             <div className="text-center">
               <h2 className="reveal-up mb-12 font-serif text-[clamp(28px,5vw,42px)] italic tracking-tight opacity-90">Our Journey</h2>
 
               <div className="grid grid-cols-2 gap-3 pb-12 lg:pb-24 sm:grid-cols-3 sm:gap-4">
-                {[0, 1, 2, 3, 4, 5].map((idx) => (
+                {mediaPack.gallery.map((src, idx) => (
                   <div key={idx} className="reveal-up vault-frame overflow-hidden bg-stone-200/30 h-[240px] sm:h-[400px]">
                     {mediaPack.gallery[idx] ? (
                       <img
@@ -1581,7 +1588,7 @@ export function CeremonyTemplate({ data, isPreview = false, previewMode = 'deskt
 }
 
 
-/* ─── Mountain / Paper-cut Immersive ────────────────────── */
+
 
 
 /* ─── Noir Editorial / High-End Modern ─────────────────── */
@@ -1658,5 +1665,4 @@ export function SolsticeTemplate({ data }) {
   );
 }
 
-
-
+export { SkyLanternsTemplate } from './SkyLanternsTemplate';

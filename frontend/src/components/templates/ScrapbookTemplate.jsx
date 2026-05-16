@@ -474,9 +474,15 @@ function Hero({ data, containerRef, onOpenRsvp }) {
               width: finalMainWidth,
               height: finalMainHeight,
               borderRadius: finalRadius,
-              ease: 'power2.out',
-              duration: 1.45,
+              ease: 'power3.inOut',
+              duration: 1.6,
             },
+            0,
+          )
+          .fromTo(
+            mainImageRef.current,
+            { scale: 1.2 },
+            { scale: 1, ease: 'power2.out', duration: 1.6 },
             0,
           )
           .to(
@@ -844,10 +850,10 @@ function IntroGallery({ data }) {
             dragConstraints={sectionRef}
             dragElastic={0.6}
             whileHover={{ 
-              scale: 1.08, 
+              scale: 1.2, 
               rotate: 0, 
-              zIndex: 40,
-              transition: { type: 'spring', stiffness: 300, damping: 20 }
+              zIndex: 50,
+              transition: { type: 'spring', stiffness: 400, damping: 25 }
             }}
             whileTap={{ 
               scale: 0.94,
@@ -1020,7 +1026,7 @@ function HorizontalGallery({ data }) {
           <motion.article
             className="memory-card"
             key={`${item.title}-${index}`}
-            whileHover={{ scale: 1.025, y: -10, rotate: index % 2 === 0 ? -1 : 1 }}
+            whileHover={{ scale: 1.15, y: -15, rotate: 0, zIndex: 10 }}
             transition={{ type: 'spring', stiffness: 250, damping: 20 }}
           >
             <div className="memory-image">
@@ -1777,6 +1783,7 @@ export function ScrapbookTemplate({ data = {}, isPreview = false }) {
             radial-gradient(circle at 16% 12%, rgba(185, 138, 83, 0.18), transparent 28rem),
             radial-gradient(circle at 84% 78%, rgba(111, 74, 47, 0.12), transparent 30rem),
             linear-gradient(180deg, #fbf6ee 0%, #f6f0e8 48%, #efe2d3 100%);
+          margin-bottom: 60px;
         }
 
         .scrapbook-template .wedding-gsap-hero::before {

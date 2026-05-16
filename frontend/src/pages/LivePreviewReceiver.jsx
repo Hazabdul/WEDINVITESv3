@@ -105,6 +105,7 @@ export function LivePreviewReceiver() {
             onResponse={() => { }}
             isPreview={true}
             theme={theme}
+            themeId={theme.id || theme.templateId || 'ceremony'}
           />
         )}
       </div>

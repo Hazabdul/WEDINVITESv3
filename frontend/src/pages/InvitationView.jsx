@@ -175,6 +175,7 @@ export function InvitationView() {
                 setShowCelebrate(false);
               }
             }}
+            themeId={theme.id || theme.templateId || 'ceremony'}
           />
         )}
       </div>

@@ -27,6 +27,8 @@ import {
   Wand2,
   Check,
   X,
+  IndianRupee,
+  AlertCircle,
 } from 'lucide-react';
 import { useInvitationState } from '../hooks/useInvitationState';
 import { Button } from '../components/ui/Button';
@@ -1144,6 +1146,13 @@ export function Builder() {
                     </button>
                   )}
                 </div>
+
+                {data.media?.gallery?.length > 0 && data.media.gallery.length % 3 !== 0 && (
+                  <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-100 p-2 text-[10px] font-medium text-amber-700 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                    <span>For the best look, upload images in groups of 3 (like 3, 6, or 9).</span>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
                   {/* Existing Gallery Images */}

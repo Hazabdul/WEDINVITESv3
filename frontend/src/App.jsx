@@ -240,7 +240,7 @@ function AppShell() {
                   <h4 className="font-serif text-[18px] italic font-normal tracking-tight">Collection</h4>
                   <nav className="flex flex-col gap-3 text-[14px] text-[#003d4d]/70">
                     <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Immersive Series</span>
-                    <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Editorial Noir</span>
+
                     <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Minimalist Suite</span>
                     <span className="hover:text-[#003d4d] cursor-pointer transition-colors">Seasonal Editions</span>
                   </nav>
