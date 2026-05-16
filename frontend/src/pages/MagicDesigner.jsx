@@ -14,6 +14,7 @@ const safeArray  = (v) => (Array.isArray(v) ? v : []);
 const unique     = (items) => [...new Set(items.filter(Boolean))];
 const firstClean = (...values) => values.map(cleanValue).find(Boolean) || '';
 const isVideoUrl = (v = '') => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(v);
+const isImageUrl = (v = '') => /\.(jpe?g|png|webp|avif)(\?.*)?$/i.test(cleanValue(v));
 
 const getPublishDate = (value) => {
   const clean = cleanValue(value);
@@ -88,7 +89,136 @@ function buildPublishPayload(invitationData, email) {
     events: eventsPayload,
   };
 }
+function mapStyleToTemplateTheme(style) {
+  return {
+    classic: 'traditional',
+    luxury: 'luxury',
+    floral: 'floral',
+    modern: 'modern',
+    arabic: 'traditional',
+    beach: 'botanical',
+    minimal: 'minimal',
+    cinematic: 'artDeco',
+  }[style] || 'modern';
+}
 
+function mapToneToDesignElements(tone) {
+  return {
+    Romantic: 'romantic',
+    Formal: 'formal',
+    Islamic: 'arabic',
+    Modern: 'modern',
+    Playful: 'playful',
+    Poetic: 'poetic',
+  }[tone] || tone?.toLowerCase?.() || 'elegant';
+}
+
+function buildMagicTemplateRequest(formState) {
+  return {
+    card_type: 'wedding',
+    bride_name: cleanValue(formState.bride),
+    groom_name: cleanValue(formState.groom),
+    event_type: 'Wedding Celebration',
+    date: formState.date || '',
+    time: '',
+    venue: cleanValue(formState.venue),
+    address: '',
+    rsvp_phone: '',
+    notes: cleanValue(formState.extra),
+    invitation_message: cleanValue(formState.extra),
+    visual_style: {
+      theme: mapStyleToTemplateTheme(formState.style),
+      font_style: cleanValue(formState.tone),
+      layout: 'portrait',
+      design_elements: unique([
+        formState.style,
+        mapToneToDesignElements(formState.tone),
+        cleanValue(formState.extra),
+      ]).slice(0, 6),
+    },
+  };
+}
+
+function mapTemplateIdToFrontendTheme(templateId) {
+  return {
+    editorialPearl: 'classic',
+    royalHeirloom: 'classic',
+    glassGarden: 'floral',
+    midnightJazz: 'noir',
+    futureBloom: 'modern',
+  }[templateId] || 'ceremony';
+}
+
+function buildInvitationDataFromTemplate(details, template, mediaUrls = []) {
+  const themeId = mapTemplateIdToFrontendTheme(template?.id);
+  const theme = template?.theme ? { ...template.theme, id: themeId } : { id: themeId };
+  const imageUrls = unique(safeArray(mediaUrls).filter((url) => isImageUrl(url)));
+  const videoUrls = safeArray(mediaUrls).filter((url) => isVideoUrl(url));
+  const heroImage = firstClean(imageUrls[0], imageUrls[1]);
+  const coupleImage = firstClean(imageUrls[1], imageUrls[0], heroImage);
+  const brideImage = firstClean(imageUrls[0], imageUrls[1], coupleImage);
+  const groomImage = firstClean(imageUrls[1], imageUrls[0], coupleImage);
+  const gallery = unique([...imageUrls]);
+
+  return {
+    brideName: cleanValue(details.bride_name),
+    groomName: cleanValue(details.groom_name),
+    weddingDate: cleanValue(details.date),
+    package: 'STANDARD',
+    couple: {
+      bride: cleanValue(details.bride_name),
+      groom: cleanValue(details.groom_name),
+      title: cleanValue(details.host_line) || 'Together with their families',
+    },
+    event: {
+      date: cleanValue(details.date),
+      time: cleanValue(details.time),
+      venue: cleanValue(details.venue),
+      address: cleanValue(details.address),
+      mapLink: '',
+    },
+    events: [
+      {
+        id: 'primary-event',
+        name: cleanValue(details.event_type) || 'Wedding Celebration',
+        date: cleanValue(details.date),
+        time: cleanValue(details.time),
+        venue: cleanValue(details.venue),
+        address: cleanValue(details.address),
+        notes: cleanValue(details.notes),
+      },
+    ],
+    family: {
+      brideParents: '',
+      groomParents: '',
+    },
+    content: {
+      welcomeHeading: cleanValue(details.event_type) || 'Wedding Celebration',
+      introMessage: cleanValue(details.invitation_message) || cleanValue(details.notes),
+      invitationText: cleanValue(details.invitation_message) || cleanValue(details.notes),
+      quote: '',
+      familyMessage: cleanValue(details.host_line) || '',
+      specialNotes: cleanValue(details.notes) || '',
+      dressCode: '',
+      rsvpText: cleanValue(details.rsvp_phone) ? `RSVP: ${cleanValue(details.rsvp_phone)}` : '',
+      contact1: cleanValue(details.rsvp_phone),
+      contact2: '',
+    },
+    theme,
+    media: {
+      heroVideo: firstClean(videoUrls[0], ''),
+      heroImage,
+      coverImage: firstClean(heroImage, coupleImage),
+      coupleImage,
+      brideImage,
+      groomImage,
+      gallery,
+      video: firstClean(videoUrls[0], ''),
+      music: '',
+    },
+    positions: {},
+  };
+}
 // ─── Draft persistence ────────────────────────────────────────────────────────
 const DRAFT_KEY = 'magic_designer_draft_v2';
 const MAX_HISTORY = 20;
@@ -117,6 +247,8 @@ export function MagicDesigner() {
 
   // Invitation state
   const [invitationData, setInvitationData] = useState(null);
+  const [templateOptions, setTemplateOptions] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [phase, setPhase] = useState('input'); // 'input' | 'generating' | 'editor'
 
   // AI Chat
@@ -244,13 +376,25 @@ export function MagicDesigner() {
       }
 
       const prompt = buildPrompt();
+      const templateRequest = buildMagicTemplateRequest(formState);
       setMessages([{ role: 'user', content: prompt }]);
-      toast.info('AI is crafting your invitation…');
+      toast.info('AI is selecting your premium template…');
 
-      const response = await apiClient.buildMagicInvitation(prompt, uploadedUrls, email, '', []);
+      const response = await apiClient.generateInvitationTemplates(templateRequest);
+      const templates = Array.isArray(response.templates) ? response.templates : [];
 
-      if (response.success && response.data) {
-        applyInvitationData(response.data);
+      if (templates.length > 0) {
+        const selectedTemplate = templates[0];
+        setTemplateOptions(templates);
+        setSelectedTemplateId(selectedTemplate.id || '');
+
+        const invitationPayload = buildInvitationDataFromTemplate(
+          templateRequest,
+          selectedTemplate,
+          uploadedUrls
+        );
+
+        applyInvitationData(invitationPayload);
         setMessages((p) => [...p, {
           role: 'ai',
           content: `Your invitation is ready! 🎉 I can adjust colors, layout, fonts, or add sections — just ask.`,
@@ -352,6 +496,8 @@ export function MagicDesigner() {
     }));
 
     setInvitationData(draft);
+    setTemplateOptions([]);
+    setSelectedTemplateId('');
     setMessages([{ role: 'ai', content: 'Your guided invitation draft is ready. Review it below and make any tweaks.' }]);
     setHistory([draft]);
     setHistoryIndex(0);
@@ -362,6 +508,8 @@ export function MagicDesigner() {
   const handleReset = () => {
     localStorage.removeItem(DRAFT_KEY);
     setInvitationData(null);
+    setTemplateOptions([]);
+    setSelectedTemplateId('');
     setMessages([]);
     setMediaUrls([]);
     setFiles([]);

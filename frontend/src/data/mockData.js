@@ -35,6 +35,18 @@ export const templatesList = [
     features: ["Botanical accents", "Organic shapes", "Soft, clean layout"],
     previewImage: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&q=80",
   },
+  {
+    id: "scrapbook",
+    name: "Scrapbook Collage",
+    description: "A dynamic, scroll-driven interactive collage that feels like a premium digital scrapbook.",
+    badge: "Interactive",
+    palette: "from-[#f6f0e8] to-[#efe2d3]",
+    accent: "from-[#b98a53] via-[#6f4a2f] to-[#2b1b14]",
+    mood: "Warm & Nostalgic",
+    tagline: "Tell your love story through a fluid, beautifully animated memory wall.",
+    features: ["Scroll animations", "Collage layouts", "Framer Motion", "GSAP integrations"],
+    previewImage: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80",
+  },
 ];
 
 
@@ -91,7 +103,7 @@ export const initialInvitationData = {
     music: "/music/music1.mp3"
   },
   theme: {
-    id: "mountain",
+    id: "scrapbook",
     primaryColor: "#c9a87c",
     secondaryColor: "#f5ede0",
     headingColor: "#1a3529",

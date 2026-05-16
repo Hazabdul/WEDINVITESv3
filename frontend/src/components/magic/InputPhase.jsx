@@ -83,7 +83,7 @@ export function InputPhase({ formState, setFormState, files, setFiles, onGenerat
             <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#111] mb-3">
               Wedding Style <span className="text-[#D4A76A]">*</span>
             </label>
-            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
               {WEDDING_STYLES.map((s) => (
                 <button
                   key={s.id}
@@ -128,7 +128,7 @@ export function InputPhase({ formState, setFormState, files, setFiles, onGenerat
           </div>
 
           {/* Names */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#111] mb-1.5">Bride Name</label>
               <input
@@ -150,7 +150,7 @@ export function InputPhase({ formState, setFormState, files, setFiles, onGenerat
           </div>
 
           {/* Date + Venue */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#111] mb-1.5">Wedding Date</label>
               <input

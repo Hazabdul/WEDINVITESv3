@@ -212,7 +212,7 @@ function TemplateOption({ option, details, isSelected, onSelect }) {
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#2f2925]">{option.name}</div>
-            <div className="mt-1 text-xs leading-5 text-slate-500">{option.description}</div>
+            <div className="mt-1 text-xs leading-5 text-slate-500">{option.description || 'Premium template direction using the extracted palette and style.'}</div>
           </div>
           <div className={cn('mt-1 h-3 w-3 shrink-0 rounded-full border', isSelected ? 'border-[#2f2925] bg-[#2f2925]' : 'border-slate-300 bg-white')} />
         </div>
@@ -667,6 +667,7 @@ export function InvitationAnalyzer() {
                       <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#9a7757]">Current Direction</div>
                       <div className="mt-3 space-y-3 text-sm text-[#6d6257]">
                         <div><span className="font-semibold text-[#2f2925]">Template:</span> {selectedTemplate?.name || 'N/A'}</div>
+                        <div><span className="font-semibold text-[#2f2925]">Match:</span> {selectedTemplate?.match_score ? `${selectedTemplate.match_score}%` : 'N/A'}</div>
                         <div><span className="font-semibold text-[#2f2925]">Theme:</span> {styleSummary.theme || 'N/A'}</div>
                         <div><span className="font-semibold text-[#2f2925]">Layout:</span> {styleSummary.layout || 'N/A'}</div>
                         <div><span className="font-semibold text-[#2f2925]">Font:</span> {styleSummary.font_style || 'N/A'}</div>
