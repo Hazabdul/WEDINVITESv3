@@ -19,6 +19,7 @@ export const invitationSchema = z.object({
   weddingDate: z.union([z.string(), z.date(), z.null()]).optional(),
   package: packageSchema.optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+  publishPolicy: z.enum(['strict', 'flexible']).optional(),
   paymentStatus: z.enum(['PENDING', 'PAID', 'FAILED']).optional(),
   
   // JSON Blobs
@@ -60,10 +61,13 @@ export const getInvitationPublishMissingFields = (invitation = {}) => {
   const family = invitation.family || {};
   const media = invitation.media || {};
 
-  const requiredFields = [
+  const coreFields = [
     { path: 'email', label: 'Email address', value: invitation.email || event.email },
     { path: 'couple.bride', label: 'Bride name', value: couple.bride || invitation.brideName },
     { path: 'couple.groom', label: 'Groom name', value: couple.groom || invitation.groomName },
+  ];
+
+  const strictFields = [
     { path: 'family.brideParents', label: "Bride's parents", value: family.brideParents },
     { path: 'family.groomParents', label: "Groom's parents", value: family.groomParents },
     { path: 'event.date', label: 'Date', value: event.date || invitation.weddingDate },
@@ -74,6 +78,10 @@ export const getInvitationPublishMissingFields = (invitation = {}) => {
     { path: 'media.brideImage', label: 'Bride photo', value: media.brideImage },
     { path: 'media.groomImage', label: 'Groom photo', value: media.groomImage },
   ];
+
+  const requiredFields = invitation.publishPolicy === 'flexible'
+    ? coreFields
+    : [...coreFields, ...strictFields];
 
   return requiredFields
     .filter((field) => !hasRequiredValue(field.value))

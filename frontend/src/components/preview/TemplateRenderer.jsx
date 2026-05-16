@@ -172,12 +172,12 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
       className={cn("w-full transition-all duration-500", bgClass, className, "template-renderer-root")}
       style={{
         fontFamily: getFontFamily(theme.font),
-        '--tw-primary': theme.primaryColor || '#b68d40',
-        '--tw-secondary': theme.secondaryColor || '#f7e7ce',
-        '--tw-heading': theme.headingColor || theme.primaryColor || '#6f5642',
-        '--tw-subheading': theme.subheadingColor || theme.primaryColor || '#876c57',
-        '--tw-body': theme.bodyColor || '#705f53',
-        '--tw-meta': theme.metaColor || '#9a7d66',
+        '--tw-primary': theme.primaryColor || '#c9a87c',
+        '--tw-secondary': theme.secondaryColor || '#f5ede0',
+        '--tw-heading': theme.headingColor || theme.primaryColor || '#1a3529',
+        '--tw-subheading': theme.subheadingColor || theme.primaryColor || '#c9a87c',
+        '--tw-body': theme.bodyColor || '#1a3529',
+        '--tw-meta': theme.metaColor || '#4f5a47',
       }}
     >
       <style>{`
@@ -193,17 +193,51 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
         .template-renderer-root {
           color: var(--tw-body) !important;
         }
+        /* Headings */
         .template-renderer-root h1, 
         .template-renderer-root h2, 
         .template-renderer-root h3, 
         .template-renderer-root .font-serif {
           color: var(--tw-heading) !important;
         }
+        /* Primary accent text — catch all common hardcoded accent classes */
         .template-renderer-root .text-primary,
         .template-renderer-root [class*="text-[#c9a87c]"],
         .template-renderer-root [class*="text-[#b08f72]"],
-        .template-renderer-root [class*="text-[#b68d40]"] {
+        .template-renderer-root [class*="text-[#b68d40]"],
+        .template-renderer-root [class*="text-[#D4A76A]"] {
           color: var(--tw-primary) !important;
+        }
+        /* Subheading text */
+        .template-renderer-root [class*="text-[#876c57]"],
+        .template-renderer-root [class*="text-[#876C57]"] {
+          color: var(--tw-subheading) !important;
+        }
+        /* Meta/label text */
+        .template-renderer-root [class*="text-[#9a7d66]"],
+        .template-renderer-root [class*="text-[#9A7D66]"] {
+          color: var(--tw-meta) !important;
+        }
+        /* Primary accent backgrounds (buttons, badges, dividers) */
+        .template-renderer-root [class*="bg-[#c9a87c]"],
+        .template-renderer-root [class*="bg-[#b68d40]"],
+        .template-renderer-root [class*="bg-[#D4A76A]"],
+        .template-renderer-root [class*="bg-[#B68D40]"] {
+          background-color: var(--tw-primary) !important;
+        }
+        /* Primary accent borders */
+        .template-renderer-root [class*="border-[#c9a87c]"],
+        .template-renderer-root [class*="border-[#b68d40]"],
+        .template-renderer-root [class*="border-[#D4A76A]"] {
+          border-color: var(--tw-primary) !important;
+        }
+        /* Secondary / warm background sections */
+        .template-renderer-root .arch-container {
+          background-color: var(--tw-secondary, #f5ede0) !important;
+        }
+        /* Via/gradient accent dividers */
+        .template-renderer-root [class*="via-[#c9a87c]"] {
+          --tw-gradient-via: var(--tw-primary) !important;
         }
       `}</style>
       <SelectedTemplate data={data} isPreview={isPreview} previewMode={previewMode} />

@@ -33,7 +33,6 @@ const featureHighlights = [
   }
 ];
 
-<<<<<<< HEAD
 const processSteps = [
   {
     title: "Choose Template",
@@ -62,11 +61,7 @@ const processSteps = [
   }
 ];
 
-function TemplateCard({ template, onSelect }) {
-  // Mapping specific high-end images to the themes
-=======
 export function TemplateCard({ template, onSelect }) {
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
   const themeImages = {
     mountain: "/template1.webp",
     noir: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=75",
@@ -86,14 +81,10 @@ export function TemplateCard({ template, onSelect }) {
             <img
               src={themeImages[template.id] || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=75"}
               alt={template.name}
-<<<<<<< HEAD
               loading="lazy"
               decoding="async"
               sizes="(min-width: 1024px) 330px, (min-width: 768px) 45vw, 90vw"
-              className="h-full w-full object-cover"
-=======
               className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
             />
           </div>
           {/* Minimal Base */}
@@ -101,7 +92,6 @@ export function TemplateCard({ template, onSelect }) {
         </div>
       </div>
 
-<<<<<<< HEAD
       {/* Editorial Content Section */}
       <div className="relative flex-grow flex flex-col items-center px-8 pb-10 pt-6 text-center overflow-hidden">
         {/* Subtle Architectural Overlay */}
@@ -114,11 +104,6 @@ export function TemplateCard({ template, onSelect }) {
         />
 
         <h3 className="relative font-serif text-[26px] italic leading-tight text-slate-900 tracking-tight">
-=======
-      {/* Compact Content Section */}
-      <div className="relative flex-grow flex flex-col items-center px-6 pb-6 pt-4 text-center">
-        <h3 className="font-serif text-[18px] italic leading-tight text-slate-900 tracking-tight">
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
           {template.name}
         </h3>
 
@@ -263,7 +248,7 @@ export function Home() {
 
   const handleUseTemplate = (id) => {
     setTemplate(id);
-    navigate('/builder');
+    navigate('/create');
   };
 
   return (
@@ -324,7 +309,7 @@ export function Home() {
           {/* Primary CTA Button - Refined Scale */}
           <div className="animate-artemis-hero stagger-4 mt-12 flex justify-center">
             <button
-              onClick={() => navigate('/builder')}
+              onClick={() => navigate('/create')}
               className="group flex items-center gap-2.5 rounded-full bg-white px-9 py-3.5 text-[11px] font-bold uppercase tracking-[0.2em] text-black shadow-2xl transition-all hover:scale-[1.03] active:scale-95"
             >
               Get Started
@@ -520,7 +505,7 @@ export function Home() {
               </p>
               <div className="flex items-center justify-center gap-x-6">
                 <button
-                  onClick={() => navigate('/builder')}
+                  onClick={() => navigate('/create')}
                   className="rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-10 py-3.5 text-[11px] font-black uppercase tracking-[0.3em] text-white transition-all hover:scale-[1.05] active:scale-95"
                 >
                   Start Building

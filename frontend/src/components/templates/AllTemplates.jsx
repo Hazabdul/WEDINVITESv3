@@ -190,10 +190,7 @@ function withAlpha(hex, alpha) {
 }
 
 function buildMediaPackage(media = {}) {
-<<<<<<< HEAD
   // Resolve the uploaded video story field first — it's what the builder writes to
-=======
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
   const heroVideo = [
     media.heroVideo,
     media.coverVideo,
@@ -214,6 +211,7 @@ function buildMediaPackage(media = {}) {
     .find(Boolean) || '';
 
   const galleryCandidates = unique([
+    resolveMediaSource(media.heroImage),
     resolveMediaSource(media.coverImage),
     resolveMediaSource(media.coupleImage),
     resolveMediaSource(media.detailImage),
@@ -412,6 +410,14 @@ export function HighEndImmersiveTemplate({ data }) {
   const mediaPack = buildMediaPackage(media);
   const intro = pickIntro(content);
 
+  // Theme-driven colors — fall back to original hardcoded values
+  const accent = theme.primaryColor || '#c9a87c';
+  const heading = theme.headingColor || '#1a3529';
+  const body = theme.bodyColor || '#1a3529';
+  const secondary = theme.secondaryColor || '#f5ede0';
+  const sub = theme.subheadingColor || accent;
+  const meta = theme.metaColor || '#ffffff';
+
   const brideName = couple.bride || 'Bride Name';
   const groomName = couple.groom || 'Groom Name';
   const heroSubtitle = couple.title || 'You are invited to the wedding of';
@@ -531,7 +537,7 @@ export function HighEndImmersiveTemplate({ data }) {
   }, []);
 
   return (
-    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-black selection:bg-[#c9a87c] selection:text-white" style={{ color: '#f5ede0' }}>
+    <div ref={rootRef} className="forest-vault-template relative min-h-screen w-full bg-black selection:text-white" style={{ color: secondary, '--fv-accent': accent, '--fv-heading': heading, '--fv-body': body, '--fv-secondary': secondary, '--fv-sub': sub, '--fv-meta': meta, selectionBackgroundColor: accent }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
         .forest-vault-template { font-family: 'Montserrat', sans-serif; }
@@ -539,7 +545,7 @@ export function HighEndImmersiveTemplate({ data }) {
         
         .hero-section-styling .hero-title {
           font-family: 'Cormorant Garamond', serif !important;
-          color: #ffffff !important;
+          color: var(--fv-secondary, #ffffff) !important;
           font-weight: 500 !important;
           text-shadow: 
             0 2px 10px rgba(0, 0, 0, 0.9),
@@ -550,7 +556,7 @@ export function HighEndImmersiveTemplate({ data }) {
 
         .video-section-styling h2 {
           font-family: 'Cormorant Garamond', serif !important;
-          color: #ffffff !important;
+          color: var(--fv-secondary, #ffffff) !important;
           font-weight: 500 !important;
           font-style: italic !important;
           text-shadow: 
@@ -572,7 +578,7 @@ export function HighEndImmersiveTemplate({ data }) {
 
         .hero-section-styling .hero-tagline {
           font-family: 'Montserrat', sans-serif !important;
-          color: rgba(255, 255, 255, 0.75) !important;
+          color: var(--fv-meta, rgba(255, 255, 255, 0.75)) !important;
           text-shadow: 0 6px 25px rgba(0, 0, 0, 0.8) !important;
           letter-spacing: 3px !important;
           font-weight: 500;
@@ -580,7 +586,7 @@ export function HighEndImmersiveTemplate({ data }) {
 
         .hero-section-styling .hero-date {
           font-family: 'Montserrat', sans-serif !important;
-          color: rgba(255, 255, 255, 0.85) !important;
+          color: var(--fv-secondary, rgba(255, 255, 255, 0.85)) !important;
           text-shadow: 0 6px 25px rgba(0, 0, 0, 0.8) !important;
           letter-spacing: 3px !important;
           margin-top: 2rem;
@@ -588,7 +594,7 @@ export function HighEndImmersiveTemplate({ data }) {
 
         .video-section-styling .video-tagline {
           font-family: 'Montserrat', sans-serif !important;
-          color: #F1D999 !important;
+          color: var(--fv-accent, #F1D999) !important;
           text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7) !important;
         }
 
@@ -606,20 +612,8 @@ export function HighEndImmersiveTemplate({ data }) {
         {/* Background Media */}
         <div className="absolute inset-0 z-0 hero-media">
           {mediaPack.heroVideo ? (
-<<<<<<< HEAD
-            <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover">
+            <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover" onCanPlay={(e) => e.target.play()}>
               <source src={mediaPack.heroVideo} type={getVideoMimeType(mediaPack.heroVideo)} />
-=======
-            <video 
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
-              className="h-full w-full object-cover"
-              onCanPlay={(e) => e.target.play()}
-            >
-              <source src={mediaPack.heroVideo} type="video/mp4" />
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
             </video>
           ) : mediaPack.heroImage ? (
             <img src={mediaPack.heroImage} alt="" loading="eager" decoding="async" fetchPriority="high" className="h-full w-full object-cover" />
@@ -643,22 +637,22 @@ export function HighEndImmersiveTemplate({ data }) {
 
         {/* Floating Icons */}
         <div className="leaf-float absolute left-[12%] top-[30%] rotate-[-15deg] opacity-20">
-          <Leaf className="h-10 w-10 text-[#c9a87c]" strokeWidth={0.5} />
+          <Leaf className="h-10 w-10" style={{ color: accent }} strokeWidth={0.5} />
         </div>
         <div className="leaf-float absolute right-[10%] top-[15%] rotate-[140deg] opacity-15">
-          <Leaf className="h-12 w-12 text-[#c9a87c]" strokeWidth={0.5} />
+          <Leaf className="h-12 w-12" style={{ color: accent }} strokeWidth={0.5} />
         </div>
       </section>
 
       {/* The Vault Arch Content */}
-      <section id="vault-arch" className="arch-container relative mt-[-60px] min-h-screen bg-[#f5ede0] px-4 pb-20 pt-24 text-[#1a3529] sm:mt-[-100px] sm:pt-32 border-none">
+      <section id="vault-arch" className="arch-container relative mt-[-60px] min-h-screen px-4 pb-20 pt-24 sm:mt-[-100px] sm:pt-32 border-none" style={{ backgroundColor: secondary, color: body }}>
         <div className="mx-auto max-w-[840px]">
           <div className="reveal-up mb-20 text-center">
             <div className="mx-auto mb-6 flex justify-center opacity-40">
-              <Leaf className="h-8 w-8 rotate-12 text-[#1a3529]" strokeWidth={1} />
+              <Leaf className="h-8 w-8 rotate-12" style={{ color: heading }} strokeWidth={1} />
             </div>
-            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]">The Union</p>
-            <p className="mx-auto max-w-[650px] font-serif text-[24px] italic leading-relaxed opacity-90 sm:text-[38px] lg:text-[42px]">
+            <p className="mb-4 text-[10px] font-bold uppercase tracking-[5px]" style={{ color: accent }}>The Union</p>
+            <p className="mx-auto max-w-[650px] font-serif text-[24px] italic leading-relaxed opacity-90 sm:text-[38px] lg:text-[42px]" style={{ color: heading }}>
               {intro || 'We Invite You to Celebrate Our Wedding'}
             </p>
           </div>
@@ -672,7 +666,7 @@ export function HighEndImmersiveTemplate({ data }) {
               groomImage={resolveMediaSource(media.groomImage) || ''}
               brideName={brideName}
               groomName={groomName}
-              nameColor="rgba(26, 53, 41, 0.82)"
+              nameColor={heading}
             />
           </div>
         )}
@@ -683,30 +677,15 @@ export function HighEndImmersiveTemplate({ data }) {
           {theme.showVideo !== false && (
             <div className="reveal-up relative mb-16 h-[320px] w-full sm:h-[400px]">
               {/* Outer Decorative Frame Border */}
-              <div className="absolute inset-[-6px] rounded-[30px] border border-[#c9a87c]/20 sm:inset-[-10px] sm:rounded-[38px]" />
+              <div className="absolute inset-[-6px] rounded-[30px] border sm:inset-[-10px] sm:rounded-[38px]" style={{ borderColor: `${accent}33` }} />
 
-              <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-transparent shadow-2xl sm:rounded-[32px] border border-[#c9a87c]/30 video-section-styling">
+              <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-transparent shadow-2xl sm:rounded-[32px] video-section-styling" style={{ borderWidth: 1, borderStyle: 'solid', borderColor: `${accent}4D` }}>
                 {mediaPack.video ? (
-<<<<<<< HEAD
-                  <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover opacity-60">
+                  <video autoPlay muted loop playsInline preload="metadata" poster={mediaPack.poster || undefined} className="h-full w-full object-cover" onCanPlay={(e) => e.target.play()}>
                     <source src={mediaPack.video} type={getVideoMimeType(mediaPack.video)} />
                   </video>
                 ) : mediaPack.heroImage && (
                   <img src={mediaPack.heroImage} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover opacity-50" />
-=======
-                  <video 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline 
-                    className="h-full w-full object-cover opacity-100"
-                    onCanPlay={(e) => e.target.play()}
-                  >
-                    <source src={mediaPack.video} type="video/mp4" />
-                  </video>
-                ) : mediaPack.heroImage && (
-                  <img src={mediaPack.heroImage} className="h-full w-full object-cover" />
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
                 )}
 
                 {/* Subtle dark overlay for text contrast */}
@@ -714,10 +693,10 @@ export function HighEndImmersiveTemplate({ data }) {
 
 
                 {/* Corner Decorative Accents */}
-                <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 border-[#c9a87c]/40 rounded-tl-lg" />
-                <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 border-[#c9a87c]/40 rounded-br-lg" />
+                <div className="absolute top-5 left-5 w-10 h-10 border-t-2 border-l-2 rounded-tl-lg" style={{ borderColor: `${accent}66` }} />
+                <div className="absolute bottom-5 right-5 w-10 h-10 border-b-2 border-r-2 rounded-br-lg" style={{ borderColor: `${accent}66` }} />
 
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center text-[#f5ede0] ">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center" style={{ color: secondary }}>
                   <DesignElement id="emeraldCinematicNames" label="Cinematic Names">
                     <div className="relative">
                       <p className="video-tagline mb-3 text-[8px] font-bold uppercase tracking-[8px]">The Union Of</p>
@@ -737,51 +716,43 @@ export function HighEndImmersiveTemplate({ data }) {
           {/* Cinematic Event Schedule - Premium Vertical Timeline */}
           {theme.showSchedule !== false && (
             <div className="reveal-up mb-32 px-4 sm:px-0">
-              <div className="mx-auto mb-10 h-px w-32 bg-gradient-to-r from-transparent via-[#c9a87c]/40 to-transparent" />
-              <h2 className="mb-16 text-center font-serif text-[clamp(24px,4vw,36px)] italic tracking-tight text-[#c9a87c]">The Schedule</h2>
+              <div className="mx-auto mb-10 h-px w-32" style={{ background: `linear-gradient(to right, transparent, ${accent}66, transparent)` }} />
+              <h2 className="mb-16 text-center font-serif text-[clamp(24px,4vw,36px)] italic tracking-tight" style={{ color: accent }}>The Schedule</h2>
 
               <div className="mx-auto max-w-[700px] space-y-24">
                 {(events || []).map((evt, i) => (
                   <div key={i} className={cn("reveal-up flex flex-col gap-8 sm:items-center sm:gap-16", i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse")}>
                     {/* Arched Portrait for Event */}
                     <div className="vault-frame relative h-[320px] w-full shrink-0 sm:h-[420px] sm:w-[300px]">
-<<<<<<< HEAD
-                      {mediaPack.gallery[i + 2] ? (
-                        <img src={mediaPack.gallery[i + 2]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-=======
-                      {(i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : evt.image) ? (
-                        <img
-                          src={i === 0 ? "/img2.jpg" : i === 1 ? "/img3.jpg" : evt.image}
-                          className="h-full w-full object-cover"
-                        />
->>>>>>> 8f2c084461eb6e20a2d27286e36cf33ae308cf2b
+                      {(evt.image || mediaPack.gallery[i + 2]) ? (
+                        <img src={evt.image || mediaPack.gallery[i + 2]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center bg-[#1a3529]/5 opacity-20">
-                          <Leaf className="h-12 w-12 text-[#c9a87c]" />
+                        <div className="flex h-full items-center justify-center opacity-20" style={{ backgroundColor: `${heading}0D` }}>
+                          <Leaf className="h-12 w-12" style={{ color: accent }} />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#1a3529]/40 via-transparent to-transparent" />
+                      <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${heading}66, transparent, transparent)` }} />
                     </div>
 
                     {/* Event Details */}
                     <div className="flex-1 space-y-6 text-center sm:text-left">
                       <div>
-                        <p className="mb-2 text-[10px] font-bold uppercase tracking-[5px] text-[#c9a87c]/80">Ceremony {i + 1}</p>
-                        <h3 className="font-serif text-[clamp(24px,4vw,36px)] leading-tight text-[#1a3529]">{evt.name}</h3>
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-[5px]" style={{ color: `${accent}CC` }}>Ceremony {i + 1}</p>
+                        <h3 className="font-serif text-[clamp(24px,4vw,36px)] leading-tight" style={{ color: heading }}>{evt.name}</h3>
                       </div>
 
-                      <div className="mx-auto h-px w-12 bg-[#c9a87c]/30 sm:mx-0" />
+                      <div className="mx-auto h-px w-12 sm:mx-0" style={{ backgroundColor: `${accent}4D` }} />
 
                       <div className="space-y-4">
-                        <div className="flex flex-col gap-4 text-sm text-[#1a3529]/70 sm:flex-row sm:items-center sm:gap-6">
-                          <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-[#c9a87c]/80" /> {evt.date}</span>
-                          <span className="hidden h-4 w-px bg-[#1a3529]/10 sm:block" />
-                          <span className="flex items-center gap-2"><Clock className="h-4 w-4 text-[#c9a87c]/80" /> {evt.time}</span>
+                        <div className="flex flex-col gap-4 text-sm sm:flex-row sm:items-center sm:gap-6" style={{ color: `${body}B3` }}>
+                          <span className="flex items-center gap-2"><Calendar className="h-4 w-4" style={{ color: `${accent}CC` }} /> {evt.date}</span>
+                          <span className="hidden h-4 w-px sm:block" style={{ backgroundColor: `${heading}1A` }} />
+                          <span className="flex items-center gap-2"><Clock className="h-4 w-4" style={{ color: `${accent}CC` }} /> {evt.time}</span>
                         </div>
-                        <div className="flex items-start gap-2 text-sm text-[#1a3529]/70">
-                          <MapPin className="h-4 w-4 shrink-0 text-[#c9a87c]/80 mt-1" />
+                        <div className="flex items-start gap-2 text-sm" style={{ color: `${body}B3` }}>
+                          <MapPin className="h-4 w-4 shrink-0 mt-1" style={{ color: `${accent}CC` }} />
                           <div>
-                            <p className="font-serif text-lg leading-tight text-[#1a3529]">{evt.venue}</p>
+                            <p className="font-serif text-lg leading-tight" style={{ color: heading }}>{evt.venue}</p>
                             <p className="mt-1 text-[11px] uppercase tracking-[2px] opacity-50">{evt.address}</p>
                           </div>
                         </div>
@@ -824,12 +795,12 @@ export function HighEndImmersiveTemplate({ data }) {
 
         {/* Footer Detail */}
         <div className="pt-6 text-center">
-          <div className="leaf-float mx-auto mb-10 flex justify-center text-[#c9a87c] opacity-60">
+          <div className="leaf-float mx-auto mb-10 flex justify-center opacity-60" style={{ color: accent }}>
             <Leaf size={40} strokeWidth={1} />
           </div>
 
           {theme.showCountdown !== false && theme.enableCountdown && (
-            <div className="reveal-up mb-10 flex justify-center text-[#1a3529]">
+            <div className="reveal-up mb-10 flex justify-center" style={{ color: heading }}>
               <CinematicTimer date={event.date} dark={false} />
             </div>
           )}
@@ -844,17 +815,18 @@ export function HighEndImmersiveTemplate({ data }) {
 
           {event.mapLink && theme.showMap !== false && (
             <div className="reveal-up mx-auto mb-16 mt-12 max-w-[400px] px-6">
-              <div className="rounded-[32px] border border-[#c9a87c]/30 bg-[#1a3529]/5 p-8 text-center backdrop-blur-sm">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1a3529] text-white">
+              <div className="rounded-[32px] border p-8 text-center backdrop-blur-sm" style={{ borderColor: `${accent}4D`, backgroundColor: `${heading}0D` }}>
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full text-white" style={{ backgroundColor: heading }}>
                   <MapPin className="h-6 w-6" strokeWidth={1.5} />
                 </div>
-                <h3 className="mb-2 font-serif text-2xl italic text-[#1a3529]">{event.venue || 'The Venue'}</h3>
-                {event.address && <p className="mb-6 text-[11px] uppercase tracking-[2px] text-[#1a3529]/60">{event.address}</p>}
+                <h3 className="mb-2 font-serif text-2xl italic" style={{ color: heading }}>{event.venue || 'The Venue'}</h3>
+                {event.address && <p className="mb-6 text-[11px] uppercase tracking-[2px]" style={{ color: `${heading}99` }}>{event.address}</p>}
                 <a
                   href={event.mapLink}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1a3529] px-6 py-4 text-[10px] font-bold uppercase tracking-[3px] text-[#f5ede0] transition-all hover:bg-[#244a39] active:scale-95 shadow-xl shadow-[#1a3529]/20"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-[10px] font-bold uppercase tracking-[3px] transition-all active:scale-95 shadow-xl"
+                  style={{ backgroundColor: heading, color: secondary, boxShadow: `0 10px 25px -5px ${heading}33` }}
                 >
                   Go to the Map
                 </a>

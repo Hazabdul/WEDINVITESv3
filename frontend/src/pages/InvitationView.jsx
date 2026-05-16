@@ -133,15 +133,18 @@ export function InvitationView() {
     positions: invitation.positions || {},
   };
 
-  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : theme.id === 'noir' ? 'bg-black' : 'bg-slate-50';
+  const secondaryBg = theme.secondaryColor || (theme.id === 'mountain' ? '#f5ede0' : null);
+  const pageBg = theme.id === 'noir' ? 'bg-black' : secondaryBg ? '' : 'bg-slate-50';
+  const pageBgStyle = secondaryBg && theme.id !== 'noir' ? { backgroundColor: secondaryBg } : {};
 
   return (
-    <div className={cn("min-h-screen transition-colors duration-1000", pageBg)}>
+    <div className={cn("min-h-screen transition-colors duration-1000", pageBg)} style={pageBgStyle}>
       {!isOpened && showCover && (
         <InvitationCover
           bride={brideName}
           groom={groomName}
-          data={templateData}
+          theme={theme}
+          eventDate={invitation.event?.date}
           onOpen={() => setIsOpened(true)}
         />
       )}
@@ -162,6 +165,7 @@ export function InvitationView() {
         {theme.showRSVP !== false && (
           <RSVPSection
             attendanceResponse={attendanceResponse}
+            theme={theme}
             onResponse={(res) => {
               setAttendanceResponse(res);
               if (res === 'accepted') {

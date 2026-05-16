@@ -29,9 +29,11 @@ const allowedOrigins = new Set([
   'https://www.weddinginvites.online',
   'https://wedinvitesv3.onrender.com',
   'http://localhost:3000',
+  'http://localhost:3001',
   'http://localhost:3002',
   'http://localhost:5173',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
   'http://127.0.0.1:3002',
   'http://127.0.0.1:5173',
   process.env.FRONTEND_URL,
@@ -73,6 +75,7 @@ const [
   { default: invitationAiRoutes },
   { default: websiteAiRoutes },
   { default: adminRoutes },
+  { default: textAiRoutes },
 ] = await Promise.all([
   import('./routes/authRoutes.js'),
   import('./routes/invitationRoutes.js'),
@@ -83,6 +86,7 @@ const [
   import('./routes/invitationAiRoutes.js'),
   import('./routes/websiteAiRoutes.js'),
   import('./routes/adminRoutes.js'),
+  import('./routes/textAiRoutes.js'),
 ]);
 
 app.use('/api/auth', authRoutes);
@@ -94,6 +98,7 @@ app.use('/api/', metaRoutes);
 app.use('/api', invitationAiRoutes);
 app.use('/api', websiteAiRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', textAiRoutes);
 
 // Root (helpful landing for the service URL)
 app.get('/', (req, res) => {

@@ -390,8 +390,7 @@ export function InvitationAnalyzer() {
       const invitationId = publishedInvitation?.id || (await apiClient.createInvitation({}))._id;
       const payload = buildInvitationData(details, selectedTemplate);
 
-      await apiClient.updateInvitation(invitationId, payload);
-      const published = await apiClient.publishInvitation(invitationId);
+      const published = await apiClient.publishInvitation(invitationId, payload);
 
       setPublishedInvitation({
         id: invitationId,

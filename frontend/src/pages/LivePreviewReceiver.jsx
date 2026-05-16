@@ -9,6 +9,15 @@ export function LivePreviewReceiver() {
   const [isOpened, setIsOpened] = useState(false);
 
   useEffect(() => {
+    const storedPreview = localStorage.getItem('live_preview_payload');
+    if (storedPreview) {
+      try {
+        setData(JSON.parse(storedPreview));
+      } catch {
+        localStorage.removeItem('live_preview_payload');
+      }
+    }
+
     const handleMessage = (event) => {
       if (event.data?.type === 'UPDATE_PREVIEW') {
         setData(event.data.payload);
@@ -61,14 +70,18 @@ export function LivePreviewReceiver() {
     positions: data.positions || {},
   };
 
-  const pageBg = theme.id === 'mountain' ? 'bg-[#f5ede0]' : theme.id === 'noir' ? 'bg-black' : 'bg-slate-50';
+  const secondaryBg = theme.secondaryColor || (theme.id === 'mountain' ? '#f5ede0' : null);
+  const pageBg = theme.id === 'noir' ? 'bg-black' : secondaryBg ? '' : 'bg-slate-50';
+  const pageBgStyle = secondaryBg && theme.id !== 'noir' ? { backgroundColor: secondaryBg } : {};
 
   return (
-    <div className={cn("min-h-screen w-full max-w-[100vw] overflow-x-hidden transition-colors duration-1000", pageBg)}>
+    <div className={cn("min-h-screen w-full max-w-[100vw] overflow-x-hidden transition-colors duration-1000", pageBg)} style={pageBgStyle}>
       {!isOpened && showCover && (
         <InvitationCover
           bride={brideName}
           groom={groomName}
+          theme={theme}
+          eventDate={templateData.event?.date}
           onOpen={() => setIsOpened(true)}
         />
       )}
@@ -91,6 +104,7 @@ export function LivePreviewReceiver() {
             attendanceResponse={null}
             onResponse={() => { }}
             isPreview={true}
+            theme={theme}
           />
         )}
       </div>

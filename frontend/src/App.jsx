@@ -5,6 +5,8 @@ import { Globe, Mail, Menu, X } from 'lucide-react';
 import { Home } from './pages/Home';
 import { Builder } from './pages/Builder';
 import { Templates } from './pages/Templates';
+import { CreateSelection } from './pages/CreateSelection';
+import { MagicDesigner } from './pages/MagicDesigner';
 
 import { InvitationView } from './pages/InvitationView';
 import { LivePreviewReceiver } from './pages/LivePreviewReceiver';
@@ -83,7 +85,7 @@ function Navbar() {
               </nav>
 
               <Link
-                to="/builder"
+                to="/create"
                 className="hidden shrink-0 rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.25em] text-white shadow-[0_10px_30px_-10px_rgba(182,141,64,0.4)] transition-all hover:scale-[1.05] hover:shadow-[0_12px_40px_-10px_rgba(182,141,64,0.6)] md:inline-flex"
               >
                 Start Building
@@ -138,7 +140,7 @@ function Navbar() {
 
               <div className="mt-16 w-full max-w-[280px]">
                 <Link
-                  to="/builder"
+                  to="/create"
                   onClick={() => setMobileOpen(false)}
                   className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] py-5 text-[14px] font-black uppercase tracking-[0.3em] text-white shadow-[0_20px_50px_-10px_rgba(182,141,64,0.4)] transition-all active:scale-95"
                 >
@@ -167,6 +169,8 @@ function AppShell() {
     location.pathname.startsWith('/invite/') ||
     location.pathname.startsWith('/v/') ||
     location.pathname.startsWith('/builder') ||
+    location.pathname.startsWith('/create') ||
+    location.pathname.startsWith('/magic-designer') ||
     location.pathname.startsWith('/preview-render');
 
   return (
@@ -187,7 +191,9 @@ function AppShell() {
         >
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/create" element={<CreateSelection />} />
             <Route path="/builder" element={<Builder />} />
+            <Route path="/magic-designer" element={<MagicDesigner />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/invitation-analyzer" element={<InvitationAnalyzer />} />
             <Route path="/image-to-website" element={<ImageToWebsite />} />

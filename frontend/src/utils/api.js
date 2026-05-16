@@ -55,8 +55,12 @@ class APIClient {
           this.clearToken();
           window.location.href = '/';
         }
-        const error = await response.json();
-        throw new Error(error.message || `API Error: ${response.statusText}`);
+        const payload = await response.json().catch(() => ({}));
+        const apiError = new Error(payload.message || `API Error: ${response.statusText}`);
+        apiError.status = response.status;
+        apiError.payload = payload;
+        apiError.missingFields = payload.missingFields;
+        throw apiError;
       }
 
       return await response.json();
@@ -142,9 +146,10 @@ class APIClient {
     });
   }
 
-  async publishInvitation(id) {
+  async publishInvitation(id, data) {
     return this.request(`/api/invitations/${id}/publish`, {
       method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
     });
   }
 
@@ -274,6 +279,48 @@ class APIClient {
     return this.request('/api/config', {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  }
+
+  // AI Text Generation endpoints
+  async generateIntroMessage({ bride, groom, tagline, parents, tone }) {
+    return this.request('/api/ai/generate-text', {
+      method: 'POST',
+      body: JSON.stringify({ bride, groom, tagline, parents, tone }),
+    });
+  }
+
+  async generateColorPalette({ mood, templateId }) {
+    return this.request('/api/ai/generate-palette', {
+      method: 'POST',
+      body: JSON.stringify({ mood, templateId }),
+    });
+  }
+
+  async generateWhatsAppMessage({ bride, groom, date, venue, shareUrl, style }) {
+    return this.request('/api/ai/generate-whatsapp', {
+      method: 'POST',
+      body: JSON.stringify({ bride, groom, date, venue, shareUrl, style }),
+    });
+  }
+  async generateInvitationWizard(data) {
+    return this.request('/api/ai/generate-wizard', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async buildMagicInvitation(prompt, mediaUrls, email, referenceUrl, referenceImageUrls) {
+    return this.request('/api/ai/magic-build', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, mediaUrls, email, referenceUrl, referenceImageUrls }),
+    });
+  }
+
+  async editMagicInvitation(currentData, prompt, referenceUrl, referenceImageUrls) {
+    return this.request('/api/ai/magic-edit', {
+      method: 'POST',
+      body: JSON.stringify({ currentData, prompt, referenceUrl, referenceImageUrls }),
     });
   }
 }

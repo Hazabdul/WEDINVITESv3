@@ -2,11 +2,27 @@ import React, { useState } from 'react';
 import { CheckCircle2, PartyPopper } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
-export function RSVPSection({ attendanceResponse: externalResponse, onResponse, isPreview = false }) {
+function withAlpha(color, alpha) {
+  const hex = String(color || '').trim();
+  if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex;
+
+  const alphaHex = Math.round(Math.max(0, Math.min(1, alpha)) * 255)
+    .toString(16)
+    .padStart(2, '0');
+
+  return `${hex}${alphaHex}`;
+}
+
+export function RSVPSection({ attendanceResponse: externalResponse, onResponse, isPreview = false, theme = {} }) {
   const [internalResponse, setInternalResponse] = useState(null);
   const [showCelebrate, setShowCelebrate] = useState(false);
 
   const response = externalResponse !== undefined ? externalResponse : internalResponse;
+  const accent = theme.primaryColor || '#c9a87c';
+  const heading = theme.headingColor || '#1a3529';
+  const subheading = theme.subheadingColor || '#244a39';
+  const secondary = theme.secondaryColor || '#f5ede0';
+  const meta = theme.metaColor || secondary;
 
   const handleAccept = () => {
     if (onResponse) {
@@ -30,27 +46,27 @@ export function RSVPSection({ attendanceResponse: externalResponse, onResponse, 
   return (
     <div className={cn("mx-auto w-full px-4 pb-12", isPreview ? "max-w-full" : "max-w-3xl")}>
       <div className={cn(
-        "relative overflow-hidden bg-gradient-to-br from-[#1a3529] to-[#244a39] text-center transition-all duration-700 border-none shadow-none",
+        "relative overflow-hidden text-center transition-all duration-700 border-none shadow-none",
         isPreview ? "rounded-[24px] py-8 px-8 sm:py-12 sm:px-16 !border-t-0" : "rounded-[28px] py-12 px-10 sm:py-16 sm:px-24"
-      )}>
+      )} style={{ background: `linear-gradient(135deg, ${heading} 0%, ${subheading} 100%)` }}>
         {/* Subtle background glow */}
         <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-[#c9a87c]/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full blur-3xl" style={{ backgroundColor: withAlpha(accent, 0.12) }} />
 
         <div className="relative z-10 mx-auto max-w-xl">
-          <h2 className="mb-3 font-serif text-[clamp(28px,5vw,40px)] italic leading-tight tracking-tight text-[#f5ede0]">
+          <h2 className="mb-3 font-serif text-[clamp(28px,5vw,40px)] italic leading-tight tracking-tight" style={{ color: secondary }}>
             Will You Attend?
           </h2>
-          <p className="mb-4 text-[10px] uppercase tracking-[4px] text-[#f5ede0]/60">
+          <p className="mb-4 text-[10px] uppercase tracking-[4px]" style={{ color: withAlpha(meta, 0.68) }}>
             Let the couple know whether you will be joining their celebration.
           </p>
 
           <div className="relative">
             {showCelebrate && (
               <div className="pointer-events-none absolute inset-x-0 -top-14 flex justify-center z-50">
-                <div className="animate-[popIn_600ms_cubic-bezier(0.22,1,0.36,1)] rounded-full bg-[#1a3529] px-5 py-2 text-[10px] font-bold uppercase tracking-[2px] text-[#f5ede0] shadow-2xl">
+                <div className="animate-[popIn_600ms_cubic-bezier(0.22,1,0.36,1)] rounded-full px-5 py-2 text-[10px] font-bold uppercase tracking-[2px] shadow-2xl" style={{ backgroundColor: heading, color: secondary }}>
                   <span className="inline-flex items-center gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-[#c9a87c]" />
+                    <CheckCircle2 className="h-4 w-4" style={{ color: accent }} />
                     RSVP saved successfully
                   </span>
                 </div>
@@ -65,9 +81,10 @@ export function RSVPSection({ attendanceResponse: externalResponse, onResponse, 
                 className={cn(
                   "group relative min-w-[200px] overflow-hidden rounded-full px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-500",
                   response === 'accepted'
-                    ? "scale-105 bg-white text-[#1a3529] shadow-2xl"
-                    : "bg-[#d4af37] text-[#1a3529] hover:scale-[1.03] active:scale-[0.98]"
+                    ? "scale-105 shadow-2xl"
+                    : "hover:scale-[1.03] active:scale-[0.98]"
                 )}
+                style={{ backgroundColor: response === 'accepted' ? secondary : accent, color: heading }}
               >
                 <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
                 <span className="relative flex items-center justify-center gap-2">
@@ -79,9 +96,14 @@ export function RSVPSection({ attendanceResponse: externalResponse, onResponse, 
               <button
                 onClick={handleDecline}
                 className={cn(
-                  "min-w-[200px] rounded-full border border-white/10 bg-white/90 px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] text-[#1a3529] transition-all duration-500 hover:bg-white active:scale-[0.98]",
-                  response === 'declined' && "bg-[#1a3529] text-white opacity-100 border-none"
+                  "min-w-[200px] rounded-full border px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-500 active:scale-[0.98]",
+                  response === 'declined' && "opacity-100 border-none"
                 )}
+                style={{
+                  backgroundColor: response === 'declined' ? heading : withAlpha(secondary, 0.92),
+                  borderColor: withAlpha(secondary, 0.16),
+                  color: response === 'declined' ? secondary : heading,
+                }}
               >
                 Sorry, I can't make it
               </button>
@@ -89,13 +111,20 @@ export function RSVPSection({ attendanceResponse: externalResponse, onResponse, 
           )}
 
           {response === 'accepted' && (
-            <p className="mt-8 font-serif text-[17px] italic text-[#f5ede0]/80 animate-in fade-in slide-in-from-top-4 duration-700">
+            <p className="mt-8 font-serif text-[17px] italic animate-in fade-in slide-in-from-top-4 duration-700" style={{ color: withAlpha(secondary, 0.82) }}>
               "We cannot wait to celebrate this special moment with you."
             </p>
           )}
 
           {response === 'declined' && (
-            <div className="mt-8 rounded-2xl border border-white/5 bg-white/5 px-6 py-4 text-xs italic leading-relaxed text-[#f5ede0]/70 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div
+              className="mt-8 rounded-2xl border px-6 py-4 text-xs italic leading-relaxed animate-in fade-in slide-in-from-top-4 duration-700"
+              style={{
+                borderColor: withAlpha(secondary, 0.08),
+                backgroundColor: withAlpha(secondary, 0.06),
+                color: withAlpha(secondary, 0.72),
+              }}
+            >
               We'll miss you. Thank you for your warm wishes and prayers.
             </div>
           )}

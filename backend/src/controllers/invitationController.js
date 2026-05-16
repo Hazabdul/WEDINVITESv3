@@ -23,6 +23,49 @@ const defaultTheme = {
   enableMusic: false,
 };
 
+const colorThemeKeys = [
+  'primaryColor',
+  'secondaryColor',
+  'headingColor',
+  'subheadingColor',
+  'bodyColor',
+  'metaColor',
+];
+
+const isHexColor = (value) => /^#[0-9A-Fa-f]{6}$/.test(String(value || ''));
+
+const normalizeTheme = (theme = {}) => {
+  const normalized = {
+    ...defaultTheme,
+    ...(theme && typeof theme === 'object' && !Array.isArray(theme) ? theme : {}),
+  };
+
+  colorThemeKeys.forEach((key) => {
+    if (!isHexColor(normalized[key])) {
+      normalized[key] = defaultTheme[key];
+    }
+  });
+
+  return normalized;
+};
+
+const normalizeInvitationPayload = (payload = {}) => {
+  if (!payload || typeof payload !== 'object') return {};
+
+  const { publishPolicy, ...invitationPayload } = payload;
+
+  return {
+    ...invitationPayload,
+    ...(invitationPayload.theme !== undefined ? { theme: normalizeTheme(invitationPayload.theme) } : {}),
+  };
+};
+
+const applyInvitationPayload = (invitation, payload = {}) => {
+  Object.entries(payload).forEach(([key, value]) => {
+    invitation[key] = value;
+  });
+};
+
 const slugify = (value) => String(value || '')
   .toLowerCase()
   .trim()
@@ -55,6 +98,7 @@ export const createInvitation = async (req, res, next) => {
       }
     }
 
+    const payload = normalizeInvitationPayload(parsed.data);
     const invitation = await Invitation.create({
       status: 'DRAFT',
       package: 'BASIC',
@@ -62,7 +106,7 @@ export const createInvitation = async (req, res, next) => {
       theme: defaultTheme,
       media: { gallery: [] },
       positions: {},
-      ...parsed.data,
+      ...payload,
     });
     res.status(201).json(invitation);
   } catch (error) {
@@ -127,7 +171,8 @@ export const updateInvitation = async (req, res, next) => {
     }
 
     const existingData = typeof existing.toObject === 'function' ? existing.toObject() : existing;
-    const candidate = { ...existingData, ...parsed.data };
+    const payload = normalizeInvitationPayload(parsed.data);
+    const candidate = { ...existingData, ...payload };
 
     if (candidate.status === 'PUBLISHED') {
       const missingFields = getInvitationPublishMissingFields(candidate);
@@ -143,7 +188,7 @@ export const updateInvitation = async (req, res, next) => {
 
     const updated = await Invitation.findByIdAndUpdate(
       id,
-      { $set: parsed.data },
+      { $set: payload },
       { new: true, runValidators: true }
     );
 
@@ -157,13 +202,32 @@ export const publishInvitation = async (req, res, next) => {
   try {
     await ensureDBReady();
     const { id } = req.params;
+    const hasPayload = req.body && Object.keys(req.body).length > 0;
+    const parsed = hasPayload ? invitationSchema.safeParse(req.body) : { success: true, data: {} };
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: parsed.error.issues,
+      });
+    }
+
     const invitation = await Invitation.findById(id);
 
     if (!invitation) return res.status(404).json({ message: 'Invitation not found' });
 
-    const missingFields = getInvitationPublishMissingFields(
-      typeof invitation.toObject === 'function' ? invitation.toObject() : invitation
-    );
+    const payload = normalizeInvitationPayload(parsed.data);
+    const existingData = typeof invitation.toObject === 'function' ? invitation.toObject() : invitation;
+    const candidate = {
+      ...existingData,
+      ...payload,
+      theme: normalizeTheme(payload.theme || existingData.theme),
+      publishPolicy: parsed.data.publishPolicy,
+      status: 'PUBLISHED',
+    };
+
+    const missingFields = getInvitationPublishMissingFields(candidate);
 
     if (missingFields.length > 0) {
       return res.status(400).json({
@@ -172,6 +236,8 @@ export const publishInvitation = async (req, res, next) => {
         missingFields,
       });
     }
+
+    applyInvitationPayload(invitation, payload);
 
     // Generate slug if not exists
     let slug = invitation.slug;
@@ -183,6 +249,7 @@ export const publishInvitation = async (req, res, next) => {
     }
 
     invitation.status = 'PUBLISHED';
+    invitation.theme = normalizeTheme(invitation.theme);
     invitation.slug = slug;
     invitation.publishedAt = invitation.publishedAt || new Date();
     await invitation.save();

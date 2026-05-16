@@ -11,7 +11,9 @@ import {
   Heart,
   Layout,
   LayoutGrid,
+  MessageSquare,
   Monitor,
+  Palette,
   Play,
   Loader2,
   Plus,
@@ -22,6 +24,7 @@ import {
   Trash2,
   Type,
   UploadCloud,
+  Wand2,
   Check,
   X,
 } from 'lucide-react';
@@ -32,6 +35,7 @@ import { cn } from '../utils/cn';
 import { templatesList } from '../data/mockData';
 import apiClient from '../utils/api';
 import { normalizeMediaUrl } from '../utils/media';
+import { AIWizardModal } from '../components/builder/AIWizardModal';
 
 const STEPS = [
   {
@@ -230,9 +234,9 @@ function PreviewFrame({ mode, children }) {
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Otherwise show laptop frame
   return (
@@ -267,7 +271,48 @@ export function Builder() {
   const [backendHealthError, setBackendHealthError] = useState('');
   // Tracks which required field labels had a failed Next click (red border highlight)
   const [errorFields, setErrorFields] = useState(new Set());
+
+  // AI Feature States
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiTone, setAiTone] = useState('romantic');
+  const [paletteMood, setPaletteMood] = useState('');
+  const [paletteGenerating, setPaletteGenerating] = useState(false);
+  const [whatsappGenerating, setWhatsappGenerating] = useState(false);
+  const [whatsappStyle, setWhatsappStyle] = useState('formal');
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [whatsappCopied, setWhatsappCopied] = useState(false);
+
+  const [showWizard, setShowWizard] = useState(false);
   const { data, clearData, updateSection, updateEvent, addEvent, removeEvent, setTemplate } = useInvitationState();
+
+  React.useEffect(() => {
+    // Only auto-show wizard once per browser session (not on every page load)
+    const alreadyShown = sessionStorage.getItem('wizard_shown_v1');
+    if (!alreadyShown && !data?.couple?.bride && !data?.couple?.groom) {
+      setShowWizard(true);
+      sessionStorage.setItem('wizard_shown_v1', '1');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const applyWizardDraft = (draft) => {
+    Object.entries(draft).forEach(([section, sectionData]) => {
+      if (section === 'theme' && sectionData.id) {
+        setTemplate(sectionData.id);
+        Object.entries(sectionData).forEach(([key, value]) => {
+          if (key !== 'id') updateSection('theme', key, value);
+        });
+      } else if (section === 'events') {
+        sectionData.forEach(eventData => {
+          addEvent();
+        });
+      } else if (section !== 'events') {
+        Object.entries(sectionData).forEach(([key, value]) => {
+          updateSection(section, key, value);
+        });
+      }
+    });
+    setCurrentStep(1);
+  };
 
   const iframeRef = React.useRef(null);
 
@@ -539,8 +584,7 @@ export function Builder() {
         events: eventsPayload,
       };
 
-      await apiClient.updateInvitation(created._id, invitationData);
-      const published = await apiClient.publishInvitation(created._id);
+      const published = await apiClient.publishInvitation(created._id, invitationData);
 
       setPublishedInvitation({
         id: created._id,
@@ -583,6 +627,19 @@ export function Builder() {
       case 0:
         return (
           <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 p-4 border border-purple-100">
+              <div>
+                <h4 className="text-sm font-bold text-purple-900">AI Magic Setup</h4>
+                <p className="text-[11px] text-purple-700">Fill your entire invitation in 3 steps</p>
+              </div>
+              <button
+                onClick={() => setShowWizard(true)}
+                className="flex items-center gap-2 rounded-full bg-purple-600 px-4 py-2 text-[11px] font-bold text-white transition hover:bg-purple-700 shadow-md"
+              >
+                <Sparkles className="h-3 w-3" />
+                Start Wizard
+              </button>
+            </div>
             <TextInput
               label="Email address"
               placeholder="Email address"
@@ -644,6 +701,65 @@ export function Builder() {
               onChange={(e) => updateSection('content', 'introMessage', e.target.value)}
               rows={5}
             />
+
+            {/* AI Text Writer */}
+            <div className="rounded-[14px] border border-dashed border-[#D4A76A]/30 bg-gradient-to-br from-[#fffbf5] to-[#fff8ef] p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#D4A76A]/10">
+                  <Sparkles className="h-3.5 w-3.5 text-[#D4A76A]" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D4A76A]">AI Writer</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-3">Generate a beautiful intro message based on your couple details and preferred tone.</p>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {['romantic', 'formal', 'islamic', 'modern', 'poetic'].map((tone) => (
+                  <button
+                    key={tone}
+                    type="button"
+                    onClick={() => setAiTone(tone)}
+                    className={cn(
+                      'rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all',
+                      aiTone === tone
+                        ? 'bg-[#D4A76A] text-white shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-500 hover:border-[#D4A76A]/40 hover:text-[#D4A76A]'
+                    )}
+                  >
+                    {tone}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                disabled={aiGenerating || (!data.couple?.bride && !data.couple?.groom)}
+                onClick={async () => {
+                  setAiGenerating(true);
+                  try {
+                    const result = await apiClient.generateIntroMessage({
+                      bride: data.couple?.bride || '',
+                      groom: data.couple?.groom || '',
+                      tagline: data.couple?.title || '',
+                      parents: [data.family?.brideParents, data.family?.groomParents].filter(Boolean).join(' & '),
+                      tone: aiTone,
+                    });
+                    if (result.message) {
+                      updateSection('content', 'introMessage', result.message);
+                      toast.success('Intro message generated!');
+                    }
+                  } catch (err) {
+                    toast.error(err?.message || 'AI generation failed.');
+                  } finally {
+                    setAiGenerating(false);
+                  }
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#D4A76A] to-[#B68D40] px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-md transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {aiGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                {aiGenerating ? 'Generating...' : 'Generate with AI'}
+              </button>
+              {(!data.couple?.bride && !data.couple?.groom) && (
+                <p className="mt-2 text-[10px] text-slate-400 text-center">Fill in bride or groom name first</p>
+              )}
+            </div>
           </div>
         );
 
@@ -1108,6 +1224,68 @@ export function Builder() {
               </div>
             </div>
 
+            {/* AI Color Palette Generator */}
+            <div className="rounded-[15px] border border-dashed border-purple-200/60 bg-gradient-to-br from-purple-50/30 to-pink-50/30 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100">
+                  <Palette className="h-4 w-4 text-purple-600" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-600">AI Palette</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-4">Describe a mood and AI will generate a complete 6-color theme for your invitation.</p>
+              <input
+                type="text"
+                value={paletteMood}
+                onChange={(e) => setPaletteMood(e.target.value)}
+                placeholder='e.g. "golden sunset", "midnight garden", "ocean breeze"'
+                className="w-full rounded-[10px] border border-purple-200/50 bg-white px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-purple-400 focus:shadow-[0_0_0_4px_rgba(147,51,234,0.06)] mb-3"
+              />
+              <button
+                type="button"
+                disabled={paletteGenerating || !paletteMood.trim()}
+                onClick={async () => {
+                  setPaletteGenerating(true);
+                  try {
+                    const result = await apiClient.generateColorPalette({
+                      mood: paletteMood.trim(),
+                      templateId: data.theme?.id || 'classic',
+                    });
+                    if (result.palette) {
+                      Object.entries(result.palette).forEach(([key, value]) => {
+                        updateSection('theme', key, value);
+                      });
+                      toast.success('Color palette applied!');
+                    }
+                  } catch (err) {
+                    toast.error(err?.message || 'Palette generation failed.');
+                  } finally {
+                    setPaletteGenerating(false);
+                  }
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-md transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {paletteGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {paletteGenerating ? 'Generating...' : 'Generate Palette'}
+              </button>
+
+              {/* Live preview of current palette */}
+              {data.theme?.primaryColor && (
+                <div className="mt-4 flex items-center gap-2">
+                  {['primaryColor', 'secondaryColor', 'headingColor', 'subheadingColor', 'bodyColor', 'metaColor'].map((key) => (
+                    <div key={key} className="group relative flex-1">
+                      <div
+                        className="aspect-square rounded-lg border border-white/50 shadow-sm transition-transform hover:scale-110"
+                        style={{ backgroundColor: data.theme?.[key] || '#ccc' }}
+                      />
+                      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform text-[7px] font-bold text-slate-400 whitespace-nowrap">
+                        {key.replace('Color', '')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="rounded-[15px] border border-slate-100 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Section Visibility</span>
@@ -1302,6 +1480,87 @@ export function Builder() {
                   >
                     <ExternalLink className="h-4 w-4" /> Open invitation
                   </Button>
+                </div>
+
+                {/* AI WhatsApp Message Drafter */}
+                <div className="rounded-[12px] border border-[#a7f3d0]/60 bg-white/80 p-5 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#25D366]/10">
+                      <MessageSquare className="h-3.5 w-3.5 text-[#25D366]" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#25D366]">WhatsApp Message</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mb-3">Generate a ready-to-share WhatsApp message with your invitation link.</p>
+
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    {['formal', 'casual', 'fun'].map((style) => (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => setWhatsappStyle(style)}
+                        className={cn(
+                          'rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all',
+                          whatsappStyle === style
+                            ? 'bg-[#25D366] text-white shadow-sm'
+                            : 'bg-white border border-slate-200 text-slate-500 hover:border-[#25D366]/40 hover:text-[#25D366]'
+                        )}
+                      >
+                        {style}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={whatsappGenerating}
+                    onClick={async () => {
+                      setWhatsappGenerating(true);
+                      setWhatsappMessage('');
+                      try {
+                        const result = await apiClient.generateWhatsAppMessage({
+                          bride: data.couple?.bride || '',
+                          groom: data.couple?.groom || '',
+                          date: data.event?.date || '',
+                          venue: data.event?.venue || '',
+                          shareUrl: publishedInvitation.shareUrl,
+                          style: whatsappStyle,
+                        });
+                        if (result.message) {
+                          setWhatsappMessage(result.message);
+                          toast.success('WhatsApp message generated!');
+                        }
+                      } catch (err) {
+                        toast.error(err?.message || 'WhatsApp generation failed.');
+                      } finally {
+                        setWhatsappGenerating(false);
+                      }
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-md transition-all hover:bg-[#1DA851] hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {whatsappGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+                    {whatsappGenerating ? 'Drafting...' : 'Generate WhatsApp Message'}
+                  </button>
+
+                  {whatsappMessage && (
+                    <div className="mt-4 space-y-3">
+                      <div className="rounded-[10px] border border-[#25D366]/20 bg-[#DCF8C6]/30 p-4">
+                        <pre className="whitespace-pre-wrap text-[13px] text-slate-800 font-sans leading-relaxed">{whatsappMessage}</pre>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(whatsappMessage);
+                          setWhatsappCopied(true);
+                          toast.success('Message copied!');
+                          setTimeout(() => setWhatsappCopied(false), 1800);
+                        }}
+                        className="flex w-full items-center justify-center gap-2 rounded-full border border-[#25D366]/30 bg-white px-5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-[#25D366] transition-all hover:bg-[#DCF8C6]/20 active:scale-95"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                        {whatsappCopied ? 'Copied!' : 'Copy Message'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1541,6 +1800,9 @@ export function Builder() {
           Build Version: {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Local Dev'}
         </div>
       </div>
+      <AIWizardModal isOpen={showWizard} onClose={() => setShowWizard(false)} onApply={applyWizardDraft} />
     </div>
   );
 }
+
+
