@@ -54,7 +54,6 @@ function buildMediaPackage(media = {}) {
     heroImage: gallery[0] || '',
     venueImage: resolveMediaSource(media.locationImage) || gallery[8] || gallery[0] || '',
     finalImage: gallery[9] || gallery[0] || '',
-    finalVideo: resolveMediaSource(media.finalVideo) || resolveMediaSource(media.heroVideo) || '',
     gallery: gallery.slice(0, 20),
   };
 }
@@ -671,7 +670,7 @@ function Hero({ data, containerRef, onOpenRsvp }) {
           <h2 className="font-serif">
             {bride} <span>&amp;</span> {groom}
           </h2>
-          <p className="font-sans">Scroll to open the invitation</p>
+          <p className="font-sans"></p>
         </div>
       </div>
 
@@ -1283,103 +1282,9 @@ function Venue({ data, onOpenRsvp }) {
   );
 }
 
-function QuestionsSection({ data }) {
-  const sectionRef = useRef(null);
 
-  const faqs = [
-    {
-      q: data.content?.faqQuestionOne || 'What should I wear?',
-      a:
-        data.content?.faqAnswerOne ||
-        'Dress beautifully and comfortably. Soft evening, formal, or festive wear will fit the celebration perfectly.',
-    },
-    {
-      q: data.content?.faqQuestionTwo || 'Can I bring a guest?',
-      a:
-        data.content?.faqAnswerTwo ||
-        'Please check the invitation details or confirm directly with the family host before bringing an additional guest.',
-    },
-    {
-      q: data.content?.faqQuestionThree || 'Where should I park?',
-      a: data.content?.faqAnswerThree || 'Parking and arrival details will be shared closer to the wedding date.',
-    },
-    {
-      q: data.content?.faqQuestionFour || 'How do I RSVP?',
-      a: data.content?.faqAnswerFour || 'You can confirm your attendance with the couple or family host.',
-    },
-  ];
 
-  const [openIndex, setOpenIndex] = useState(0);
 
-  useEffect(() => {
-    if (!sectionRef.current) return undefined;
-
-    const ctx = gsap.context(() => {
-      gsap.from('.faq-heading', {
-        opacity: 0,
-        y: 70,
-        duration: 0.9,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 72%',
-        },
-      });
-
-      gsap.from('.faq-item', {
-        opacity: 0,
-        y: 40,
-        duration: 0.75,
-        stagger: 0.08,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 58%',
-        },
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  return (
-    <section ref={sectionRef} className="questions-section section-shell">
-      <div className="faq-heading">
-        <span className="eyebrow">Questions and answers</span>
-        <h2 className="font-serif">Questions and answers</h2>
-      </div>
-
-      <div className="faq-list">
-        {faqs.map((item, index) => {
-          const isOpen = openIndex === index;
-
-          return (
-            <div className={cx('faq-item', isOpen && 'active')} key={item.q}>
-              <button type="button" onClick={() => setOpenIndex(isOpen ? -1 : index)}>
-                <span>{item.q}</span>
-                <strong>{isOpen ? '−' : '+'}</strong>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    className="faq-answer font-sans"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <p>{item.a}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 
 function FinalCinematicSection({ data, onOpenRsvp }) {
   const sectionRef = useRef(null);
@@ -2385,75 +2290,9 @@ export function ScrapbookTemplate({ data = {}, isPreview = false }) {
           font-weight: 700;
         }
 
-        .scrapbook-template .questions-section {
-          padding: 120px 0;
-          display: grid;
-          grid-template-columns: 0.75fr 1.25fr;
-          gap: 60px;
-          align-items: start;
-        }
 
-        .scrapbook-template .faq-heading h2 {
-          margin: 12px 0 0;
-          color: var(--ink) !important;
-          font-size: clamp(52px, 7vw, 104px);
-          line-height: 0.9;
-          font-weight: 500;
-          letter-spacing: -0.06em;
-        }
 
-        .scrapbook-template .faq-list {
-          display: grid;
-          gap: 12px;
-        }
 
-        .scrapbook-template .faq-item {
-          overflow: hidden;
-          border-radius: 22px;
-          background: rgba(255, 250, 242, 0.78);
-          border: 1px solid rgba(255, 255, 255, 0.72);
-          box-shadow: 0 18px 50px rgba(57, 41, 32, 0.08);
-        }
-
-        .scrapbook-template .faq-item button {
-          width: 100%;
-          min-height: 66px;
-          padding: 0 22px;
-          border: 0;
-          background: transparent;
-          color: var(--brown-dark);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 18px;
-          text-align: left;
-          font-size: 17px;
-          font-weight: 800;
-        }
-
-        .scrapbook-template .faq-item button strong {
-          width: 34px;
-          height: 34px;
-          display: grid;
-          place-items: center;
-          flex: 0 0 auto;
-          border-radius: 50%;
-          background: rgba(111, 74, 47, 0.08);
-          color: var(--gold);
-          font-size: 22px;
-          line-height: 1;
-        }
-
-        .scrapbook-template .faq-answer {
-          overflow: hidden;
-        }
-
-        .scrapbook-template .faq-answer p {
-          margin: 0;
-          padding: 0 22px 22px;
-          color: var(--muted);
-          line-height: 1.7;
-        }
 
         .scrapbook-template .final-cinematic {
           position: relative;
@@ -2701,10 +2540,7 @@ export function ScrapbookTemplate({ data = {}, isPreview = false }) {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
-          .scrapbook-template .questions-section {
-            gap: 34px;
-            padding: 88px 0;
-          }
+
 
           .scrapbook-template .venue-image-wrap {
             height: 260px;
@@ -2854,10 +2690,7 @@ export function ScrapbookTemplate({ data = {}, isPreview = false }) {
             padding: 20px 12px;
           }
 
-          .scrapbook-template .faq-item button {
-            font-size: 15px;
-            min-height: 60px;
-          }
+
 
           .scrapbook-template .venue-card {
             width: 100%;
@@ -2885,7 +2718,7 @@ export function ScrapbookTemplate({ data = {}, isPreview = false }) {
         <HorizontalGallery data={data} />
         <CountdownSection data={data} />
         <Venue data={data} onOpenRsvp={openRsvp} />
-        <QuestionsSection data={data} />
+
         <FinalCinematicSection data={data} onOpenRsvp={openRsvp} />
 
         <footer className="footer section-shell">
