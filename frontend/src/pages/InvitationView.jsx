@@ -170,10 +170,20 @@ export function InvitationView() {
             data={templateData}
             isPreview={false}
             className="w-full"
+            attendanceResponse={attendanceResponse}
+            onResponse={(res) => {
+              setAttendanceResponse(res);
+              if (res === 'accepted') {
+                setShowCelebrate(true);
+                playCelebrationTone();
+              } else {
+                setShowCelebrate(false);
+              }
+            }}
           />
         </div>
 
-        {theme.showRSVP !== false && (
+        {theme.showRSVP !== false && theme.id !== 'skylanterns' && theme.templateId !== 'skylanterns' && (
           <RSVPSection
             attendanceResponse={attendanceResponse}
             onResponse={(res) => {

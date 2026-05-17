@@ -83,10 +83,12 @@ export function LivePreviewReceiver() {
             data={templateData}
             isPreview={false}
             className="w-full"
+            attendanceResponse={null}
+            onResponse={() => { }}
           />
         </div>
 
-        {theme.showRSVP !== false && (
+        {theme.showRSVP !== false && theme.id !== 'skylanterns' && theme.templateId !== 'skylanterns' && (
           <RSVPSection
             attendanceResponse={null}
             onResponse={() => { }}

@@ -15,7 +15,7 @@ const templates = {
   skylanterns: SkyLanternsTemplate,
 };
 
-export function TemplateRenderer({ type, data, className = "", isPreview = true, previewMode = 'desktop' }) {
+export function TemplateRenderer({ type, data, className = "", isPreview = true, previewMode = 'desktop', ...rest }) {
   const rootRef = useRef(null);
   const hasData = Boolean(data);
   const effectiveType = templates[type] ? type : 'ceremony';
@@ -209,7 +209,7 @@ export function TemplateRenderer({ type, data, className = "", isPreview = true,
           color: var(--tw-primary) !important;
         }
       `}</style>
-      <SelectedTemplate data={data} isPreview={isPreview} previewMode={previewMode} />
+      <SelectedTemplate data={data} isPreview={isPreview} previewMode={previewMode} {...rest} />
     </div>
   );
 }

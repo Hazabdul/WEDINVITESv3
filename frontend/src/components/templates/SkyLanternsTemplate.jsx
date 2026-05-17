@@ -1,7 +1,78 @@
-import React, { useEffect, useRef } from 'react';
-import { MapPin, Clock } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapPin, Clock, CheckCircle2, PartyPopper } from 'lucide-react';
 import { resolveMediaSource } from '../../utils/media';
 import { CouplePortraits } from '../preview/CouplePortraits';
+
+/* ─── Sky Lanterns Custom Countdown Timer ─────────────────── */
+function LanternTimer({ date }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      if (!date) return;
+      const diff = new Date(date).getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [date]);
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 'clamp(0.6rem, 3vw, 1.5rem)',
+      color: '#f5e6c8',
+      background: 'rgba(255, 255, 255, 0.03)',
+      border: '1px solid #f5c96a',
+      borderRadius: '24px',
+      padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1rem, 4vw, 2rem)',
+      width: 'fit-content',
+      margin: '2rem auto'
+    }}>
+      {Object.entries(timeLeft).map(([label, value], i) => (
+        <React.Fragment key={label}>
+          <div style={{ textAlign: 'center', minWidth: 'clamp(45px, 12vw, 60px)' }}>
+            <div style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(1.5rem, 4vw, 3rem)',
+              fontWeight: 300,
+              fontStyle: 'italic',
+              lineHeight: 1.1,
+              color: '#fff',
+            }}>
+              {String(value).padStart(2, '0')}
+            </div>
+            <div style={{
+              fontFamily: '"Montserrat", sans-serif',
+              fontSize: 'clamp(7px, 1.5vw, 8px)',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: 'clamp(1px, 0.8vw, 3px)',
+              color: '#f5c96a',
+              marginTop: '0.4rem',
+              opacity: 0.8
+            }}>
+              {label}
+            </div>
+          </div>
+          {i < 3 && <div style={{ width: 1, height: '40px', background: 'rgba(245, 230, 200, 0.15)' }} />}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
 
 /* ─── Sky Lanterns Data (Identical to Original HTML) ──────── */
 const LANTERNS_DATA = [
@@ -30,9 +101,73 @@ const LANTERNS_DATA = [
   { x: 78, w: 76, spd: 0.57, sw: 14, ph: 2.7, sy: 1.50 },
 ];
 
-export function SkyLanternsTemplate({ data, isPreview = false }) {
+export function SkyLanternsTemplate({ data, isPreview = false, attendanceResponse, onResponse }) {
   const { couple = {}, content = {}, event = {}, events = [], theme = {}, media = {} } = data || {};
+  const [localResponse, setLocalResponse] = useState(null);
+  const [showCelebrate, setShowCelebrate] = useState(false);
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const response = attendanceResponse !== undefined && attendanceResponse !== null
+    ? attendanceResponse
+    : localResponse;
+
+  const handleAccept = () => {
+    if (onResponse) {
+      onResponse('accepted');
+    } else {
+      setLocalResponse('accepted');
+      setShowCelebrate(true);
+      setTimeout(() => setShowCelebrate(false), 3000);
+    }
+  };
+
+  const handleDecline = () => {
+    if (onResponse) {
+      onResponse('declined');
+    } else {
+      setLocalResponse('declined');
+      setShowCelebrate(false);
+    }
+  };
   const overlayRef = useRef(null);
+  const imgRef = useRef(null);
+  const contentRef = useRef(null);
+  const [parentHeight, setParentHeight] = useState('auto');
+  const [offsetTop, setOffsetTop] = useState(0);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (!imgRef.current || !contentRef.current) return;
+      const imgHeight = imgRef.current.offsetHeight;
+      const contentHeight = contentRef.current.offsetHeight;
+      const startTop = imgHeight * 0.36;
+      setOffsetTop(startTop);
+      const totalHeight = startTop + contentHeight + 40; // elegant 40px padding bottom
+      setParentHeight(`${totalHeight}px`);
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    if (contentRef.current) resizeObserver.observe(contentRef.current);
+    if (imgRef.current) resizeObserver.observe(imgRef.current);
+
+    window.addEventListener('resize', updateHeight);
+    window.addEventListener('load', updateHeight);
+
+    const timer = setTimeout(updateHeight, 500);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateHeight);
+      window.removeEventListener('load', updateHeight);
+      clearTimeout(timer);
+    };
+  }, []);
 
   const videoUrl = resolveMediaSource(media?.video || media?.videoStory || media?.videoUrl || media?.storyVideo || media?.inviteVideo);
   const videoEnabled = theme?.showVideo !== false && theme?.enableVideo !== false && media?.enableVideo !== false;
@@ -53,13 +188,17 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
         const urlParams = new URLSearchParams(new URL(url).search);
         videoId = urlParams.get('v');
       }
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+      return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0` : url;
     } catch {
       return url;
     }
   };
 
   useEffect(() => {
+    // Detect mobile viewport to completely disable dynamic JS on mobile
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) return;
+
     const layer = overlayRef.current;
     if (!layer) return;
 
@@ -68,9 +207,13 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
     const scrollEl = document.querySelector('#preview-scroll-container') || window;
     const isWindow = scrollEl === window;
 
+    const scaleFactor = 1.0;
+    const activeLanterns = LANTERNS_DATA;
+
     // 2. Create lantern DOM elements dynamically just like native JS
-    const els = LANTERNS_DATA.map((c) => {
+    const els = activeLanterns.map((c) => {
       const d = document.createElement('div');
+      const finalW = Math.round(c.w * scaleFactor);
       d.style.cssText = [
         'position:absolute',
         `background-image:url('/template2/lamp.avif')`,
@@ -78,8 +221,8 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
         'background-repeat:no-repeat',
         'background-position:center',
         'will-change:transform,opacity',
-        `width:${c.w}px`,
-        `height:${Math.round(c.w * 1.4)}px`,
+        `width:${finalW}px`,
+        `height:${Math.round(finalW * 1.4)}px`,
         `left:${c.x}%`,
         'transform: translate3d(0,0,0)', // Trigger composite layer
       ].join(';');
@@ -91,28 +234,39 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
       const scrollY = isWindow ? window.scrollY : scrollEl.scrollTop;
       const wh = isWindow ? window.innerHeight : scrollEl.clientHeight;
 
-      LANTERNS_DATA.forEach((c, i) => {
+      activeLanterns.forEach((c, i) => {
         const el = els[i];
+        if (!el) return;
         const baseY = wh * c.sy;
         const travel = scrollY * c.spd;
-        const y = baseY - travel;
 
-        // Exact math from sky-lanterns (1).html
-        const swayX = Math.sin((scrollY * 0.003) + c.ph) * c.sw;
-        const rot = Math.sin((scrollY * 0.004) + c.ph) * 4;
+        // Mobile static positioning at the castle area as fixed, desktop animated positioning
+        const y = isMobile
+          ? (i === 0 ? wh * 0.38
+            : i === 1 ? wh * 0.50
+              : i === 2 ? wh * 0.60
+                : wh * 0.74)
+          : baseY - travel;
+
+        // Exact math from sky-lanterns (1).html with responsive sway scaling (disabled on mobile)
+        const swayX = isMobile ? 0 : Math.sin((scrollY * 0.003) + c.ph) * c.sw * scaleFactor;
+        const rot = isMobile ? 0 : Math.sin((scrollY * 0.004) + c.ph) * 4;
 
         let op = 1;
-        // fade in from bottom
-        if (y > wh * 0.88) {
-          op = Math.max(0, 1 - (y - wh * 0.88) / (wh * 0.14));
+        if (!isMobile) {
+          // fade in from bottom
+          if (y > wh * 0.88) {
+            op = Math.max(0, 1 - (y - wh * 0.88) / (wh * 0.14));
+          }
+          // fade out above screen
+          const currentW = c.w * scaleFactor;
+          if (y < -currentW * 0.6) {
+            op = Math.max(0, 1 - (-y - currentW * 0.6) / (wh * 0.18));
+          }
+          if (y > wh + currentW) op = 0;
         }
-        // fade out above screen
-        if (y < -c.w * 0.6) {
-          op = Math.max(0, 1 - (-y - c.w * 0.6) / (wh * 0.18));
-        }
-        if (y > wh + c.w) op = 0;
 
-        const glowR = 16 + Math.sin((scrollY * 0.005) + c.ph) * 7;
+        const glowR = isMobile ? 18 : 16 + Math.sin((scrollY * 0.005) + c.ph) * 7;
 
         el.style.transform = `translate3d(calc(${swayX}px - 50%), ${y}px, 0) rotate(${rot}deg)`;
         el.style.opacity = op;
@@ -167,12 +321,52 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
       />
 
       {/* Background Section exactly matched */}
-      <div style={{ position: 'relative', width: '100%', zIndex: 0 }}>
-        <img
-          src="/template2/bg.avif"
-          alt=""
-          style={{ width: '100%', height: 'auto', display: 'block' }}
-        />
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        zIndex: 0,
+        height: parentHeight,
+        overflow: 'hidden'
+      }}>
+        <div style={{ position: 'relative', width: '100%' }}>
+          <img
+            ref={imgRef}
+            src="/template2/bg.avif"
+            alt=""
+            style={{ width: '100%', height: 'auto', display: 'block' }}
+          />
+          {isMobile && (
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
+              {LANTERNS_DATA.slice(0, 6).map((c, i) => {
+                const finalW = Math.round(c.w * 0.45);
+                const topPct = i === 0 ? '16%'
+                  : i === 1 ? '25%'
+                    : i === 2 ? '30%'
+                      : i === 3 ? '22%'
+                        : i === 4 ? '15%'
+                          : '28%';
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      backgroundImage: "url('/template2/lamp.avif')",
+                      backgroundSize: 'contain',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center',
+                      width: `${finalW}px`,
+                      height: `${Math.round(finalW * 1.4)}px`,
+                      left: `${c.x}%`,
+                      top: topPct,
+                      transform: 'translateX(-50%)',
+                      filter: 'drop-shadow(0 0 18px rgba(245,175,50,0.68)) brightness(1.07)'
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* High-fidelity Content Overlay matched to aesthetics */}
         <div style={{
@@ -260,55 +454,60 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
 
         {/* LOWER OVERLAY - Event Details aligned to green background section */}
         {(event.date || event.venue || event.address || (events && events.length > 0) || (videoEnabled && videoUrl) || (theme?.showGallery !== false && media?.gallery?.length > 0) || (theme.showPortraits !== false && (media.brideImage || media.groomImage))) && (
-          <div style={{
-            position: 'absolute',
-            top: '44%',
-            left: 0,
-            width: '100%',
-            zIndex: 15,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            pointerEvents: 'none',
-          }}>
+          <div
+            ref={contentRef}
+            style={{
+              position: 'absolute',
+              top: offsetTop ? `${offsetTop}px` : '36%',
+              left: 0,
+              width: '100%',
+              zIndex: 15,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              pointerEvents: 'none',
+            }}
+          >
             {/* BRIDE & GROOM PORTRAITS */}
             {theme?.showPortraits !== false && (media?.brideImage || media?.groomImage) && (
               <div style={{
-                marginBottom: '5rem',
+                marginBottom: isMobile ? '3rem' : '5rem',
                 width: '100%',
                 pointerEvents: 'auto',
                 display: 'flex',
-                flexWrap: 'wrap',
+                flexDirection: 'row',
+                flexWrap: 'nowrap',
                 justifyContent: 'center',
-                gap: 'clamp(3rem, 6vw, 5rem)'
+                alignItems: 'flex-start',
+                gap: isMobile ? '1rem' : 'clamp(3rem, 6vw, 5rem)'
               }}>
                 {media?.brideImage && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ position: 'relative', width: '240px', height: '315px', flexShrink: 0 }}>
-                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', width: '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isMobile ? '0.6rem' : '1.5rem' }}>
+                    <div style={{ position: 'relative', width: isMobile ? '135px' : '240px', height: isMobile ? '177px' : '315px', flexShrink: 0 }}>
+                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', top: isMobile ? '-14px' : '-24px', left: '50%', transform: 'translateX(-50%)', width: isMobile ? '56px' : '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
                       <div style={{ position: 'absolute', inset: 0, zIndex: 1, backgroundImage: 'url(/template2/frame.avif)', backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 8px 22px rgba(0,0,0,0.35))' }} />
                       <div style={{ position: 'absolute', inset: '7%', zIndex: 2, overflow: 'hidden', borderRadius: '140px' }}>
                         <img src={resolveMediaSource(media.brideImage)} alt="Bride" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
-                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', bottom: '-24px', left: '50%', transform: 'translateX(-50%) rotate(180deg)', width: '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
+                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', bottom: isMobile ? '-14px' : '-24px', left: '50%', transform: 'translateX(-50%) rotate(180deg)', width: isMobile ? '56px' : '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
                     </div>
-                    <h3 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontFamily: '"Cormorant Garamond", serif', color: '#f5e6c8', margin: 0, fontWeight: 500, fontStyle: 'italic', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                    <h3 style={{ fontSize: isMobile ? '1.25rem' : 'clamp(1.6rem, 3vw, 2.2rem)', fontFamily: '"Cormorant Garamond", serif', color: '#f5e6c8', margin: 0, fontWeight: 500, fontStyle: 'italic', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
                       {couple.bride || 'The Bride'}
                     </h3>
                   </div>
                 )}
 
                 {media?.groomImage && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-                    <div style={{ position: 'relative', width: '240px', height: '315px', flexShrink: 0 }}>
-                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', width: '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isMobile ? '0.6rem' : '1.5rem' }}>
+                    <div style={{ position: 'relative', width: isMobile ? '135px' : '240px', height: isMobile ? '177px' : '315px', flexShrink: 0 }}>
+                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', top: isMobile ? '-14px' : '-24px', left: '50%', transform: 'translateX(-50%)', width: isMobile ? '56px' : '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
                       <div style={{ position: 'absolute', inset: 0, zIndex: 1, backgroundImage: 'url(/template2/frame.avif)', backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', filter: 'drop-shadow(0 8px 22px rgba(0,0,0,0.35))' }} />
                       <div style={{ position: 'absolute', inset: '7%', zIndex: 2, overflow: 'hidden', borderRadius: '140px' }}>
                         <img src={resolveMediaSource(media.groomImage)} alt="Groom" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
-                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', bottom: '-24px', left: '50%', transform: 'translateX(-50%) rotate(180deg)', width: '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
+                      <img src="/template2/flower.avif" alt="" style={{ position: 'absolute', bottom: isMobile ? '-14px' : '-24px', left: '50%', transform: 'translateX(-50%) rotate(180deg)', width: isMobile ? '56px' : '100px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))' }} />
                     </div>
-                    <h3 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontFamily: '"Cormorant Garamond", serif', color: '#f5e6c8', margin: 0, fontWeight: 500, fontStyle: 'italic', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                    <h3 style={{ fontSize: isMobile ? '1.25rem' : 'clamp(1.6rem, 3vw, 2.2rem)', fontFamily: '"Cormorant Garamond", serif', color: '#f5e6c8', margin: 0, fontWeight: 500, fontStyle: 'italic', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
                       {couple.groom || 'The Groom'}
                     </h3>
                   </div>
@@ -457,11 +656,11 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
                     }}>
 
                       {/* LEFT/RIGHT SIDE - FRAMED IMAGE */}
-                      <div style={{ position: 'relative', width: '280px', height: '370px', flexShrink: 0 }}>
+                      <div style={{ position: 'relative', width: isMobile ? '220px' : '280px', height: isMobile ? '290px' : '370px', flexShrink: 0 }}>
                         {/* Top flower ornament */}
                         <img src="/template2/flower.avif" alt="" style={{
-                          position: 'absolute', top: '-28px', left: '50%', transform: 'translateX(-50%)',
-                          width: '120px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
+                          position: 'absolute', top: isMobile ? '-22px' : '-28px', left: '50%', transform: 'translateX(-50%)',
+                          width: isMobile ? '95px' : '120px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
                         }} />
 
                         {/* Main Decorative Frame Cover */}
@@ -486,8 +685,8 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
 
                         {/* Bottom flower ornament flipped */}
                         <img src="/template2/flower.avif" alt="" style={{
-                          position: 'absolute', bottom: '-28px', left: '50%', transform: 'translateX(-50%) rotate(180deg)',
-                          width: '120px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
+                          position: 'absolute', bottom: isMobile ? '-22px' : '-28px', left: '50%', transform: 'translateX(-50%) rotate(180deg)',
+                          width: isMobile ? '95px' : '120px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
                         }} />
                       </div>
 
@@ -575,6 +774,8 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
               </div>
             )}
 
+
+
             {/* VIDEO MESSAGE SECTION */}
             {videoEnabled && videoUrl && (
               <div style={{
@@ -597,17 +798,17 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
                   textAlign: 'center',
                   gap: '0.5rem'
                 }}>
-                  <p style={{
-                    fontSize: 'clamp(0.6rem, 1.2vw, 0.8rem)',
-                    letterSpacing: '0.5em',
-                    textTransform: 'uppercase',
-                    fontFamily: 'Arial, sans-serif',
-                    color: '#f5c96a',
+                  <h2 style={{
+                    fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+                    fontFamily: '"Cormorant Garamond", serif',
+                    fontWeight: 500,
+                    fontStyle: 'italic',
+                    color: '#f5e6c8',
                     marginBottom: '0.5rem',
-                    opacity: 0.85,
+                    textShadow: '0 4px 20px rgba(0,0,0,0.4)'
                   }}>
-                    OUR STORY
-                  </p>
+                    Our Story
+                  </h2>
                   <div style={{ width: 60, height: 1, background: 'rgba(245,201,106,0.4)', marginBottom: '0.5rem' }} />
                 </div>
 
@@ -615,15 +816,15 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
                   position: 'relative',
                   width: '100%',
                   maxWidth: '750px', // High-fidelity wide scaling
-                  aspectRatio: '617/404',
+                  aspectRatio: '666/400',
                 }}>
                   {/* Video Layer (Behind Frame) */}
                   <div style={{
                     position: 'absolute',
-                    top: '24.5%',
-                    left: '9.0%',
-                    right: '9.0%',
-                    bottom: '24.5%',
+                    top: '3.5%',
+                    bottom: '2.0%',
+                    left: '5.0%',
+                    right: '5.0%',
                     overflow: 'hidden',
                     background: '#000',
                     zIndex: 1,
@@ -642,7 +843,9 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
                     ) : (
                       <video
                         src={videoUrl}
-                        controls
+                        autoPlay
+                        muted
+                        loop
                         playsInline
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
@@ -671,12 +874,12 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
             {/* GALLERY SECTION */}
             {theme?.showGallery !== false && media?.gallery?.length > 0 && (
               <div style={{
-                marginTop: '12rem',
+                marginTop: isMobile ? '5rem' : '12rem',
                 width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4rem',
+                gap: isMobile ? '2.5rem' : '4rem',
                 padding: '0 2rem',
                 pointerEvents: 'auto'
               }}>
@@ -712,18 +915,20 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
                 </div>
 
                 <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? 'repeat(2, 135px)' : 'repeat(auto-fit, minmax(260px, 260px))',
                   justifyContent: 'center',
-                  gap: '2.5rem',
-                  width: '100%'
+                  gap: isMobile ? '2.5rem 1rem' : '4.5rem 3.5rem',
+                  width: '100%',
+                  maxWidth: '900px',
+                  margin: '0 auto'
                 }}>
-                  {media.gallery.slice(0, 6).map((imgSrc, idx) => (
-                    <div key={idx} style={{ position: 'relative', width: '220px', height: '288px', flexShrink: 0 }}>
+                  {(media?.gallery || []).slice(0, 9).map((imgSrc, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: isMobile ? '135px' : '260px', height: isMobile ? '177px' : '340px', flexShrink: 0 }}>
                       {/* Top flower ornament */}
                       <img src="/template2/flower.avif" alt="" style={{
-                        position: 'absolute', top: '-22px', left: '50%', transform: 'translateX(-50%)',
-                        width: '90px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
+                        position: 'absolute', top: isMobile ? '-14px' : '-26px', left: '50%', transform: 'translateX(-50%)',
+                        width: isMobile ? '56px' : '110px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
                       }} />
 
                       {/* Main Decorative Frame Cover */}
@@ -737,7 +942,7 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
                       {/* Actual Event Image inside frame cutout area */}
                       <div style={{
                         position: 'absolute', inset: '7%',
-                        zIndex: 2, overflow: 'hidden', borderRadius: '140px'
+                        zIndex: 2, overflow: 'hidden', borderRadius: '170px'
                       }}>
                         <img
                           src={resolveMediaSource(imgSrc)}
@@ -748,14 +953,252 @@ export function SkyLanternsTemplate({ data, isPreview = false }) {
 
                       {/* Bottom flower ornament flipped */}
                       <img src="/template2/flower.avif" alt="" style={{
-                        position: 'absolute', bottom: '-22px', left: '50%', transform: 'translateX(-50%) rotate(180deg)',
-                        width: '90px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
+                        position: 'absolute', bottom: isMobile ? '-14px' : '-26px', left: '50%', transform: 'translateX(-50%) rotate(180deg)',
+                        width: isMobile ? '56px' : '110px', height: 'auto', zIndex: 3, filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.25))'
                       }} />
                     </div>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Concluding Signature & Map Section */}
+            <div style={{
+              marginTop: isMobile ? '2.5rem' : '5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              width: '100%',
+              zIndex: 2,
+              pointerEvents: 'auto'
+            }}>
+              <div style={{ width: 120, height: 1, background: 'rgba(245,230,200,0.3)', marginBottom: isMobile ? '1.5rem' : '3rem' }} />
+
+              {/* Elegant Signature */}
+              <h3 style={{
+                fontFamily: '"Cormorant Garamond", serif',
+                fontSize: 'clamp(2.2rem, 5.5vw, 3.5rem)',
+                fontWeight: 500,
+                fontStyle: 'italic',
+                color: '#f5e6c8',
+                marginBottom: isMobile ? '0.5rem' : '1rem',
+                textShadow: '0 4px 20px rgba(0,0,0,0.4)'
+              }}>
+                {couple.bride} & {couple.groom}
+              </h3>
+
+              <p style={{
+                fontFamily: '"Cormorant Garamond", serif',
+                fontSize: 'clamp(1rem, 2vw, 1.3rem)',
+                fontStyle: 'italic',
+                color: '#ffffff',
+                opacity: 0.85,
+                letterSpacing: '0.05em',
+                maxWidth: '340px',
+                margin: isMobile ? '0 auto 1.5rem auto' : '0 auto 4rem auto',
+                lineHeight: 1.6
+              }}>
+                We look forward to celebrating this special day with you.
+              </p>
+
+              {/* DYNAMIC LIVE COUNTDOWN TIMER */}
+              {theme?.showCountdown !== false && theme?.enableCountdown !== false && event?.date && (
+                <div style={{ marginBottom: isMobile ? '1.5rem' : '3rem' }}>
+                  <LanternTimer date={event.date} />
+                </div>
+              )}
+
+              {/* RSVP SECTION */}
+              {theme?.showRSVP !== false && (
+                <div style={{
+                  marginTop: isMobile ? '1.5rem' : '3.5rem',
+                  width: '100%',
+                  maxWidth: '500px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  pointerEvents: 'auto',
+                  position: 'relative'
+                }}>
+                  {/* Subtle Glow */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-10%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '80%',
+                    height: '120px',
+                    borderRadius: '100%',
+                    background: 'rgba(245, 201, 106, 0.08)',
+                    filter: 'blur(40px)',
+                    pointerEvents: 'none'
+                  }} />
+
+                  <h3 style={{
+                    fontFamily: '"Cormorant Garamond", serif',
+                    fontSize: 'clamp(2rem, 5vw, 2.8rem)',
+                    fontWeight: 500,
+                    fontStyle: 'italic',
+                    color: '#f5e6c8',
+                    marginBottom: '0.5rem',
+                    textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+                  }}>
+                    Will You Attend?
+                  </h3>
+
+                  <p style={{
+                    fontFamily: '"Montserrat", sans-serif',
+                    fontSize: 'clamp(9px, 2vw, 11px)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '3px',
+                    color: '#ffffff',
+                    opacity: 0.95,
+                    marginBottom: '2.5rem',
+                    textAlign: 'center',
+                    textShadow: '0 2px 10px rgba(0,0,0,0.4)',
+                    maxWidth: '420px',
+                    lineHeight: 1.6
+                  }}>
+                    Let the couple know whether you will be joining their celebration
+                  </p>
+
+                  {/* Celebration / Success Notification */}
+                  {showCelebrate && (
+                    <div style={{
+                      marginBottom: '1.5rem',
+                      background: '#f5c96a',
+                      borderRadius: '50px',
+                      padding: '0.6rem 1.5rem',
+                      boxShadow: '0 10px 30px rgba(245, 201, 106, 0.3)',
+                      animation: 'popIn 600ms ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <CheckCircle2 size={16} style={{ color: '#1a142e' }} />
+                      <span style={{
+                        fontFamily: '"Montserrat", sans-serif',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        color: '#1a142e'
+                      }}>
+                        RSVP saved successfully
+                      </span>
+                    </div>
+                  )}
+
+                  {!response && (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      padding: '0 1rem'
+                    }}>
+                      <button
+                        onClick={handleAccept}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.6rem',
+                          background: 'linear-gradient(135deg, #f5c96a 0%, #d4af37 100%)',
+                          border: 'none',
+                          borderRadius: '50px',
+                          padding: '1.1rem 2rem',
+                          fontFamily: '"Montserrat", sans-serif',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '2px',
+                          color: '#1a142e',
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 25px rgba(245, 201, 106, 0.2)',
+                          transition: 'all 0.3s ease',
+                          width: '100%'
+                        }}
+                      >
+                        <PartyPopper size={14} />
+                        Yes, I'll be there
+                      </button>
+
+                      <button
+                        onClick={handleDecline}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'rgba(0, 0, 0, 0.25)',
+                          border: '1px solid rgba(245, 201, 106, 0.4)',
+                          borderRadius: '50px',
+                          padding: '1.1rem 2rem',
+                          fontFamily: '"Montserrat", sans-serif',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '2px',
+                          color: '#f5c96a',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                          transition: 'all 0.3s ease',
+                          width: '100%'
+                        }}
+                      >
+                        Sorry, I can't make it
+                      </button>
+                    </div>
+                  )}
+
+                  {response === 'accepted' && (
+                    <p style={{
+                      fontFamily: '"Cormorant Garamond", serif',
+                      fontSize: '1.3rem',
+                      fontStyle: 'italic',
+                      color: '#f5c96a',
+                      textAlign: 'center',
+                      marginTop: '1rem',
+                      lineHeight: 1.5,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                    }}>
+                      "We cannot wait to celebrate this special moment with you."
+                    </p>
+                  )}
+
+                  {response === 'declined' && (
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '16px',
+                      padding: '1.2rem 1.5rem',
+                      fontStyle: 'italic',
+                      fontSize: '13px',
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      textAlign: 'center',
+                      marginTop: '1rem',
+                      lineHeight: 1.6,
+                      width: '100%',
+                      boxSizing: 'border-box'
+                    }}>
+                      We'll miss you. Thank you for your warm wishes and prayers.
+                    </div>
+                  )}
+
+                  <style>{`
+                    @keyframes popIn {
+                      0% { opacity: 0; transform: scale(0.9); }
+                      100% { opacity: 1; transform: scale(1); }
+                    }
+                  `}</style>
+                </div>
+              )}
+
+
+            </div>
           </div>
         )}
 
